@@ -1,0 +1,61 @@
+/* Glassmorphism styles for widget cards */
+.glass-card {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  backdrop-filter: blur(12px) saturate(1.2);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  transition: box-shadow 0.3s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.glass-card:hover {
+  box-shadow: 0 12px 36px 0 rgba(31, 38, 135, 0.22);
+  transform: translateY(-2px) scale(1.015);
+}
+
+.glass-icon {
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.10));
+  transition: transform 0.7s cubic-bezier(.23,1.01,.32,1), filter 0.3s;
+  will-change: transform;
+  animation: floatIcon 3.2s ease-in-out infinite alternate;
+}
+@keyframes floatIcon {
+  0% { transform: translateY(0px) scale(1); }
+  100% { transform: translateY(-8px) scale(1.07); }
+}
+
+.live-update-pop {
+  animation: popLive 0.5s cubic-bezier(.23,1.01,.32,1);
+}
+@keyframes popLive {
+  0% { transform: scale(1.08); box-shadow: 0 0 0 0 #4caf50; }
+  60% { transform: scale(1.03); box-shadow: 0 0 0 8px #4caf5022; }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 #4caf5000; }
+}
+
+.theme-light {
+  background: rgba(255,255,255,0.18);
+  color: #222;
+}
+.theme-dark {
+  background: rgba(30,34,44,0.82);
+  color: #fff;
+}
+.theme-warn {
+  background: rgba(255, 193, 7, 0.18);
+  color: #222;
+}
+.theme-dark .glass-icon {
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.25));
+}
+.theme-warn .glass-icon {
+  filter: drop-shadow(0 2px 8px #ffc10755);
+}
+.theme-dark .status-indicator {
+  box-shadow: 0 0 0 2px #fff2;
+}
+.theme-warn .status-indicator {
+  box-shadow: 0 0 0 2px #ffc10744;
+}

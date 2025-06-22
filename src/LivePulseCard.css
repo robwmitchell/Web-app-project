@@ -1,0 +1,70 @@
+/* Pulse animation for status indicator */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
+}
+
+.status-indicator {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
+  animation: pulse 1.5s infinite;
+}
+
+.status-indicator.none {
+  background: #4caf50;
+}
+.status-indicator.minor {
+  background: #ff9800;
+}
+.status-indicator.major {
+  background: #f44336;
+}
+.status-indicator.critical {
+  background: #b71c1c;
+}
+.status-indicator.unknown {
+  background: #757575;
+}
+
+.card-icon {
+  width: 28px;
+  height: 28px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.live-pulse-card {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 18px;
+  width: 370px;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  background: #fff;
+  transition: box-shadow 0.2s;
+}
+.live-pulse-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+
+.live-pulse-headline {
+  font-size: 1.05em;
+  color: #333;
+  margin: 8px 0 0 0;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
