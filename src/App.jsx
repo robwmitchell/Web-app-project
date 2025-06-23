@@ -138,10 +138,10 @@ function App() {
         })
         .catch(() => setSendgrid({ status: 'Error loading status', indicator: '', incidents: [], name: 'SendGrid' }));
       // Okta status
-      fetch('https://status.okta.com/api/v2/summary.json')
+      fetch('/api/okta')
         .then(res => res.json())
         .then(summary => {
-          fetch('https://status.okta.com/api/v2/status.json')
+          fetch('/api/okta-status')
             .then(res => res.json())
             .then(statusData => {
               const name = summary.page?.name || 'Okta';
