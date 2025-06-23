@@ -103,7 +103,7 @@ function App() {
         })
         .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
       // Zscaler RSS via proxy
-      fetch('/api/zscaler')
+      fetch('/api/rss-proxy?url=https://trust.zscaler.com/blog-feed')
         .then(res => res.text())
         .then(data => {
           const updates = parseZscalerRSS(data);
