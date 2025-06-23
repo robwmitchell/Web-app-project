@@ -38,33 +38,124 @@
 }
 
 .card-icon {
-  width: 28px;
-  height: 28px;
-  margin-right: 8px;
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
   vertical-align: middle;
 }
 
 .live-pulse-card {
   border: 1px solid #ccc;
   border-radius: 12px;
-  padding: 20px;
-  margin: 18px;
-  width: 370px;
+  padding: 28px 26px 60px 26px; /* extra bottom padding for button and timeline */
+  margin: 22px;
+  width: 410px;
+  min-height: 320px; /* Increased minimum height for more vertical space */
   text-align: left;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  background: #fff;
-  transition: box-shadow 0.2s;
+  background-color: #fff;
+  position: relative;
+  overflow: hidden;
 }
 .live-pulse-card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.10);
 }
 
+.card-bg-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 90%;
+  height: 90%;
+  max-width: 90%;
+  max-height: 90%;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  opacity: 0.13;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 1s cubic-bezier(.4,2,.6,1);
+}
+
+.card-bg-logo-fade {
+  opacity: 0 !important;
+}
+
+.live-pulse-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: inherit;
+  opacity: 0.10;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.live-pulse-card > div,
+.live-pulse-card .live-pulse-headline,
+.live-pulse-card .card-bottom-center {
+  margin-bottom: 18px;
+}
+
+/* Add margin to the timeline/history bar container */
+.live-pulse-card > div:last-child {
+  margin-top: 18px;
+}
+
 .live-pulse-headline {
-  font-size: 1.05em;
+  font-size: 0.92em;
   color: #333;
-  margin: 8px 0 0 0;
+  margin: 12px 0 0 0;
   font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.card-bottom-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  position: static;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.card-bottom-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 0 18px 8px 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.view-7days-btn {
+  background: #eee;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 500;
+  box-shadow: 0 1px 6px 0 #0001;
+  pointer-events: auto;
+  transition: background 0.15s;
+}
+.view-7days-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Ensure content is above background */
+.live-pulse-card > *:not(.card-bg-logo) {
+  position: relative;
+  z-index: 1;
 }

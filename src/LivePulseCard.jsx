@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LivePulseCard.css';
 import './Glassmorphism.css';
 import cloudflareLogo from './assets/cloudflare-logo.svg';
@@ -25,6 +25,8 @@ export default function LivePulseCard({
 }) {
   const [pop, setPop] = useState(false);
   const [flipped, setFlipped] = useState(false); // flip state
+  const [bgVisible, setBgVisible] = useState(true);
+
   // Animate pop on live update
   React.useEffect(() => {
     setPop(true);
@@ -32,11 +34,30 @@ export default function LivePulseCard({
     return () => clearTimeout(t);
   }, [headline]);
 
+  // Fade out background image after 4 seconds
+  useEffect(() => {
+    setBgVisible(true);
+    const timer = setTimeout(() => setBgVisible(false), 4000);
+    return () => clearTimeout(timer);
+  }, [provider]);
+
   return (
     <div
       className={`live-pulse-card glass-card${pop ? ' live-update-pop' : ''} ${flipped ? 'flipped' : ''}`}
-      style={{ perspective: '1000px', minHeight: 180, minWidth: 280, position: 'relative' }}
+      style={{
+        perspective: '1000px',
+        minHeight: 180,
+        minWidth: 280,
+        position: 'relative',
+      }}
     >
+      {/* Card background logo */}
+      <img
+        src={LOGOS[provider]}
+        alt={provider + ' background'}
+        className={`card-bg-logo${bgVisible ? '' : ' card-bg-logo-fade'}`}
+        aria-hidden="true"
+      />
       <div
         className="card-flip-inner"
         style={{
@@ -88,13 +109,15 @@ export default function LivePulseCard({
             <span className={`status-indicator ${indicator}`} title={indicator}></span>
           </div>
           <div className="live-pulse-headline">{headline}</div>
-          <button
-            style={{ marginTop: 12, background: '#eee', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer', fontWeight: 500 }}
-            onClick={onExpand}
-          >
-            View last 7 days
-          </button>
           {children}
+          <div className="card-bottom-center">
+            <button
+              className="view-7days-btn"
+              onClick={onExpand}
+            >
+              View last 7 days
+            </button>
+          </div>
         </div>
         {/* Back Side */}
         <div

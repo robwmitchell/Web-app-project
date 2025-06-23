@@ -15,39 +15,41 @@ export default function LivePulseCardContainer({
 
   // Headline: latest incident/update or fallback
   let headline = 'All systems operational.';
-  let timelineEvents = [];
   if (provider === 'Cloudflare' && incidents.length > 0) {
     const latest = incidents[0];
-    headline = `${latest.name} – ${latest.status.replace('_', ' ')} (${formatDate(latest.updated_at || latest.updatedAt)})`;
-    timelineEvents = incidents.map(inc => ({
-      date: formatDate(inc.updated_at || inc.updatedAt),
-      indicator: (inc.impact || '').toLowerCase(),
-      statusText: inc.status,
-      status: inc.name,
-    }));
+    headline = (
+      <span>
+        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.name}</span>
+        <span style={{ color: '#888', marginLeft: 6 }}>{latest.status.replace('_', ' ')}</span>
+        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.updated_at || latest.updatedAt)})</span>
+      </span>
+    );
   } else if (provider === 'Zscaler' && updates.length > 0) {
     const latest = updates[0];
-    headline = `${latest.title} (${formatDate(latest.date)})`;
-    timelineEvents = updates.map(u => ({
-      date: formatDate(u.date),
-      indicator: /resolved|closed/i.test(u.title + ' ' + u.description) ? 'none' : 'major',
-      statusText: u.title,
-      status: u.title,
-    }));
+    headline = (
+      <span>
+        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.title}</span>
+        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.date)})</span>
+      </span>
+    );
   } else if (provider === 'SendGrid' && incidents.length > 0) {
-    timelineEvents = incidents.map(inc => ({
-      date: formatDate(inc.updated_at || inc.updatedAt),
-      indicator: (inc.impact || '').toLowerCase(),
-      statusText: inc.status,
-      status: inc.name,
-    }));
+    const latest = incidents[0];
+    headline = (
+      <span>
+        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.name}</span>
+        <span style={{ color: '#888', marginLeft: 6 }}>{latest.status.replace('_', ' ')}</span>
+        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.updated_at || latest.updatedAt)})</span>
+      </span>
+    );
   } else if (provider === 'Okta' && incidents.length > 0) {
-    timelineEvents = incidents.map(inc => ({
-      date: formatDate(inc.updated_at || inc.updatedAt),
-      indicator: (inc.impact || '').toLowerCase(),
-      statusText: inc.status,
-      status: inc.name,
-    }));
+    const latest = incidents[0];
+    headline = (
+      <span>
+        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.name}</span>
+        <span style={{ color: '#888', marginLeft: 6 }}>{latest.status.replace('_', ' ')}</span>
+        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.updated_at || latest.updatedAt)})</span>
+      </span>
+    );
   }
 
   // Company info for each provider
@@ -135,7 +137,7 @@ export default function LivePulseCardContainer({
         onExpand={() => setModalOpen(true)}
         companyInfo={companyInfoMap[provider]}
       >
-        {/* Service history bar at bottom */}
+        {/* Service history bar now beneath the button */}
         <div style={{ marginTop: 18, width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
             {last7.map((d, i) => {
@@ -244,9 +246,7 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
-        ) : (
-          <div>No recent updates.</div>
-        )}
+        ) : null}
       </Modal>
     </>
   );
