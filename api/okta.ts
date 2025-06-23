@@ -1,3 +1,0 @@
-export default async function handler(req, res) {
-  // ...existing code from okta.js...
-}
