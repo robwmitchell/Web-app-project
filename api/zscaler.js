@@ -1,12 +1,12 @@
 export default async function handler(req, res) {
   try {
-    const response = await fetch('https://trust.zscaler.com/api/v1/components');
+    const response = await fetch('https://trust.zscaler.com/blog-feed');
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'Failed to fetch Zscaler data' });
+      return res.status(response.status).json({ error: 'Failed to fetch Zscaler RSS feed' });
     }
-    const data = await response.json();
+    const xml = await response.text();
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.status(200).json(data);
+    res.status(200).send(xml);
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
