@@ -13,16 +13,6 @@ const LOGOS = {
   Zscaler: zscalerLogo,
 };
 
-function getThemeClass(indicator, themeOverride) {
-  if (themeOverride && themeOverride !== 'auto') {
-    if (themeOverride === 'light') return 'theme-light';
-    if (themeOverride === 'dark') return 'theme-dark';
-  }
-  if (indicator === 'none' || indicator === 'minor') return 'theme-light';
-  if (indicator === 'major' || indicator === 'critical') return 'theme-dark';
-  return 'theme-light';
-}
-
 export default function LivePulseCard({
   name,
   provider,
@@ -31,7 +21,6 @@ export default function LivePulseCard({
   headline,
   onExpand,
   children,
-  themeOverride = 'auto',
   companyInfo = null, // new prop for company info
 }) {
   const [pop, setPop] = useState(false);
@@ -43,11 +32,9 @@ export default function LivePulseCard({
     return () => clearTimeout(t);
   }, [headline]);
 
-  const themeClass = getThemeClass(indicator, themeOverride);
-
   return (
     <div
-      className={`live-pulse-card glass-card${pop ? ' live-update-pop' : ''} ${themeClass} ${flipped ? 'flipped' : ''}`}
+      className={`live-pulse-card glass-card${pop ? ' live-update-pop' : ''} ${flipped ? 'flipped' : ''}`}
       style={{ perspective: '1000px', minHeight: 180, minWidth: 280, position: 'relative' }}
     >
       <div

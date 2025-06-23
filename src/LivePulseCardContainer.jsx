@@ -10,7 +10,6 @@ export default function LivePulseCardContainer({
   status,
   incidents = [],
   updates = [],
-  themeOverride = 'auto', // add default
 }) {
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -134,7 +133,6 @@ export default function LivePulseCardContainer({
         status={status}
         headline={headline}
         onExpand={() => setModalOpen(true)}
-        themeOverride={themeOverride}
         companyInfo={companyInfoMap[provider]}
       >
         {/* Service history bar at bottom */}

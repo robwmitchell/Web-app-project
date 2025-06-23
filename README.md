@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-# Web-app-project
-Service Status POC
-=======
 # Service Status Dashboard (Vite + React)
 
 This project is a modern, glassmorphic dashboard for monitoring the status of key SaaS providers: Cloudflare, Zscaler, SendGrid, and Okta. It is built with Vite and React, featuring live polling, animated status cards, and a beautiful, responsive UI.
@@ -42,4 +38,3 @@ This project is a modern, glassmorphic dashboard for monitoring the status of ke
 ---
 
 This project is a demonstration of best practices for modern React development with Vite, focusing on clean UI, real-time data, and user experience.
->>>>>>> b0ce4b4 (Initial commit)

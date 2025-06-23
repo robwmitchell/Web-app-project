@@ -76,7 +76,6 @@ function App() {
   const [zscaler, setZscaler] = useState({ status: 'Loading...', updates: [] });
   const [sendgrid, setSendgrid] = useState({ status: 'Loading...', indicator: '', incidents: [], name: 'SendGrid' });
   const [okta, setOkta] = useState({ status: 'Loading...', indicator: '', incidents: [], name: 'Okta' });
-  const [themeOverride, setThemeOverride] = useState('auto'); // 'auto', 'light', 'dark', 'warn'
 
   useEffect(() => {
     function fetchAllStatuses() {
@@ -173,18 +172,6 @@ function App() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
       <h1 style={{ marginBottom: 24 }}>Service Status Dashboard</h1>
-      <div style={{ position: 'absolute', top: 24, right: 32, zIndex: 10 }}>
-        <label style={{ fontWeight: 500, marginRight: 8 }}>Theme:</label>
-        <select
-          value={themeOverride}
-          onChange={e => setThemeOverride(e.target.value)}
-          style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid #ccc', fontWeight: 500 }}
-        >
-          <option value="auto">Auto</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
         <LivePulseCardContainer
           provider="Cloudflare"
@@ -192,7 +179,6 @@ function App() {
           indicator={cloudflare.indicator}
           status={cloudflare.status}
           incidents={cloudflare.incidents}
-          themeOverride={themeOverride}
         />
         <LivePulseCardContainer
           provider="Zscaler"
@@ -200,7 +186,6 @@ function App() {
           indicator={getZscalerIndicator(zscaler.status)}
           status={zscaler.status}
           updates={zscaler.updates}
-          themeOverride={themeOverride}
         />
         <LivePulseCardContainer
           provider="SendGrid"
@@ -208,7 +193,6 @@ function App() {
           indicator={sendgrid.indicator}
           status={sendgrid.status}
           incidents={sendgrid.incidents}
-          themeOverride={themeOverride}
         />
         <LivePulseCardContainer
           provider="Okta"
@@ -216,7 +200,6 @@ function App() {
           indicator={getOktaIndicator(okta.status)}
           status={okta.status}
           incidents={okta.incidents}
-          themeOverride={themeOverride}
         />
       </div>
     </div>
