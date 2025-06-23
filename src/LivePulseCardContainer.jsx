@@ -95,27 +95,50 @@ export default function LivePulseCardContainer({
     for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(now.getDate() - i);
+      d.setHours(0, 0, 0, 0); // normalize to midnight
       days.push(d);
     }
     return days;
   }
   // Helper: get indicator for a given day
   function getDayIndicator(day) {
-    // For each provider, check if any incident/update on that day, else 'none'
     const dayStr = day.toISOString().slice(0, 10);
     if (provider === 'Cloudflare' && incidents.length > 0) {
-      const found = incidents.find(inc => (inc.updated_at || inc.updatedAt || '').slice(0, 10) === dayStr);
+      // Show indicator if any incident is open during this day
+      const found = incidents.find(inc => {
+        const started = new Date(inc.created_at || inc.createdAt);
+        const ended = inc.resolved_at ? new Date(inc.resolved_at) : null;
+        const dayStart = new Date(day);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(day);
+        dayEnd.setHours(23, 59, 59, 999);
+        if (isNaN(started)) return false;
+        if (ended) {
+          return started <= dayEnd && ended >= dayStart;
+        } else {
+          return started <= dayEnd;
+        }
+      });
       if (found) return (found.impact || 'minor').toLowerCase();
     } else if (provider === 'Zscaler' && updates.length > 0) {
-      // If any update on this day, show 'minor' (yellow) regardless of resolved/closed
-      const dayUpdates = updates.filter(u => {
-        // Defensive: support both Date and string for u.date
-        const updateDate = u.date instanceof Date ? u.date : new Date(u.date);
-        return updateDate.toISOString().slice(0, 10) === dayStr;
+      // Only show indicator if a service interruption/disruption is present for this day
+      const disruptionKeywords = [
+        'disruption', 'outage', 'service disruption', 'service interruption', 'service issue', 'incident', 'degraded', 'problem', 'error', 'failure', 'downtime'
+      ];
+      const dayDisruptions = updates.filter(u => {
+        // Parse the date robustly and align to midnight
+        const updateDate = new Date(u.date);
+        updateDate.setHours(0, 0, 0, 0);
+        // Compare to the indicator day
+        if (updateDate.getTime() !== day.getTime()) return false;
+        // Check for disruption in eventType, title, or description
+        const text = `${u.eventType || ''} ${u.title || ''} ${u.description || ''}`.toLowerCase();
+        return disruptionKeywords.some(k => text.includes(k));
       });
-      if (dayUpdates.length > 0) {
-        return 'minor'; // yellow for any update, even if resolved
+      if (dayDisruptions.length > 0) {
+        return 'major'; // Show orange for service interruptions
       }
+      return 'none'; // Green if no disruption
     } else if ((provider === 'SendGrid' || provider === 'Okta') && incidents.length > 0) {
       const found = incidents.find(inc => (inc.updated_at || inc.updatedAt || '').slice(0, 10) === dayStr);
       if (found) return (found.impact || 'minor').toLowerCase();
@@ -125,6 +148,19 @@ export default function LivePulseCardContainer({
   // Day labels
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
   const last7 = getLast7Days();
+
+  // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)
+  let filteredUpdates = updates;
+  if (provider === 'Zscaler' && updates.length > 0) {
+    const last7 = getLast7Days();
+    const minDate = last7[0].getTime();
+    filteredUpdates = updates.filter(u => {
+      // Parse the date robustly
+      const updateDate = new Date(u.date);
+      updateDate.setHours(0, 0, 0, 0);
+      return updateDate.getTime() >= minDate;
+    });
+  }
 
   return (
     <>
@@ -192,13 +228,18 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
-        ) : provider === 'Zscaler' && updates.length > 0 ? (
+        ) : provider === 'Zscaler' && filteredUpdates.length > 0 ? (
           <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
-            {updates.map((issue, idx) => (
+            {filteredUpdates.map((issue, idx) => (
               <li key={idx} style={{ marginBottom: 18 }}>
                 <a href={issue.link} target="_blank" rel="noopener noreferrer"><strong>{issue.title}</strong></a><br />
                 <span style={{ color: '#888' }}>{formatDate(issue.date)}</span><br />
                 <span style={{ color: '#444' }}>{htmlToText(issue.description)}</span>
+                {issue.eventType && (
+                  <div style={{ fontSize: '0.95em', color: '#555', marginTop: 4 }}>
+                    <strong>Event Type:</strong> {issue.eventType}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import LivePulseCard from './LivePulseCard';
 import LivePulseCardContainer from './LivePulseCardContainer';
+import ZscalerPulseCardContainer from './ZscalerPulseCardContainer';
 import Modal from './Modal';
 import './App.css';
 
 function parseZscalerRSS(xmlText) {
   const parser = new window.DOMParser();
   const xml = parser.parseFromString(xmlText, 'text/xml');
-  const items = Array.from(xml.querySelectorAll('item')).slice(0, 5);
+  const items = Array.from(xml.querySelectorAll('item'));
   return items.map(item => ({
     title: item.querySelector('title')?.textContent || '',
     link: item.querySelector('link')?.textContent || '',
-    date: item.querySelector('pubDate')?.textContent || '',
+    date: item.querySelector('pubDate')?.textContent || '', // This must be present!
     description: item.querySelector('description')?.textContent || '',
+    eventType: item.querySelector('eventType')?.textContent || '',
   }));
 }
 
@@ -102,8 +104,8 @@ function App() {
             .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
         })
         .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
-      // Zscaler RSS via proxy
-      fetch('/api/rss-proxy?url=https://trust.zscaler.com/blog-feed')
+      // Zscaler RSS fetch via local proxy to avoid CORS
+      fetch('/api/zscaler')
         .then(res => res.text())
         .then(data => {
           const updates = parseZscalerRSS(data);
@@ -180,8 +182,7 @@ function App() {
           status={cloudflare.status}
           incidents={cloudflare.incidents}
         />
-        <LivePulseCardContainer
-          provider="Zscaler"
+        <ZscalerPulseCardContainer
           name="Zscaler"
           indicator={getZscalerIndicator(zscaler.status)}
           status={zscaler.status}
