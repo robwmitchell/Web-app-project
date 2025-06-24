@@ -5,11 +5,12 @@ import ZscalerPulseCardContainer from './ZscalerPulseCardContainer';
 import Modal from './Modal';
 import './App.css';
 
-function parseZscalerRSS(xmlText) {
+function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
   const xml = parser.parseFromString(xmlText, 'text/xml');
   const items = Array.from(xml.querySelectorAll('item'));
-  return items.map(item => ({
+  // Only keep the most recent N items
+  return items.slice(0, maxItems).map(item => ({
     title: item.querySelector('title')?.textContent || '',
     link: item.querySelector('link')?.textContent || '',
     date: item.querySelector('pubDate')?.textContent || '', // This must be present!
@@ -66,11 +67,12 @@ function getZscalerIndicator(status) {
   return 'minor';
 }
 
-function parseOktaRSS(xmlText) {
+function parseOktaRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
   const xml = parser.parseFromString(xmlText, 'text/xml');
   const items = Array.from(xml.querySelectorAll('item'));
-  return items.map(item => ({
+  // Only keep the most recent N items
+  return items.slice(0, maxItems).map(item => ({
     title: item.querySelector('title')?.textContent || '',
     link: item.querySelector('link')?.textContent || '',
     date: item.querySelector('pubDate')?.textContent || '',
@@ -107,11 +109,12 @@ function getOktaIndicator(status) {
   return 'minor';
 }
 
-function parseSendgridRSS(xmlText) {
+function parseSendgridRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
   const xml = parser.parseFromString(xmlText, 'text/xml');
   const items = Array.from(xml.querySelectorAll('item'));
-  return items.map(item => ({
+  // Only keep the most recent N items
+  return items.slice(0, maxItems).map(item => ({
     title: item.querySelector('title')?.textContent || '',
     link: item.querySelector('link')?.textContent || '',
     date: item.querySelector('pubDate')?.textContent || '',
@@ -185,29 +188,51 @@ function App() {
       fetch('/api/zscaler')
         .then(res => res.text())
         .then(data => {
-          const updates = parseZscalerRSS(data);
-          const status = getStatusFromZscalerUpdates(updates);
-          setZscaler({ status, updates });
+          const updates = parseZscalerRSS(data, 25); // Only keep 25 most recent
+          // Filter for last 7 days
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const filteredUpdates = updates.filter(update => {
+            const updateDate = new Date(update.date);
+            return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+          });
+          console.log('Zscaler updates count:', updates.length, 'filteredUpdates count:', filteredUpdates.length);
+          const status = getStatusFromZscalerUpdates(filteredUpdates);
+          setZscaler({ status, updates: filteredUpdates });
         })
         .catch(() => setZscaler({ status: 'Error loading feed', updates: [] }));
-      // SendGrid RSS fetch via local proxy to avoid CORS
-      fetch('/api/sendgrid')
-        .then(res => res.text())
-        .then(data => {
-          const updates = parseSendgridRSS(data);
-          const status = getStatusFromSendgridUpdates(updates);
-          setSendgrid({ status, indicator: getSendgridIndicator(status), updates, name: 'SendGrid' });
-        })
-        .catch(() => setSendgrid({ status: 'Error loading feed', indicator: '', updates: [], name: 'SendGrid' }));
       // Okta RSS fetch via local proxy to avoid CORS
       fetch('/api/okta-status')
         .then(res => res.text())
         .then(data => {
-          const updates = parseOktaRSS(data);
-          const status = getStatusFromOktaUpdates(updates);
-          setOkta({ status, indicator: getOktaIndicator(status), updates, name: 'Okta' });
+          const updates = parseOktaRSS(data, 25); // Only keep 25 most recent
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const filteredUpdates = updates.filter(update => {
+            const updateDate = new Date(update.date);
+            return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+          });
+          console.log('Okta updates count:', updates.length, 'filteredUpdates count:', filteredUpdates.length);
+          const status = getStatusFromOktaUpdates(filteredUpdates);
+          setOkta({ status, indicator: getOktaIndicator(status), updates: filteredUpdates, name: 'Okta' });
         })
         .catch(() => setOkta({ status: 'Error loading feed', indicator: '', updates: [], name: 'Okta' }));
+      // SendGrid RSS fetch via local proxy to avoid CORS
+      fetch('/api/sendgrid')
+        .then(res => res.text())
+        .then(data => {
+          const updates = parseSendgridRSS(data, 25); // Only keep 25 most recent
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const filteredUpdates = updates.filter(update => {
+            const updateDate = new Date(update.date);
+            return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+          });
+          console.log('SendGrid updates count:', updates.length, 'filteredUpdates count:', filteredUpdates.length);
+          const status = getStatusFromSendgridUpdates(filteredUpdates);
+          setSendgrid({ status, indicator: getSendgridIndicator(status), updates: filteredUpdates, name: 'SendGrid' });
+        })
+        .catch(() => setSendgrid({ status: 'Error loading feed', indicator: '', updates: [], name: 'SendGrid' }));
     }
     fetchAllStatuses();
     const interval = setInterval(fetchAllStatuses, 60000); // 60 seconds
