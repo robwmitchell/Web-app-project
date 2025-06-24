@@ -9,7 +9,14 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const response = await fetch('https://status.okta.com/api/v2/status.json');
-  const data = await response.json();
-  res.status(200).json(data);
+  try {
+    const response = await fetch('https://status.okta.com/api/v2/status.json');
+    if (!response.ok) {
+      throw new Error(`Upstream error: ${response.status} ${response.statusText}`);
+    }
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch Okta status', details: error.message });
+  }
 }
