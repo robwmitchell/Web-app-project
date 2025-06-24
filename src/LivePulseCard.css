@@ -98,9 +98,10 @@
   margin-bottom: 18px;
 }
 
-/* Add margin to the timeline/history bar container */
-.live-pulse-card > div:last-child {
-  margin-top: 18px;
+/* Reduce spacing between day indicator and history bar */
+.live-pulse-card > div > div:first-child {
+  margin-bottom: 0 !important; /* no gap between day indicator and history */
+  padding: 0 !important;
 }
 
 .live-pulse-headline {
@@ -115,15 +116,62 @@
 }
 
 .card-bottom-center {
+  position: absolute;
+  bottom: 8px; /* reduce gap from bottom */
+  left: 0;
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
-  width: 100%;
-  margin-top: 18px;
-  margin-bottom: 8px;
-  position: static;
-  pointer-events: none;
   z-index: 2;
+  padding: 0; /* remove any extra padding */
+  margin: 0;
+}
+
+.card-bottom-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+}
+.card-bottom-row .view-7days-btn {
+  margin: 0;
+}
+.card-bottom-row .bug-btn {
+  margin: 0;
+}
+
+.card-bottom-stack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+.card-bottom-stack .bug-btn {
+  margin-bottom: 0;
+}
+.card-bottom-stack .view-7days-btn {
+  margin-top: 0;
+}
+
+.card-bottom-left {
+  position: absolute;
+  bottom: 16px;
+  left: 18px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  /* Remove width and justify-content to prevent overlap */
 }
 
 .card-bottom-right {
@@ -191,4 +239,92 @@
 }
 .card-plus-btn:hover {
   background: #f0f0f0;
+}
+
+.bug-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.bug-btn:active {
+  transform: scale(0.95);
+}
+
+.bug-icon {
+  font-size: 18px;
+  color: #b71c1c;
+  margin-right: 4px;
+}
+
+.bug-text {
+  font-size: 0.92em;
+  color: #b71c1c;
+  font-weight: 500;
+}
+
+.report-issue-container {
+  position: absolute;
+  bottom: 16px;
+  right: 18px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  /* Remove width and justify-content to prevent overlap */
+}
+
+.report-issue-above {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 36px; /* just above the bottom button */
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.card-bottom-center {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 2;
+  padding: 0;
+  margin: 0;
+}
+
+/* Remove any margin between the two stacked buttons */
+.report-issue-above + .card-bottom-center {
+  margin-top: 0 !important;
+}
+.bug-btn {
+  margin-bottom: 0;
+}
+
+.bug-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.32);
+  z-index: 2000; /* Increased to ensure above cards */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.bug-modal {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  padding: 32px 28px 22px 28px;
+  min-width: 320px;
+  max-width: 94vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
 }

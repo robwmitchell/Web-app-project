@@ -13,6 +13,7 @@ export default function LivePulseCardContainer({
   updates = [],
 }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [bugModalOpen, setBugModalOpen] = useState(false);
 
   // Helper: get today's date string (YYYY-MM-DD)
   function getTodayStr() {
@@ -163,6 +164,7 @@ export default function LivePulseCardContainer({
         headline={headline}
         onExpand={() => setModalOpen(true)}
         companyInfo={companyInfoMap[provider]}
+        onBugClick={() => setBugModalOpen(true)}
       >
         {/* Service history bar now beneath the button */}
         <div style={{ marginTop: 18, width: '100%' }}>
@@ -285,6 +287,62 @@ export default function LivePulseCardContainer({
           </ul>
         ) : null}
       </Modal>
+      <Modal open={bugModalOpen} onClose={() => setBugModalOpen(false)} title={`Report Service Impact: ${name || provider}`}>
+        <p>Let us know if you're currently impacted by an issue with <strong>{name || provider}</strong>.</p>
+        <ReportImpactForm provider={provider} onClose={() => setBugModalOpen(false)} />
+      </Modal>
     </>
+  );
+}
+
+function ReportImpactForm({ provider, onClose }) {
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+    try {
+      const res = await fetch('/api/report-impact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, name, email, description }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Submission failed');
+      setSuccess(true);
+      setName('');
+      setEmail('');
+      setDescription('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (success) return (
+    <div style={{ color: '#388e3c', padding: 12, textAlign: 'center' }}>
+      Thank you for reporting your issue!
+      <br />
+      <button onClick={onClose} style={{ marginTop: 16, background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Close</button>
+    </div>
+  );
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <input type="text" placeholder="Your name (optional)" value={name} onChange={e => setName(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+      <input type="email" placeholder="Your email (optional)" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+      <textarea placeholder="Describe your issue..." required value={description} onChange={e => setDescription(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }} />
+      {error && <div style={{ color: '#b71c1c', fontSize: '0.98em' }}>{error}</div>}
+      <button type="submit" disabled={loading} style={{ background: '#b71c1c', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 18px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Submitting...' : 'Submit'}</button>
+      <button type="button" onClick={onClose} style={{ background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Cancel</button>
+    </form>
   );
 }

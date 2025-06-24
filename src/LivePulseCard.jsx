@@ -30,7 +30,8 @@ export default function LivePulseCard({
   headline,
   onExpand,
   children,
-  companyInfo = null, // new prop for company info
+  companyInfo = null,
+  onBugClick, // new prop
 }) {
   const [pop, setPop] = useState(false);
   const [flipped, setFlipped] = useState(false); // flip state
@@ -119,14 +120,6 @@ export default function LivePulseCard({
           </div>
           <div className="live-pulse-headline">{headline}</div>
           {children}
-          <div className="card-bottom-center">
-            <button
-              className="view-7days-btn"
-              onClick={onExpand}
-            >
-              View last 7 days
-            </button>
-          </div>
         </div>
         {/* Back Side */}
         <div
@@ -158,6 +151,23 @@ export default function LivePulseCard({
             Back
           </button>
         </div>
+      </div>
+      {/* Place both buttons in a single row at the bottom of the card */}
+      <div className="card-bottom-row">
+        <button
+          className="view-7days-btn"
+          onClick={onExpand}
+        >
+          View last 7 days
+        </button>
+        <button
+          className="bug-btn"
+          aria-label="Report an issue with this service"
+          onClick={onBugClick}
+        >
+          <span className="bug-icon" role="img" aria-label="report issue">⚠️</span>
+          <span className="bug-text">Report an issue</span>
+        </button>
       </div>
     </div>
   );
