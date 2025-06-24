@@ -78,8 +78,10 @@ function App() {
   const [zscaler, setZscaler] = useState({ status: 'Loading...', updates: [] });
   const [sendgrid, setSendgrid] = useState({ status: 'Loading...', indicator: '', incidents: [], name: 'SendGrid' });
   const [okta, setOkta] = useState({ status: 'Loading...', indicator: '', incidents: [], name: 'Okta' });
+  const [today, setToday] = useState(() => new Date());
 
   useEffect(() => {
+    setToday(new Date()); // Update on mount (in case of SSR)
     function fetchAllStatuses() {
       // Cloudflare status (based on open incidents)
       fetch('https://www.cloudflarestatus.com/api/v2/status.json')
@@ -173,6 +175,9 @@ function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 16, right: 32, fontSize: 16, color: '#555', fontWeight: 500 }}>
+        {today.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+      </div>
       <h1 style={{ marginBottom: 24 }}>Service Status Dashboard</h1>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
         <LivePulseCardContainer

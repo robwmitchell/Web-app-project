@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
-
 // pages/api/okta-summary.js
 export default async function handler(req, res) {
   // Set CORS headers
