@@ -16,8 +16,52 @@ function getLast7DaysUTC() {
   return days;
 }
 
+function ReportImpactForm({ provider, onClose }) {
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [description, setDescription] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+    // FAKE submission: simulate network delay and always succeed
+    setTimeout(() => {
+      setSuccess(true);
+      setName('');
+      setEmail('');
+      setDescription('');
+      setLoading(false);
+    }, 1000);
+  }
+
+  if (success) return (
+    <div style={{ color: '#388e3c', padding: 12, textAlign: 'center' }}>
+      Thank you for reporting your issue!
+      <br />
+      <button onClick={onClose} style={{ marginTop: 16, background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Close</button>
+    </div>
+  );
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <input type="text" placeholder="Your name (optional)" value={name} onChange={e => setName(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+      <input type="email" placeholder="Your email (optional)" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+      <textarea placeholder="Describe your issue..." required value={description} onChange={e => setDescription(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }} />
+      {error && <div style={{ color: '#b71c1c', fontSize: '0.98em' }}>{error}</div>}
+      <button type="submit" disabled={loading} style={{ background: '#b71c1c', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 18px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Submitting...' : 'Submit'}</button>
+      <button type="button" onClick={onClose} style={{ background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Cancel</button>
+    </form>
+  );
+}
+
 export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, indicator, status, updates = [] }) {
   const [modalOpen, setModalOpen] = useState(false);
+  const [bugModalOpen, setBugModalOpen] = useState(false);
 
   // Helper: get the date string to use for an update (startTime > date)
   function getUpdateDate(update) {
@@ -100,6 +144,7 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
         headline={headline}
         onExpand={() => setModalOpen(true)}
         companyInfo={companyInfo}
+        onBugClick={() => setBugModalOpen(true)}
       >
         <div style={{ marginTop: 18, width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
@@ -175,6 +220,10 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
         ) : (
           <div style={{ color: '#888', padding: 24, textAlign: 'center' }}>No recent updates.</div>
         )}
+      </Modal>
+      <Modal open={bugModalOpen} onClose={() => setBugModalOpen(false)} title={`Report Service Impact: ${name || provider}`}>
+        <p>Let us know if you're currently impacted by an issue with <strong>{name || provider}</strong>.</p>
+        <ReportImpactForm provider={provider} onClose={() => setBugModalOpen(false)} />
       </Modal>
     </>
   );
