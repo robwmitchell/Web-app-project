@@ -66,18 +66,52 @@ function getZscalerIndicator(status) {
   return 'minor';
 }
 
+function parseOktaRSS(xmlText) {
+  const parser = new window.DOMParser();
+  const xml = parser.parseFromString(xmlText, 'text/xml');
+  const items = Array.from(xml.querySelectorAll('item'));
+  return items.map(item => ({
+    title: item.querySelector('title')?.textContent || '',
+    link: item.querySelector('link')?.textContent || '',
+    date: item.querySelector('pubDate')?.textContent || '',
+    description: item.querySelector('description')?.textContent || '',
+    // Okta RSS does not have eventType, but you can parse from title/description if needed
+  }));
+}
+
+function getStatusFromOktaUpdates(updates) {
+  if (updates.length === 0) return 'Operational';
+  const latest = updates[0];
+  const resolvedKeywords = ['resolved', 'closed'];
+  const openKeywords = [
+    'open', 'investigating', 'degraded', 'outage', 'incident', 'partial', 'disruption', 'monitoring', 'in progress', 'under review', 'downtime', 'service disruption'
+  ];
+  if (resolvedKeywords.some(keyword =>
+    (latest.title + ' ' + latest.description).toLowerCase().includes(keyword)
+  )) {
+    return 'Operational';
+  }
+  if (updates.some(update =>
+    openKeywords.some(keyword =>
+      (update.title + ' ' + update.description).toLowerCase().includes(keyword)
+    )
+  )) {
+    return 'Issues Detected';
+  }
+  return 'Operational';
+}
+
 function getOktaIndicator(status) {
-  if (!status || /operational/i.test(status)) return 'none';
-  if (/major|critical|issues detected/i.test(status)) return 'major';
-  if (/minor/i.test(status)) return 'minor';
-  return 'none';
+  if (!status || status === 'Operational') return 'none';
+  if (status === 'Issues Detected') return 'major';
+  return 'minor';
 }
 
 function App() {
   const [cloudflare, setCloudflare] = useState({ status: 'Loading...', indicator: '', incidents: [] });
   const [zscaler, setZscaler] = useState({ status: 'Loading...', updates: [] });
   const [sendgrid, setSendgrid] = useState({ status: 'Loading...', indicator: '', incidents: [], name: 'SendGrid' });
-  const [okta, setOkta] = useState({ status: 'Loading...', indicator: '', incidents: [], name: 'Okta' });
+  const [okta, setOkta] = useState({ status: 'Loading...', indicator: '', updates: [], name: 'Okta' });
   const [today, setToday] = useState(() => new Date());
 
   useEffect(() => {
@@ -141,32 +175,15 @@ function App() {
             .catch(() => setSendgrid({ status: 'Error loading status', indicator: '', incidents: [], name: 'SendGrid' }));
         })
         .catch(() => setSendgrid({ status: 'Error loading status', indicator: '', incidents: [], name: 'SendGrid' }));
-      // Okta status
-      fetch('/api/okta')
-        .then(res => res.json())
-        .then(summary => {
-          fetch('/api/okta-status')
-            .then(res => res.json())
-            .then(statusData => {
-              const name = summary.page?.name || 'Okta';
-              const now = new Date();
-              const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-              const incidents = (summary.incidents || []).filter(inc => {
-                const updatedAt = inc.updated_at || inc.updatedAt;
-                if (!updatedAt) return false;
-                const updatedDate = new Date(updatedAt);
-                return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
-              });
-              setOkta({
-                status: statusData.status?.description || 'Unknown',
-                indicator: statusData.status?.indicator || 'none',
-                incidents,
-                name,
-              });
-            })
-            .catch(() => setOkta({ status: 'Error loading status', indicator: '', incidents: [], name: 'Okta' }));
+      // Okta RSS fetch via local proxy to avoid CORS
+      fetch('/api/okta-status')
+        .then(res => res.text())
+        .then(data => {
+          const updates = parseOktaRSS(data);
+          const status = getStatusFromOktaUpdates(updates);
+          setOkta({ status, indicator: getOktaIndicator(status), updates, name: 'Okta' });
         })
-        .catch(() => setOkta({ status: 'Error loading status', indicator: '', incidents: [], name: 'Okta' }));
+        .catch(() => setOkta({ status: 'Error loading feed', indicator: '', updates: [], name: 'Okta' }));
     }
     fetchAllStatuses();
     const interval = setInterval(fetchAllStatuses, 60000); // 60 seconds
@@ -200,12 +217,11 @@ function App() {
           status={sendgrid.status}
           incidents={sendgrid.incidents}
         />
-        <LivePulseCardContainer
-          provider="Okta"
-          name={okta.name}
-          indicator={getOktaIndicator(okta.status)}
+        <ZscalerPulseCardContainer
+          name="Okta"
+          indicator={okta.indicator}
           status={okta.status}
-          incidents={okta.incidents}
+          updates={okta.updates}
         />
       </div>
     </div>
