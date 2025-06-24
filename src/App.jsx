@@ -107,10 +107,51 @@ function getOktaIndicator(status) {
   return 'minor';
 }
 
+function parseSendgridRSS(xmlText) {
+  const parser = new window.DOMParser();
+  const xml = parser.parseFromString(xmlText, 'text/xml');
+  const items = Array.from(xml.querySelectorAll('item'));
+  return items.map(item => ({
+    title: item.querySelector('title')?.textContent || '',
+    link: item.querySelector('link')?.textContent || '',
+    date: item.querySelector('pubDate')?.textContent || '',
+    description: item.querySelector('description')?.textContent || '',
+    // SendGrid RSS does not have eventType, but you can parse from title/description if needed
+  }));
+}
+
+function getStatusFromSendgridUpdates(updates) {
+  if (updates.length === 0) return 'Operational';
+  const latest = updates[0];
+  const resolvedKeywords = ['resolved', 'closed'];
+  const openKeywords = [
+    'open', 'investigating', 'degraded', 'outage', 'incident', 'partial', 'disruption', 'monitoring', 'in progress', 'under review', 'downtime', 'service disruption'
+  ];
+  if (resolvedKeywords.some(keyword =>
+    (latest.title + ' ' + latest.description).toLowerCase().includes(keyword)
+  )) {
+    return 'Operational';
+  }
+  if (updates.some(update =>
+    openKeywords.some(keyword =>
+      (update.title + ' ' + update.description).toLowerCase().includes(keyword)
+    )
+  )) {
+    return 'Issues Detected';
+  }
+  return 'Operational';
+}
+
+function getSendgridIndicator(status) {
+  if (!status || status === 'Operational') return 'none';
+  if (status === 'Issues Detected') return 'major';
+  return 'minor';
+}
+
 function App() {
   const [cloudflare, setCloudflare] = useState({ status: 'Loading...', indicator: '', incidents: [] });
   const [zscaler, setZscaler] = useState({ status: 'Loading...', updates: [] });
-  const [sendgrid, setSendgrid] = useState({ status: 'Loading...', indicator: '', incidents: [], name: 'SendGrid' });
+  const [sendgrid, setSendgrid] = useState({ status: 'Loading...', indicator: '', updates: [], name: 'SendGrid' });
   const [okta, setOkta] = useState({ status: 'Loading...', indicator: '', updates: [], name: 'Okta' });
   const [today, setToday] = useState(() => new Date());
 
@@ -149,32 +190,15 @@ function App() {
           setZscaler({ status, updates });
         })
         .catch(() => setZscaler({ status: 'Error loading feed', updates: [] }));
-      // SendGrid status
-      fetch('https://status.sendgrid.com/api/v2/summary.json')
-        .then(res => res.json())
-        .then(summary => {
-          fetch('https://status.sendgrid.com/api/v2/status.json')
-            .then(res => res.json())
-            .then(statusData => {
-              const name = summary.page?.name || 'SendGrid';
-              const now = new Date();
-              const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-              const incidents = (summary.incidents || []).filter(inc => {
-                const updatedAt = inc.updated_at || inc.updatedAt;
-                if (!updatedAt) return false;
-                const updatedDate = new Date(updatedAt);
-                return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
-              });
-              setSendgrid({
-                status: statusData.status?.description || 'Unknown',
-                indicator: statusData.status?.indicator || 'none',
-                incidents,
-                name,
-              });
-            })
-            .catch(() => setSendgrid({ status: 'Error loading status', indicator: '', incidents: [], name: 'SendGrid' }));
+      // SendGrid RSS fetch via local proxy to avoid CORS
+      fetch('/api/sendgrid')
+        .then(res => res.text())
+        .then(data => {
+          const updates = parseSendgridRSS(data);
+          const status = getStatusFromSendgridUpdates(updates);
+          setSendgrid({ status, indicator: getSendgridIndicator(status), updates, name: 'SendGrid' });
         })
-        .catch(() => setSendgrid({ status: 'Error loading status', indicator: '', incidents: [], name: 'SendGrid' }));
+        .catch(() => setSendgrid({ status: 'Error loading feed', indicator: '', updates: [], name: 'SendGrid' }));
       // Okta RSS fetch via local proxy to avoid CORS
       fetch('/api/okta-status')
         .then(res => res.text())
@@ -210,12 +234,11 @@ function App() {
           status={zscaler.status}
           updates={zscaler.updates}
         />
-        <LivePulseCardContainer
-          provider="SendGrid"
-          name={sendgrid.name}
+        <ZscalerPulseCardContainer
+          name="SendGrid"
           indicator={sendgrid.indicator}
           status={sendgrid.status}
-          incidents={sendgrid.incidents}
+          updates={sendgrid.updates}
         />
         <ZscalerPulseCardContainer
           name="Okta"
