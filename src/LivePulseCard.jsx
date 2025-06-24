@@ -60,6 +60,15 @@ export default function LivePulseCard({
         position: 'relative',
       }}
     >
+      {/* Plus/Minus Icon Button - top right of card container */}
+      <button
+        className="card-plus-btn"
+        onClick={() => setFlipped(f => !f)}
+        aria-label={flipped ? "Hide info" : "Show more info"}
+        style={{ position: 'absolute', top: 10, right: 12, width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', zIndex: 3 }}
+      >
+        <span style={{ fontSize: 22, fontWeight: 700, color: '#888' }}>{flipped ? '−' : '+'}</span>
+      </button>
       {/* Card background logo */}
       <img
         src={LOGOS[provider]}
@@ -90,32 +99,23 @@ export default function LivePulseCard({
             left: 0,
           }}
         >
-          {/* Company Info Button - top right */}
+          {/* Company Info Button - hidden, but kept for revertability */}
+          {/*
           <button
-            style={{
-              position: 'absolute',
-              top: 10,
-              right: 12,
-              background: '#f5f5f5',
-              border: 'none',
-              borderRadius: 4,
-              padding: '4px 10px',
-              cursor: 'pointer',
-              fontWeight: 500,
-              zIndex: 2,
-              boxShadow: '0 1px 6px 0 #0001',
-            }}
+            className="company-info-btn"
             onClick={() => setFlipped(true)}
             aria-label="Show company info"
           >
             Company Info
           </button>
+          */}
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
             {LOGOS[provider] && (
               <img src={LOGOS[provider]} alt={provider + ' logo'} className="card-icon glass-icon" style={{ width: 28, height: 28, marginRight: 8 }} />
             )}
             <span style={{ fontWeight: 600, fontSize: '1.1em', marginRight: 8 }}>{name || provider}</span>
             <span className={`status-indicator ${indicator}`} title={indicator}></span>
+            <span className="status-text" style={{ marginLeft: 8, fontWeight: 500, color: '#555', fontSize: '1em' }}>{status}</span>
           </div>
           <div className="live-pulse-headline">{headline}</div>
           {children}

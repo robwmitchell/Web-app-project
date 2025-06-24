@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import LivePulseCard from './LivePulseCard';
 import Modal from './Modal';
 import { formatDate, htmlToText } from './ServiceStatusCard';
+import { getLast7Days } from './utils/dateHelpers';
 
 export default function LivePulseCardContainer({
   provider,
@@ -91,18 +92,6 @@ export default function LivePulseCardContainer({
     ),
   };
 
-  // Helper: get last 7 days (Sun-Sat)
-  function getLast7Days() {
-    const days = [];
-    const now = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      d.setHours(0, 0, 0, 0); // normalize to midnight
-      days.push(d);
-    }
-    return days;
-  }
   // Helper: get indicator for a given day
   function getDayIndicator(day) {
     const dayStr = day.toISOString().slice(0, 10);
@@ -155,7 +144,6 @@ export default function LivePulseCardContainer({
   // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)
   let filteredUpdates = updates;
   if (provider === 'Zscaler' && updates.length > 0) {
-    const last7 = getLast7Days();
     const minDate = last7[0].getTime();
     filteredUpdates = updates.filter(u => {
       // Parse the date robustly
@@ -295,9 +283,7 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
-        ) : (
-          <div style={{ color: '#888', padding: 24, textAlign: 'center' }}>No recent updates.</div>
-        )}
+        ) : null}
       </Modal>
     </>
   );

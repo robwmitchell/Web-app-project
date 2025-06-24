@@ -159,3 +159,36 @@
   position: relative;
   z-index: 1;
 }
+
+.company-info-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-weight: 500;
+  z-index: 2;
+  box-shadow: 0 1px 6px 0 #0001;
+}
+
+.card-plus-btn {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.card-plus-btn:hover {
+  background: #f0f0f0;
+}

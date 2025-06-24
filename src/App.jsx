@@ -205,7 +205,6 @@ function App() {
           const updateDate = new Date(update.date);
           return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
         });
-        console.log('Zscaler updates count:', updates.length, 'filteredUpdates count:', filteredUpdates.length);
         const status = getStatusFromZscalerUpdates(filteredUpdates);
         setZscaler({ status, updates: filteredUpdates });
       })
@@ -221,7 +220,6 @@ function App() {
           const updateDate = new Date(update.date);
           return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
         });
-        console.log('Okta updates count:', updates.length, 'filteredUpdates count:', filteredUpdates.length);
         const status = getStatusFromOktaUpdates(filteredUpdates);
         setOkta({ status, indicator: getOktaIndicator(status), updates: filteredUpdates, name: 'Okta' });
       })
@@ -237,7 +235,6 @@ function App() {
           const updateDate = new Date(update.date);
           return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
         });
-        console.log('SendGrid updates count:', updates.length, 'filteredUpdates count:', filteredUpdates.length);
         const status = getStatusFromSendgridUpdates(filteredUpdates);
         setSendgrid({ status, indicator: getSendgridIndicator(status), updates: filteredUpdates, name: 'SendGrid' });
       })

@@ -2,32 +2,28 @@ import React, { useState } from 'react';
 import LivePulseCard from './LivePulseCard';
 import Modal from './Modal';
 import { formatDate, htmlToText } from './ServiceStatusCard';
+import { getUTCMidnight } from './utils/dateHelpers';
+
+// Zscaler-specific: get last 7 days using UTC midnight
+function getLast7DaysUTC() {
+  const days = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    d.setUTCDate(d.getUTCDate() - i);
+    days.push(d);
+  }
+  return days;
+}
 
 export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, indicator, status, updates = [] }) {
   const [modalOpen, setModalOpen] = useState(false);
-
-  // Helper: get UTC midnight for a date string
-  function getUTCMidnight(dateString) {
-    const d = new Date(dateString);
-    return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  }
 
   // Helper: get the date string to use for an update (startTime > date)
   function getUpdateDate(update) {
     if (update.startTime) return getUTCMidnight(update.startTime);
     if (update.date) return getUTCMidnight(update.date);
     return null;
-  }
-
-  function getLast7Days() {
-    const days = [];
-    const now = new Date();
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      d.setUTCDate(d.getUTCDate() - i);
-      days.push(d);
-    }
-    return days;
   }
 
   function getDayIndicator(day) {
@@ -51,7 +47,7 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
   }
 
   // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)
-  const last7 = getLast7Days();
+  const last7 = getLast7DaysUTC();
   const minDate = last7[0].getTime();
   const filteredUpdates = updates.filter(u => {
     const updateDate = getUpdateDate(u);
@@ -93,12 +89,6 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
   );
 
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
-  // DEBUG: Log updates and filteredUpdates for troubleshooting
-  React.useEffect(() => {
-    console.log('Zscaler updates:', updates);
-    console.log('Zscaler filteredUpdates:', filteredUpdates);
-  }, [updates]);
 
   return (
     <>
