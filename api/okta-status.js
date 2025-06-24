@@ -2,7 +2,7 @@ let cachedData = null;
 let cachedAt = 0;
 const CACHE_DURATION = process.env.OKTA_CACHE_MS
   ? parseInt(process.env.OKTA_CACHE_MS, 10)
-  : 5 * 60 * 1000; // 5 minutes
+  : 2 * 60 * 1000; // 2 minutes
 
 export default async function handler(req, res) {
   // Set CORS headers

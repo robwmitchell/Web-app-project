@@ -3,7 +3,7 @@ import LivePulseCard from './LivePulseCard';
 import Modal from './Modal';
 import { formatDate, htmlToText } from './ServiceStatusCard';
 
-export default function ZscalerPulseCardContainer({ name, indicator, status, updates = [] }) {
+export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, indicator, status, updates = [] }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   // Helper: get UTC midnight for a date string
@@ -104,7 +104,7 @@ export default function ZscalerPulseCardContainer({ name, indicator, status, upd
     <>
       <LivePulseCard
         name={name}
-        provider="Zscaler"
+        provider={provider}
         indicator={indicator}
         status={status}
         headline={headline}
@@ -146,8 +146,8 @@ export default function ZscalerPulseCardContainer({ name, indicator, status, upd
           </div>
         </div>
       </LivePulseCard>
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Zscaler Changelog">
-        {filteredUpdates.length > 0 ? (
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={`${name || provider} Changelog`}>
+        {provider === 'Zscaler' && filteredUpdates.length > 0 ? (
           <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
             {filteredUpdates.map((issue, idx) => (
               <li key={idx} style={{ marginBottom: 18 }}>
@@ -159,6 +159,26 @@ export default function ZscalerPulseCardContainer({ name, indicator, status, upd
                     <strong>Event Type:</strong> {issue.eventType}
                   </div>
                 )}
+              </li>
+            ))}
+          </ul>
+        ) : provider === 'SendGrid' && updates.length > 0 ? (
+          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+            {updates.map((issue, idx) => (
+              <li key={idx} style={{ marginBottom: 18 }}>
+                <a href={issue.link} target="_blank" rel="noopener noreferrer"><strong>{issue.title}</strong></a><br />
+                <span style={{ color: '#888' }}>{formatDate(issue.date)}</span><br />
+                <span style={{ color: '#444' }}>{htmlToText(issue.description)}</span>
+              </li>
+            ))}
+          </ul>
+        ) : provider === 'Okta' && updates.length > 0 ? (
+          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+            {updates.map((issue, idx) => (
+              <li key={idx} style={{ marginBottom: 18 }}>
+                <a href={issue.link} target="_blank" rel="noopener noreferrer"><strong>{issue.title}</strong></a><br />
+                <span style={{ color: '#888' }}>{formatDate(issue.date)}</span><br />
+                <span style={{ color: '#444' }}>{htmlToText(issue.description)}</span>
               </li>
             ))}
           </ul>

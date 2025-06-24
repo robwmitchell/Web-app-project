@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import LivePulseCard from './LivePulseCard';
 import Modal from './Modal';
 import { formatDate, htmlToText } from './ServiceStatusCard';
@@ -43,39 +43,16 @@ export default function LivePulseCardContainer({
   let headline = 'All systems operational.';
   if (provider === 'Cloudflare' && incidents.length > 0) {
     const latest = incidents[0];
-    headline = (
-      <span>
-        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.name}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>{latest.status.replace('_', ' ')}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.updated_at || latest.updatedAt)})</span>
-      </span>
-    );
+    headline = `${latest.name} ${latest.status.replace('_', ' ')} (${formatDate(latest.updated_at || latest.updatedAt)})`;
   } else if (provider === 'Zscaler' && updates.length > 0) {
     const latest = updates[0];
-    headline = (
-      <span>
-        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.title}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.date)})</span>
-      </span>
-    );
+    headline = `${latest.title} (${formatDate(latest.date)})`;
   } else if (provider === 'SendGrid' && incidents.length > 0) {
     const latest = incidents[0];
-    headline = (
-      <span>
-        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.name}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>{latest.status.replace('_', ' ')}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.updated_at || latest.updatedAt)})</span>
-      </span>
-    );
+    headline = `${latest.name} ${latest.status.replace('_', ' ')} (${formatDate(latest.updated_at || latest.updatedAt)})`;
   } else if (provider === 'Okta' && incidents.length > 0) {
     const latest = incidents[0];
-    headline = (
-      <span>
-        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.name}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>{latest.status.replace('_', ' ')}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.updated_at || latest.updatedAt)})</span>
-      </span>
-    );
+    headline = `${latest.name} ${latest.status.replace('_', ' ')} (${formatDate(latest.updated_at || latest.updatedAt)})`;
   }
 
   // Company info for each provider
@@ -274,6 +251,28 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
+        ) : provider === 'Okta' && incidents.length > 0 ? (
+          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+            {incidents.map((incident, idx) => (
+              <li key={idx} style={{ marginBottom: 18 }}>
+                <strong>{incident.name}</strong> <span style={{ color: '#888' }}>{formatDate(incident.updated_at || incident.updatedAt)}</span><br />
+                <span style={{ color: '#444' }}>{incident.status.replace('_', ' ')}</span>
+                {incident.link && (
+                  <div><a href={incident.link} target="_blank" rel="noopener noreferrer">More details</a></div>
+                )}
+                {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
+                  <ul style={{ margin: '4px 0 0 12px', padding: 0, listStyle: 'circle' }}>
+                    {incident.incident_updates.map((update, uidx) => (
+                      <li key={uidx} style={{ fontSize: '0.95em', color: '#555', marginBottom: 4 }}>
+                        {htmlToText(update.body)}<br />
+                        <span style={{ fontSize: '0.85em' }}>{formatDate(update.updated_at || update.updatedAt)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
         ) : provider === 'SendGrid' && incidents.length > 0 ? (
           <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
             {incidents.map((incident, idx) => (
@@ -296,30 +295,8 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
-        ) : provider === 'Okta' && incidents.length > 0 ? (
-          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
-            {incidents.map((incident, idx) => (
-              <li key={idx} style={{ marginBottom: 18 }}>
-                <strong>{incident.name}</strong> <span style={{ color: '#888' }}>{formatDate(incident.updated_at || incident.updatedAt)}</span><br />
-                <span style={{ color: '#444' }}>{incident.status.replace('_', ' ')}</span>
-                {incident.shortlink && (
-                  <div><a href={incident.shortlink} target="_blank" rel="noopener noreferrer">More details</a></div>
-                )}
-                {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
-                  <ul style={{ margin: '4px 0 0 12px', padding: 0, listStyle: 'circle' }}>
-                    {incident.incident_updates.map((update, uidx) => (
-                      <li key={uidx} style={{ fontSize: '0.95em', color: '#555', marginBottom: 4 }}>
-                        {htmlToText(update.body)}<br />
-                        <span style={{ fontSize: '0.85em' }}>{formatDate(update.updated_at || update.updatedAt)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
         ) : (
-          <div style={{ color: '#888', textAlign: 'center', marginTop: 24 }}>No recent issues or incidents found.</div>
+          <div style={{ color: '#888', padding: 24, textAlign: 'center' }}>No recent updates.</div>
         )}
       </Modal>
     </>

@@ -159,6 +159,13 @@ function App() {
   const [today, setToday] = useState(() => new Date());
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
   const [loading, setLoading] = useState(false);
+  const [criticalMode, setCriticalMode] = useState({ active: false, details: [] });
+  const [tickerIndex, setTickerIndex] = useState(0);
+  const demoIssues = [
+    { provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' },
+    { provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' },
+    { provider: 'Okta', name: 'Service Disruption', status: 'critical', updated: new Date().toISOString(), url: 'https://status.okta.com/' },
+  ];
 
   // Fetch all statuses (extracted for reuse)
   const fetchAllStatuses = React.useCallback(() => {
@@ -241,12 +248,66 @@ function App() {
       });
   }, []);
 
+  // Check for any major/critical outage across all providers
+  useEffect(() => {
+    const criticals = [];
+    // Cloudflare
+    if (cloudflare && cloudflare.indicator === 'critical' && cloudflare.incidents && cloudflare.incidents.length > 0) {
+      cloudflare.incidents.forEach(inc => {
+        if ((inc.impact || '').toLowerCase() === 'critical' && !['resolved', 'completed'].includes((inc.status || '').toLowerCase())) {
+          criticals.push({ provider: 'Cloudflare', name: inc.name, status: inc.status, updated: inc.updated_at || inc.updatedAt, url: inc.shortlink || inc.url });
+        }
+      });
+    }
+    // Zscaler
+    if (zscaler && getZscalerIndicator(zscaler.status) === 'major' && zscaler.updates && zscaler.updates.length > 0) {
+      zscaler.updates.forEach(upd => {
+        const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
+        if (text.includes('outage') || text.includes('critical')) {
+          criticals.push({ provider: 'Zscaler', name: upd.title, status: zscaler.status, updated: upd.date, url: upd.link });
+        }
+      });
+    }
+    // Okta
+    if (okta && okta.indicator === 'major' && okta.updates && okta.updates.length > 0) {
+      okta.updates.forEach(upd => {
+        const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
+        if (text.includes('outage') || text.includes('critical')) {
+          criticals.push({ provider: 'Okta', name: upd.title, status: okta.status, updated: upd.date, url: upd.link });
+        }
+      });
+    }
+    // SendGrid
+    if (sendgrid && sendgrid.indicator === 'major' && sendgrid.updates && sendgrid.updates.length > 0) {
+      sendgrid.updates.forEach(upd => {
+        const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
+        if (text.includes('outage') || text.includes('critical')) {
+          criticals.push({ provider: 'SendGrid', name: upd.title, status: sendgrid.status, updated: upd.date, url: upd.link });
+        }
+      });
+    }
+    setCriticalMode({ active: criticals.length > 0, details: criticals });
+  }, [cloudflare, zscaler, okta, sendgrid]);
+
   useEffect(() => {
     setToday(new Date()); // Update on mount (in case of SSR)
     fetchAllStatuses();
-    const interval = setInterval(fetchAllStatuses, 60000); // 60 seconds
+    const interval = setInterval(fetchAllStatuses, 2 * 60 * 1000); // 2 minutes
     return () => clearInterval(interval);
   }, [fetchAllStatuses]);
+
+  // Ticker logic: cycle through issues if more than one
+  useEffect(() => {
+    const issues = criticalMode.active ? criticalMode.details : demoIssues;
+    if (issues.length > 1) {
+      const interval = setInterval(() => {
+        setTickerIndex(i => (i + 1) % issues.length);
+      }, 5000); // 5 seconds per issue
+      return () => clearInterval(interval);
+    } else {
+      setTickerIndex(0);
+    }
+  }, [criticalMode.active, criticalMode.details.length]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
@@ -286,6 +347,48 @@ function App() {
         </button>
       </div>
       <h1 style={{ marginBottom: 24 }}>Service Status Dashboard</h1>
+      {/* Critical Mode Strip (with example for demo) */}
+      {(
+        criticalMode.active || process.env.NODE_ENV === 'development'
+      ) && (
+        <div style={{
+          width: '100%',
+          background: 'linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%)',
+          color: '#fff',
+          fontWeight: 600,
+          fontSize: 17,
+          padding: '8px 0',
+          marginBottom: 18,
+          display: 'flex',
+          alignItems: 'center',
+          overflow: 'hidden',
+          position: 'relative',
+          zIndex: 10,
+          minHeight: 32,
+        }}>
+          <div style={{
+            width: '100%',
+            textAlign: 'center',
+            transition: 'opacity 0.6s',
+            opacity: 1,
+            position: 'relative',
+          }}>
+            {(() => {
+              const issues = criticalMode.active ? criticalMode.details : demoIssues;
+              const idx = tickerIndex % issues.length;
+              const c = issues[idx];
+              return (
+                <span key={idx} style={{ display: 'inline-block', transition: 'opacity 0.6s' }}>
+                  [{c.provider}] <b>{c.name}</b> - {c.status} {c.updated ? `(${new Date(c.updated).toLocaleString()})` : ''}
+                  {c.url && (
+                    <a href={c.url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline', marginLeft: 8 }}>Details</a>
+                  )}
+                </span>
+              );
+            })()}
+          </div>
+        </div>
+      )}
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
         <LivePulseCardContainer
           provider="Cloudflare"
@@ -295,18 +398,22 @@ function App() {
           incidents={cloudflare.incidents}
         />
         <ZscalerPulseCardContainer
+          provider="Zscaler"
           name="Zscaler"
           indicator={getZscalerIndicator(zscaler.status)}
           status={zscaler.status}
           updates={zscaler.updates}
         />
         <ZscalerPulseCardContainer
+          provider="SendGrid"
           name="SendGrid"
           indicator={sendgrid.indicator}
           status={sendgrid.status}
           updates={sendgrid.updates}
+          incidents={sendgrid.updates} // Pass updates as incidents for SendGrid modal
         />
         <ZscalerPulseCardContainer
+          provider="Okta"
           name="Okta"
           indicator={okta.indicator}
           status={okta.status}
