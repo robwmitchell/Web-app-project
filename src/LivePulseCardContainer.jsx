@@ -13,6 +13,32 @@ export default function LivePulseCardContainer({
 }) {
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Helper: get today's date string (YYYY-MM-DD)
+  function getTodayStr() {
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
+  }
+  const todayStr = getTodayStr();
+
+  // Count issues for today for each provider
+  let todayIssueCount = 0;
+  if (provider === 'Cloudflare' && incidents.length > 0) {
+    todayIssueCount = incidents.filter(inc => {
+      const started = new Date(inc.created_at || inc.createdAt);
+      const ended = inc.resolved_at ? new Date(inc.resolved_at) : null;
+      const todayStart = new Date(todayStr);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(todayStr);
+      todayEnd.setHours(23, 59, 59, 999);
+      if (isNaN(started)) return false;
+      if (ended) {
+        return started <= todayEnd && ended >= todayStart;
+      } else {
+        return started <= todayEnd;
+      }
+    }).length;
+  }
+
   // Headline: latest incident/update or fallback
   let headline = 'All systems operational.';
   if (provider === 'Cloudflare' && incidents.length > 0) {
@@ -199,12 +225,17 @@ export default function LivePulseCardContainer({
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {last7.map((d, i) => (
               <div key={i} style={{ flex: 1, textAlign: 'center' }}>
-                <span className={`status-indicator ${getDayIndicator(d)}`} style={{ margin: '0 auto', display: 'inline-block' }} title={getDayIndicator(d)}></span>
+                <span
+                  className={`status-indicator ${getDayIndicator(d)}`}
+                  style={{ margin: '0 auto', display: 'inline-block' }}
+                  title={getDayIndicator(d)}
+                ></span>
               </div>
             ))}
           </div>
         </div>
       </LivePulseCard>
+      {/* Modal and all closing tags */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={`${name || provider} Changelog`}>
         {provider === 'Cloudflare' && incidents.length > 0 ? (
           <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
@@ -287,7 +318,9 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
-        ) : null}
+        ) : (
+          <div style={{ color: '#888', textAlign: 'center', marginTop: 24 }}>No recent issues or incidents found.</div>
+        )}
       </Modal>
     </>
   );

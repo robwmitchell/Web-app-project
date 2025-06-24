@@ -59,16 +59,29 @@ export default function ZscalerPulseCardContainer({ name, indicator, status, upd
     return updateDate.getTime() >= minDate;
   });
 
-  let headline = 'All systems operational.';
-  if (updates.length > 0) {
-    const latest = updates[0];
-    headline = (
-      <span>
-        <span style={{ fontWeight: 600, fontSize: '1em', wordBreak: 'break-word' }}>{latest.title}</span>
-        <span style={{ color: '#888', marginLeft: 6 }}>({formatDate(latest.date)})</span>
-      </span>
-    );
+  // Helper: get today's date string (YYYY-MM-DD)
+  function getTodayStr() {
+    const today = new Date();
+    return today.toISOString().slice(0, 10);
   }
+  const todayStr = getTodayStr();
+
+  // Count issues for today for Zscaler
+  const disruptionKeywords = [
+    'disruption', 'outage', 'service disruption', 'service interruption', 'service issue', 'incident', 'degraded', 'problem', 'error', 'failure', 'downtime'
+  ];
+  const todayIssueCount = updates.filter(u => {
+    const updateDate = getUpdateDate(u);
+    if (!updateDate) return false;
+    if (updateDate.toISOString().slice(0, 10) !== todayStr) return false;
+    const text = `${u.eventType || ''} ${u.title || ''} ${u.description || ''}`.toLowerCase();
+    return disruptionKeywords.some(k => text.includes(k));
+  }).length;
+
+  // Headline: show issue count for today
+  let headline = todayIssueCount > 0
+    ? `${todayIssueCount} issue${todayIssueCount > 1 ? 's' : ''} logged today`
+    : 'No issues logged today.';
 
   const companyInfo = (
     <>
@@ -123,7 +136,11 @@ export default function ZscalerPulseCardContainer({ name, indicator, status, upd
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {last7.map((d, i) => (
               <div key={i} style={{ flex: 1, textAlign: 'center' }}>
-                <span className={`status-indicator ${getDayIndicator(d)}`} style={{ margin: '0 auto', display: 'inline-block' }} title={getDayIndicator(d)}></span>
+                <span
+                  className={`status-indicator ${getDayIndicator(d)}`}
+                  style={{ margin: '0 auto', display: 'inline-block' }}
+                  title={getDayIndicator(d)}
+                ></span>
               </div>
             ))}
           </div>

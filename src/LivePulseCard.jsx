@@ -13,6 +13,15 @@ const LOGOS = {
   Zscaler: zscalerLogo,
 };
 
+// Icon mapping for status
+const STATUS_ICONS = {
+  none: { icon: '✔', color: '#4caf50', emoji: '🟢' }, // operational
+  minor: { icon: '⚠', color: '#ff9800', emoji: '🟠' }, // partial outage
+  major: { icon: '❌', color: '#f44336', emoji: '🔴' }, // major issue
+  critical: { icon: '❌', color: '#b71c1c', emoji: '🔴' }, // major/critical
+  unknown: { icon: '?', color: '#757575', emoji: '❔' }, // unknown
+};
+
 export default function LivePulseCard({
   name,
   provider,
