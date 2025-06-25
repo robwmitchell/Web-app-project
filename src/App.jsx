@@ -7,6 +7,7 @@ import MiniHeatbarGrid from './MiniHeatbarGrid';
 import './App.css';
 import './MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -430,6 +431,7 @@ function App() {
       {/* Mini Heatbar Grid at the bottom of the page */}
       <MiniHeatbarGrid />
       <SpeedInsights />
+      <Analytics />
     </div>
   );
 }
