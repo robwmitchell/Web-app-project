@@ -6,6 +6,7 @@ import Modal from './Modal';
 import MiniHeatbarGrid from './MiniHeatbarGrid';
 import './App.css';
 import './MiniHeatbarGrid.css';
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -169,6 +170,22 @@ function App() {
     { provider: 'Okta', name: 'Service Disruption', status: 'critical', updated: new Date().toISOString(), url: 'https://status.okta.com/' },
   ];
 
+  // Utility: get and set Cloudflare incidents in localStorage
+  function getStoredCloudflareIncidents() {
+    try {
+      const raw = localStorage.getItem('cloudflare_incidents');
+      if (!raw) return [];
+      return JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  function setStoredCloudflareIncidents(incidents) {
+    try {
+      localStorage.setItem('cloudflare_incidents', JSON.stringify(incidents));
+    } catch {}
+  }
+
   // Fetch all statuses (extracted for reuse)
   const fetchAllStatuses = React.useCallback(() => {
     setLoading(true);
@@ -183,14 +200,31 @@ function App() {
             // Only include incidents updated in the last 7 days
             const now = new Date();
             const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const incidents = (summaryData.incidents || []).filter(inc => {
+            const apiIncidents = (summaryData.incidents || []).filter(inc => {
               const updatedAt = inc.updated_at || inc.updatedAt;
               if (!updatedAt) return false;
               const updatedDate = new Date(updatedAt);
               return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
             });
-            const { status, indicator } = getCloudflareStatusFromIncidents(incidents);
-            setCloudflare({ status, indicator, incidents, name });
+            // --- Merge with localStorage ---
+            let stored = getStoredCloudflareIncidents();
+            // Remove old stored incidents
+            stored = stored.filter(inc => {
+              const updatedAt = inc.updated_at || inc.updatedAt;
+              if (!updatedAt) return false;
+              const updatedDate = new Date(updatedAt);
+              return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
+            });
+            // Merge: update or add any from API, keep any not present in API
+            const merged = [...apiIncidents];
+            stored.forEach(storedInc => {
+              if (!merged.some(apiInc => apiInc.id === storedInc.id)) {
+                merged.push(storedInc);
+              }
+            });
+            setStoredCloudflareIncidents(merged);
+            const { status, indicator } = getCloudflareStatusFromIncidents(merged);
+            setCloudflare({ status, indicator, incidents: merged, name });
           })
           .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
       })
@@ -395,6 +429,7 @@ function App() {
       </div>
       {/* Mini Heatbar Grid at the bottom of the page */}
       <MiniHeatbarGrid />
+      <SpeedInsights />
     </div>
   );
 }
