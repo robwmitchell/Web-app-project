@@ -9,7 +9,13 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Debug: log the incoming request body
+  console.log('Incoming report-issue body:', req.body);
+
   const { service_name, description, user_email, status, metadata } = req.body;
+
+  // Debug: log the extracted service_name
+  console.log('Extracted service_name:', service_name);
 
   if (!service_name || !description) {
     res.status(400).json({ error: 'Missing required fields' });
