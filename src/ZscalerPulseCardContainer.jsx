@@ -16,7 +16,7 @@ function getLast7DaysUTC() {
   return days;
 }
 
-function ReportImpactForm({ provider, onClose }) {
+function ReportImpactForm({ serviceName, onClose }) {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [description, setDescription] = React.useState('');
@@ -34,7 +34,7 @@ function ReportImpactForm({ provider, onClose }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          service_name: provider?.name || provider?.title || 'Unknown',
+          service_name: serviceName || 'Unknown',
           description,
           user_email: email || undefined,
           status: 'open',
@@ -257,7 +257,7 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
       </Modal>
       <Modal open={bugModalOpen} onClose={() => setBugModalOpen(false)} title={`Report Service Impact: ${name || provider}`}>
         <p>Let us know if you're currently impacted by an issue with <strong>{name || provider}</strong>.</p>
-        <ReportImpactForm provider={provider} onClose={() => setBugModalOpen(false)} />
+        <ReportImpactForm serviceName={name || provider} onClose={() => setBugModalOpen(false)} />
       </Modal>
     </>
   );
