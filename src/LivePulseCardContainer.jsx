@@ -326,14 +326,31 @@ function ReportImpactForm({ provider, onClose }) {
     setLoading(true);
     setError('');
     setSuccess(false);
-    // Simulate network delay and always succeed
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/report-issue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_name: provider?.name || provider?.title || 'Unknown',
+          description,
+          user_email: email || undefined,
+          status: 'open',
+          metadata: name ? { name } : undefined
+        })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Submission failed');
+      }
       setSuccess(true);
       setName('');
       setEmail('');
       setDescription('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   }
 
   if (success) return (
