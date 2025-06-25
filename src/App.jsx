@@ -8,6 +8,7 @@ import './App.css';
 import './MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
+import { FaBell } from 'react-icons/fa';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -344,95 +345,118 @@ function App() {
   }, [criticalMode.active, criticalMode.details.length]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-      {/* Responsive: stack date and refresh on mobile */}
-      <div className="app-top-bar">
-        <div className="app-date">
-          {today.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+    <>
+      <div style={{
+        width: '100%',
+        background: '#fff',
+        borderBottom: '1px solid #e0e0e0',
+        padding: '0 0 0 0',
+        marginBottom: 18,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        minHeight: 56,
+        boxShadow: '0 2px 8px #0001',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+      }}>
+        <div style={{ fontWeight: 700, fontSize: '1.22em', paddingLeft: 24, letterSpacing: 1 }}>
+          Service Status Dashboard
         </div>
-        <div className="app-refresh">
-          <span style={{ fontSize: 14, color: '#888' }}>Last updated: {lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+        <div style={{ paddingRight: 24 }}>
+          <FaBell size={22} color="#1976d2" style={{ cursor: 'pointer' }} title="Notifications" />
         </div>
       </div>
-      <h1 style={{ marginBottom: 24 }}>Service Status Dashboard</h1>
-      {/* Critical Mode Strip (with example for demo) */}
-      {(
-        criticalMode.active || process.env.NODE_ENV === 'development'
-      ) && (
-        <div style={{
-          width: '100%',
-          background: 'linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%)',
-          color: '#fff',
-          fontWeight: 600,
-          fontSize: 17,
-          padding: '8px 0',
-          marginBottom: 18,
-          display: 'flex',
-          alignItems: 'center',
-          overflow: 'hidden',
-          position: 'relative',
-          zIndex: 10,
-          minHeight: 32,
-        }}>
-          <div style={{
-            width: '100%',
-            textAlign: 'center',
-            transition: 'opacity 0.6s',
-            opacity: 1,
-            position: 'relative',
-          }}>
-            {(() => {
-              const issues = criticalMode.active ? criticalMode.details : demoIssues;
-              const idx = tickerIndex % issues.length;
-              const c = issues[idx];
-              return (
-                <span key={idx} style={{ display: 'inline-block', transition: 'opacity 0.6s' }}>
-                  [{c.provider}] <b>{c.name}</b> - {c.status} {c.updated ? `(${new Date(c.updated).toLocaleString()})` : ''}
-                  {c.url && (
-                    <a href={c.url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline', marginLeft: 8 }}>Details</a>
-                  )}
-                </span>
-              );
-            })()}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+        {/* Responsive: stack date and refresh on mobile */}
+        <div className="app-top-bar">
+          <div className="app-date">
+            {today.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+          </div>
+          <div className="app-refresh">
+            <span style={{ fontSize: 14, color: '#888' }}>Last updated: {lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
           </div>
         </div>
-      )}
-      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <LivePulseCardContainer
-          provider="Cloudflare"
-          name={cloudflare.name}
-          indicator={cloudflare.indicator}
-          status={cloudflare.status}
-          incidents={cloudflare.incidents}
-        />
-        <ZscalerPulseCardContainer
-          provider="Zscaler"
-          name="Zscaler"
-          indicator={getZscalerIndicator(zscaler.status)}
-          status={zscaler.status}
-          updates={zscaler.updates}
-        />
-        <ZscalerPulseCardContainer
-          provider="SendGrid"
-          name="SendGrid"
-          indicator={sendgrid.indicator}
-          status={sendgrid.status}
-          updates={sendgrid.updates}
-          incidents={sendgrid.updates} // Pass updates as incidents for SendGrid modal
-        />
-        <ZscalerPulseCardContainer
-          provider="Okta"
-          name="Okta"
-          indicator={okta.indicator}
-          status={okta.status}
-          updates={okta.updates}
-        />
+        {/* Critical Mode Strip (with example for demo) */}
+        {(
+          criticalMode.active || process.env.NODE_ENV === 'development'
+        ) && (
+          <div style={{
+            width: '100%',
+            background: 'linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%)',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: 17,
+            padding: '8px 0',
+            marginBottom: 18,
+            display: 'flex',
+            alignItems: 'center',
+            overflow: 'hidden',
+            position: 'relative',
+            zIndex: 10,
+            minHeight: 32,
+          }}>
+            <div style={{
+              width: '100%',
+              textAlign: 'center',
+              transition: 'opacity 0.6s',
+              opacity: 1,
+              position: 'relative',
+            }}>
+              {(() => {
+                const issues = criticalMode.active ? criticalMode.details : demoIssues;
+                const idx = tickerIndex % issues.length;
+                const c = issues[idx];
+                return (
+                  <span key={idx} style={{ display: 'inline-block', transition: 'opacity 0.6s' }}>
+                    [{c.provider}] <b>{c.name}</b> - {c.status} {c.updated ? `(${new Date(c.updated).toLocaleString()})` : ''}
+                    {c.url && (
+                      <a href={c.url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline', marginLeft: 8 }}>Details</a>
+                    )}
+                  </span>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <LivePulseCardContainer
+            provider="Cloudflare"
+            name={cloudflare.name}
+            indicator={cloudflare.indicator}
+            status={cloudflare.status}
+            incidents={cloudflare.incidents}
+          />
+          <ZscalerPulseCardContainer
+            provider="Zscaler"
+            name="Zscaler"
+            indicator={getZscalerIndicator(zscaler.status)}
+            status={zscaler.status}
+            updates={zscaler.updates}
+          />
+          <ZscalerPulseCardContainer
+            provider="SendGrid"
+            name="SendGrid"
+            indicator={sendgrid.indicator}
+            status={sendgrid.status}
+            updates={sendgrid.updates}
+            incidents={sendgrid.updates} // Pass updates as incidents for SendGrid modal
+          />
+          <ZscalerPulseCardContainer
+            provider="Okta"
+            name="Okta"
+            indicator={okta.indicator}
+            status={okta.status}
+            updates={okta.updates}
+          />
+        </div>
+        {/* Mini Heatbar Grid at the bottom of the page */}
+        <MiniHeatbarGrid />
+        <SpeedInsights />
+        <Analytics />
       </div>
-      {/* Mini Heatbar Grid at the bottom of the page */}
-      <MiniHeatbarGrid />
-      <SpeedInsights />
-      <Analytics />
-    </div>
+    </>
   );
 }
 
