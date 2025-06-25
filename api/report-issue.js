@@ -12,10 +12,11 @@ export default async function handler(req, res) {
   // Debug: log the incoming request body
   console.log('Incoming report-issue body:', req.body);
 
-  const { service_name, description, user_email, status, metadata } = req.body;
+  const { service_name, impacted_provider, description, user_email, status, metadata } = req.body;
 
-  // Debug: log the extracted service_name
+  // Debug: log the extracted service_name and impacted_provider
   console.log('Extracted service_name:', service_name);
+  console.log('Extracted impacted_provider:', impacted_provider);
 
   if (!service_name || !description) {
     res.status(400).json({ error: 'Missing required fields' });
@@ -24,9 +25,10 @@ export default async function handler(req, res) {
 
   try {
     const result = await sql`
-      INSERT INTO issue_reports (service_name, description, user_email, status, metadata)
+      INSERT INTO issue_reports (service_name, impacted_provider, description, user_email, status, metadata)
       VALUES (
         ${service_name},
+        ${impacted_provider || null},
         ${description},
         ${user_email || null},
         ${status || 'open'},
