@@ -1,5 +1,6 @@
 import React from 'react';
 import './MiniHeatbarGrid.css';
+import LineSpark from './LineSpark';
 
 const SERVICES = [
   'Cloudflare',
@@ -14,16 +15,6 @@ const STATUS_MAP = {
   SendGrid: '🟢 OK',
   Zscaler: '🔴 Major',
 };
-
-// Unicode blocks from low to high: ▁▂▃▄▅▆▇█
-const BLOCKS = ['▁', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
-function getTrendBar(trend) {
-  if (!trend || trend.length === 0) return '';
-  const max = Math.max(...trend, 1);
-  return trend
-    .map(val => BLOCKS[Math.round((val / max) * (BLOCKS.length - 1))])
-    .join('');
-}
 
 function getTrendArrow(up) {
   return up ? '▲' : '▼';
@@ -74,7 +65,9 @@ export default function MiniHeatbarGrid() {
         <div className="mini-heatbar-row" key={row.service}>
           <span>{row.service}</span>
           <span>{row.status}</span>
-          <span className="mini-heatbar-trend">{getTrendBar(row.trend)}</span>
+          <span className="mini-heatbar-trend">
+            <LineSpark data={row.trend} width={48} height={16} color="#1976d2" />
+          </span>
           <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
         </div>
       ))}
