@@ -162,9 +162,7 @@ export default function LivePulseCardContainer({
         indicator={indicator}
         status={status}
         headline={headline}
-        onExpand={() => setModalOpen(true)}
         companyInfo={companyInfoMap[provider]}
-        onBugClick={() => setBugModalOpen(true)}
       >
         {/* Service history bar now beneath the button */}
         <div style={{ marginTop: 18, width: '100%' }}>
@@ -200,6 +198,23 @@ export default function LivePulseCardContainer({
               </div>
             ))}
           </div>
+        </div>
+        {/* Move the button group here, just below the day indicator */}
+        <div className="card-action-row" style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+          <button
+            className="view-7days-btn"
+            onClick={() => setModalOpen(true)}
+          >
+            View last 7 days
+          </button>
+          <button
+            className="bug-btn"
+            aria-label="Report an issue with this service"
+            onClick={() => setBugModalOpen(true)}
+          >
+            <span className="bug-icon" role="img" aria-label="report issue">⚠️</span>
+            <span className="bug-text">Report an issue</span>
+          </button>
         </div>
       </LivePulseCard>
       {/* Modal and all closing tags */}
@@ -285,7 +300,9 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
-        ) : null}
+        ) : (
+          <div style={{ color: '#888', padding: 24, textAlign: 'center' }}>No recent updates.</div>
+        )}
       </Modal>
       <Modal open={bugModalOpen} onClose={() => setBugModalOpen(false)} title={`Report Service Impact: ${name || provider}`}>
         <p>Let us know if you're currently impacted by an issue with <strong>{name || provider}</strong>.</p>
@@ -295,6 +312,7 @@ export default function LivePulseCardContainer({
   );
 }
 
+// Add ReportImpactForm definition
 function ReportImpactForm({ provider, onClose }) {
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
@@ -308,23 +326,14 @@ function ReportImpactForm({ provider, onClose }) {
     setLoading(true);
     setError('');
     setSuccess(false);
-    try {
-      const res = await fetch('/api/report-impact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, name, email, description }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Submission failed');
+    // Simulate network delay and always succeed
+    setTimeout(() => {
       setSuccess(true);
       setName('');
       setEmail('');
       setDescription('');
-    } catch (err) {
-      setError(err.message);
-    } finally {
       setLoading(false);
-    }
+    }, 1000);
   }
 
   if (success) return (

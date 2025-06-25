@@ -3,7 +3,9 @@ import LivePulseCard from './LivePulseCard';
 import LivePulseCardContainer from './LivePulseCardContainer';
 import ZscalerPulseCardContainer from './ZscalerPulseCardContainer';
 import Modal from './Modal';
+import MiniHeatbarGrid from './MiniHeatbarGrid';
 import './App.css';
+import './MiniHeatbarGrid.css';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -391,6 +393,8 @@ function App() {
           updates={okta.updates}
         />
       </div>
+      {/* Mini Heatbar Grid at the bottom of the page */}
+      <MiniHeatbarGrid />
     </div>
   );
 }

@@ -1,0 +1,47 @@
+.mini-heatbar-grid {
+  width: 100%;
+  max-width: 520px;
+  margin: 32px auto 0 auto;
+  border-radius: 10px;
+  background: #fafbfc;
+  box-shadow: 0 2px 8px #0001;
+  padding: 18px 18px 10px 18px;
+  font-family: inherit;
+  font-size: 1.04em;
+}
+.mini-heatbar-header {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 2.5fr;
+  font-weight: 700;
+  color: #444;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+.mini-heatbar-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 2.5fr;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 1em;
+}
+.mini-heatbar-row:last-child {
+  border-bottom: none;
+}
+.mini-heatbar-bar {
+  font-family: 'Menlo', 'Consolas', monospace;
+  letter-spacing: 1px;
+  color: #b71c1c;
+  font-size: 1.02em;
+}
+@media (max-width: 600px) {
+  .mini-heatbar-grid {
+    padding: 10px 2vw 6px 2vw;
+    font-size: 0.98em;
+  }
+  .mini-heatbar-header, .mini-heatbar-row {
+    grid-template-columns: 1.2fr 1fr 2.2fr;
+    font-size: 0.98em;
+  }
+}

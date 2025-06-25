@@ -329,13 +329,58 @@
   position: relative;
 }
 
+.card-action-row {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+@media (max-width: 900px) {
+  .card-action-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+    margin-bottom: 0;
+  }
+  .card-action-row .view-7days-btn,
+  .card-action-row .bug-btn {
+    width: 100%;
+    margin: 0 auto;
+    font-size: 1em;
+    display: flex;
+    justify-content: center;
+  }
+}
+@media (max-width: 600px) {
+  .card-action-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 0;
+  }
+  .card-action-row .view-7days-btn,
+  .card-action-row .bug-btn {
+    width: 100%;
+    margin: 0 auto;
+    font-size: 1em;
+    display: flex;
+    justify-content: center;
+  }
+}
+
 @media (max-width: 900px) {
   .live-pulse-card {
     width: 98vw;
     min-width: 0;
     max-width: 98vw;
     min-height: 260px;
-    padding: 18px 8px 60px 8px;
+    padding: 18px 8px 90px 8px; /* increased bottom padding */
     margin: 12px auto;
     font-size: 0.98em;
   }
@@ -346,11 +391,17 @@
     padding: 0 8px;
     bottom: 8px;
   }
-  .card-bottom-row .view-7days-btn,
-  .card-bottom-row .bug-btn {
+  .card-bottom-row .view-7days-btn {
     width: 100%;
     margin: 0;
     font-size: 1em;
+  }
+  .card-bottom-row .bug-btn {
+    width: 100%;
+    margin: 0 auto;
+    font-size: 1em;
+    display: flex;
+    justify-content: center;
   }
   .card-icon {
     width: 28px;
@@ -368,7 +419,7 @@
     min-width: 0;
     max-width: 100vw;
     min-height: 200px;
-    padding: 8px 2vw 56px 2vw;
+    padding: 8px 2vw 90px 2vw; /* increased bottom padding */
     margin: 8px 0;
     font-size: 0.96em;
   }
@@ -379,11 +430,17 @@
     padding: 0 4px;
     bottom: 4px;
   }
-  .card-bottom-row .view-7days-btn,
-  .card-bottom-row .bug-btn {
+  .card-bottom-row .view-7days-btn {
     width: 100%;
     margin: 0;
     font-size: 1em;
+  }
+  .card-bottom-row .bug-btn {
+    width: 100%;
+    margin: 0 auto;
+    font-size: 1em;
+    display: flex;
+    justify-content: center;
   }
   .card-icon {
     width: 22px;

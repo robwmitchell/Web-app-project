@@ -153,22 +153,7 @@ export default function LivePulseCard({
         </div>
       </div>
       {/* Place both buttons in a single row at the bottom of the card */}
-      <div className="card-bottom-row">
-        <button
-          className="view-7days-btn"
-          onClick={onExpand}
-        >
-          View last 7 days
-        </button>
-        <button
-          className="bug-btn"
-          aria-label="Report an issue with this service"
-          onClick={onBugClick}
-        >
-          <span className="bug-icon" role="img" aria-label="report issue">⚠️</span>
-          <span className="bug-text">Report an issue</span>
-        </button>
-      </div>
+      {/* Removed card-bottom-row and buttons; now handled by parent via children */}
     </div>
   );
 }

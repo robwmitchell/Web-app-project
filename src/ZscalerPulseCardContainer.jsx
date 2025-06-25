@@ -180,6 +180,23 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
             ))}
           </div>
         </div>
+        {/* Add the action buttons below the day indicator for all providers */}
+        <div className="card-action-row" style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+          <button
+            className="view-7days-btn"
+            onClick={() => setModalOpen(true)}
+          >
+            View last 7 days
+          </button>
+          <button
+            className="bug-btn"
+            aria-label="Report an issue with this service"
+            onClick={() => setBugModalOpen(true)}
+          >
+            <span className="bug-icon" role="img" aria-label="report issue">⚠️</span>
+            <span className="bug-text">Report an issue</span>
+          </button>
+        </div>
       </LivePulseCard>
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={`${name || provider} Changelog`}>
         {provider === 'Zscaler' && filteredUpdates.length > 0 ? (
