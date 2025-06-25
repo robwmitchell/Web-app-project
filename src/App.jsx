@@ -315,33 +315,6 @@ function App() {
         </div>
         <div className="app-refresh">
           <span style={{ fontSize: 14, color: '#888' }}>Last updated: {lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-          <button
-            onClick={fetchAllStatuses}
-            disabled={loading}
-            style={{
-              marginLeft: 8,
-              padding: '4px 14px',
-              borderRadius: 6,
-              border: 'none',
-              background: loading ? '#e0e0e0' : 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)',
-              color: loading ? '#888' : '#fff',
-              fontWeight: 600,
-              fontSize: 15,
-              boxShadow: '0 2px 8px 0 #0001',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background 0.2s',
-              outline: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-            title="Refresh data"
-          >
-            <span style={{ fontSize: 18, display: 'inline-block', transform: loading ? 'rotate(360deg)' : 'none', transition: 'transform 0.7s', }}>
-              &#x21bb;
-            </span>
-            {loading ? 'Refreshing...' : 'Refresh'}
-          </button>
         </div>
       </div>
       <h1 style={{ marginBottom: 24 }}>Service Status Dashboard</h1>
