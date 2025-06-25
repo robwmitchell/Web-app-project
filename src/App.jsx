@@ -6,7 +6,7 @@ import Modal from './Modal';
 import MiniHeatbarGrid from './MiniHeatbarGrid';
 import './App.css';
 import './MiniHeatbarGrid.css';
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
