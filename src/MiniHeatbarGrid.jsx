@@ -20,15 +20,23 @@ function getTrendArrow(up) {
 }
 
 function sanitizeTrend(trend) {
-  // Ensure trend is an array of 24 non-negative numbers
-  if (!Array.isArray(trend) || trend.length !== 24) return Array(24).fill(0);
-  return trend.map(v => (typeof v === 'number' && isFinite(v) && v >= 0 ? v : 0));
+  // Ensure trend is an array of 24 objects: { count, timestamps }
+  if (!Array.isArray(trend) || trend.length !== 24) return Array(24).fill({ count: 0, timestamps: [] });
+  return trend.map(v => {
+    if (typeof v === 'object' && v !== null && typeof v.count === 'number' && Array.isArray(v.timestamps)) {
+      return { count: v.count, timestamps: v.timestamps };
+    }
+    if (typeof v === 'number') {
+      return { count: v, timestamps: [] };
+    }
+    return { count: 0, timestamps: [] };
+  });
 }
 
 function AreaSpark({ data = [], width = 384, height = 28, color = '#d32f2f', fill = '#ffd6d6' }) {
+  // Accepts array of { count, timestamps }
   if (!Array.isArray(data) || data.length === 0) return null;
-  // Defensive: filter out non-numeric values
-  const safeData = data.map(v => (typeof v === 'number' && isFinite(v) ? v : 0));
+  const safeData = data.map(v => (typeof v === 'object' && v !== null ? v.count : 0));
   const max = Math.max(...safeData, 1);
   const min = Math.min(...safeData, 0);
   // Points for the line
@@ -58,7 +66,7 @@ function AreaSpark({ data = [], width = 384, height = 28, color = '#d32f2f', fil
 }
 
 function TimelineAxis({ points = 24, width = 384, height = 16, issueHours = [] }) {
-  // Show 24h axis: 0, 4, 8, 12, 16, 20, 24
+  // issueHours: [{ hourIdx, timestamps }]
   const labels = [0, 4, 8, 12, 16, 20, 24];
   return (
     <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
@@ -72,10 +80,15 @@ function TimelineAxis({ points = 24, width = 384, height = 16, issueHours = [] }
           </g>
         );
       })}
-      {/* Issue indicators */}
-      {issueHours.filter(h => typeof h === 'number' && isFinite(h)).map((h, idx) => {
-        const x = (h / 24) * width;
-        return <circle key={idx} cx={x} cy={height-8} r="4" fill="#d32f2f" stroke="#fff" strokeWidth="1.5" />;
+      {/* Issue indicators with tooltips */}
+      {issueHours.map(({ hourIdx, timestamps }, idx) => {
+        const x = (hourIdx / 24) * width;
+        const tooltip = timestamps && timestamps.length > 0
+          ? timestamps.map(ts => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })).join(', ')
+          : '';
+        return (
+          <circle key={idx} cx={x} cy={height-8} r="4" fill="#d32f2f" stroke="#fff" strokeWidth="1.5" title={tooltip} />
+        );
       })}
     </svg>
   );
@@ -100,10 +113,10 @@ export default function MiniHeatbarGrid() {
           { service_name: 'Zscaler', count: 3 },
         ] };
         trendRes = { trend: {
-          Cloudflare: [0,1,0,2,1,0,2,1,0,0,1,2,1,0,0,1,2,1,0,0,1,2,1,0],
-          Okta: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-          SendGrid: [0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1],
-          Zscaler: [1,2,1,3,2,1,3,2,1,3,2,1,3,2,1,3,2,1,3,2,1,3,2,1],
+          Cloudflare: Array(24).fill({ count: 0, timestamps: [] }),
+          Okta: Array(24).fill({ count: 0, timestamps: [] }),
+          SendGrid: Array(24).fill({ count: 0, timestamps: [] }),
+          Zscaler: Array(24).fill({ count: 0, timestamps: [] }),
         } };
       } else {
         [todayRes, trendRes] = await Promise.all([
@@ -111,18 +124,15 @@ export default function MiniHeatbarGrid() {
           fetch('/api/issue-reports-trend').then(r => r.json()),
         ]);
       }
-      // todayRes.data: [{ service_name, count }]
-      // trendRes.trend: { service_name: [counts...] }
       const todayMap = {};
       (todayRes.data || []).forEach(row => {
         todayMap[row.service_name] = Number(row.count);
       });
       const trendMap = trendRes.trend || {};
       const rows = SERVICES.map(service => {
-        // Defensive: always sanitize trend data
         const trend = sanitizeTrend(trendMap[service]);
         const count = todayMap[service] || 0;
-        const trendUp = trend.length > 1 ? trend[trend.length-1] >= trend[trend.length-2] : false;
+        const trendUp = trend.length > 1 ? trend[trend.length-1].count >= trend[trend.length-2].count : false;
         return {
           service,
           status: STATUS_MAP[service],
@@ -146,7 +156,7 @@ export default function MiniHeatbarGrid() {
       </div>
       {data.map((row) => {
         // Find hours with issues (trend > 0)
-        const issueHours = (row.trend || []).map((v, i) => v > 0 ? i : null).filter(i => i !== null);
+        const issueHours = (row.trend || []).map((v, i) => v.count > 0 ? { hourIdx: i, timestamps: v.timestamps } : null).filter(Boolean);
         return (
           <div className="mini-heatbar-row" key={row.service} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
             <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
