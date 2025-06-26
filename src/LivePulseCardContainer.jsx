@@ -170,10 +170,10 @@ export default function LivePulseCardContainer({
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Service history bar now beneath the button */}
-          <div style={{ marginTop: 18, width: '100%' }}>
+          <div style={{ marginTop: 0, width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
               {last7.map((d, i) => {
-                const isToday = (new Date().toDateString() === d.toDateString());
+                const isToday = (new Date().toUTCString().slice(0, 16) === d.toUTCString().slice(0, 16));
                 return (
                   <div
                     key={i}
@@ -187,12 +187,12 @@ export default function LivePulseCardContainer({
                       letterSpacing: 1,
                     }}
                   >
-                    {dayLabels[d.getDay()]}
+                    {dayLabels[d.getUTCDay()]}
                   </div>
                 );
               })}
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 0, width: '100%' }}>
               {last7.map((d, i) => (
                 <div key={i} style={{ flex: 1, textAlign: 'center' }}>
                   <span
