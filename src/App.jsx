@@ -421,12 +421,12 @@ function App() {
           </div>
         )}
         <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <ZscalerPulseCardContainer
+          <LivePulseCardContainer
             provider="Cloudflare"
             name={cloudflare.name}
             indicator={cloudflare.indicator}
             status={cloudflare.status}
-            updates={cloudflare.incidents} // Pass incidents as updates for consistency
+            incidents={cloudflare.incidents} // Pass incidents correctly
           />
           <ZscalerPulseCardContainer
             provider="Zscaler"
