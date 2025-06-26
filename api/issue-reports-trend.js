@@ -9,22 +9,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get counts of issues for each service for the last 7 days
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      days.push(d.toISOString().slice(0, 10));
+    // Get counts of issues for each service for the last 24 hours
+    const now = new Date();
+    const hours = [];
+    for (let i = 23; i >= 0; i--) {
+      const d = new Date(now);
+      d.setMinutes(0, 0, 0);
+      d.setHours(now.getHours() - i);
+      hours.push(d.toISOString().slice(0, 13)); // 'YYYY-MM-DDTHH'
     }
-    // Query for each day and each service
+    // Query for each hour and each service
     const trend = {};
-    for (const day of days) {
+    for (const hour of hours) {
       const rows = await sql`
         SELECT service_name, COUNT(*) as count
         FROM issue_reports
-        WHERE reported_at >= ${day} AND reported_at < ${day}::date + interval '1 day'
+        WHERE reported_at >= ${hour}:00:00.000Z AND reported_at < (${hour}:00:00.000Z)::timestamp + interval '1 hour'
         GROUP BY service_name
       `;
       for (const row of rows) {
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         trend[row.service_name].push(Number(row.count));
       }
     }
-    res.status(200).json({ days, trend });
+    res.status(200).json({ hours, trend });
   } catch (error) {
     res.status(500).json({ error: 'Database error', details: error.message });
   }
