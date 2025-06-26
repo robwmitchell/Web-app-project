@@ -18,6 +18,12 @@ export default async function handler(req, res) {
   console.log('Extracted service_name:', service_name);
   console.log('Extracted impacted_provider:', impacted_provider);
 
+  // Honeypot spam protection
+  if (req.body.website && req.body.website.trim() !== "") {
+    res.status(400).json({ error: "Spam detected." });
+    return;
+  }
+
   if (!service_name || !description) {
     res.status(400).json({ error: 'Missing required fields' });
     return;

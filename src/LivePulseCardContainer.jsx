@@ -365,6 +365,8 @@ function ReportImpactForm({ serviceName, onClose }) {
 
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {/* Honeypot field for spam protection */}
+      <input type="text" name="website" autoComplete="off" tabIndex="-1" style={{ display: 'none' }} />
       <input type="hidden" name="service_name" value={impactedProvider} />
       <input type="text" name="impacted_provider" value={impactedProvider} readOnly style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', background: '#f5f5f5', color: '#888' }} />
       <input type="text" placeholder="Your name (optional)" value={name} onChange={e => setName(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
