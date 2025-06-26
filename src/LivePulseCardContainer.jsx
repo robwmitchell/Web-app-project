@@ -311,6 +311,24 @@ export default function LivePulseCardContainer({
           <div style={{ color: '#888', padding: 16, textAlign: 'center' }}>No recent updates.</div>
         )}
       </Modal>
+      {/* Report Issue Modal (all providers) */}
+      <Modal open={bugModalOpen} onClose={() => setBugModalOpen(false)} title={`Report an issue for ${name || provider}`}>
+        {/* Directly render the form here instead of using an iframe */}
+        <form method="POST" action="/api/report-issue">
+          <input type="hidden" name="service" value={provider} />
+          <div style={{ marginBottom: 12 }}>
+            <label htmlFor="description">Description:</label><br />
+            <textarea id="description" name="description" rows={4} style={{ width: '100%' }} required />
+          </div>
+          <div style={{ marginBottom: 12 }}>
+            <label htmlFor="email">Your Email (optional):</label><br />
+            <input id="email" name="email" type="email" style={{ width: '100%' }} />
+          </div>
+          <button type="submit" style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 18px', fontWeight: 500 }}>
+            Submit
+          </button>
+        </form>
+      </Modal>
     </>
   );
 }
