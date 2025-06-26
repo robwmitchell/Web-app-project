@@ -12,7 +12,14 @@ export default async function handler(req, res) {
       const d = new Date(now);
       d.setMinutes(0, 0, 0);
       d.setHours(now.getHours() - i);
-      hours.push(d.toISOString().slice(0, 13)); // 'YYYY-MM-DDTHH'
+      // Build full ISO timestamp for the hour start and end
+      const hourStart = new Date(d);
+      const hourEnd = new Date(d);
+      hourEnd.setHours(hourEnd.getHours() + 1);
+      hours.push({
+        start: hourStart.toISOString(),
+        end: hourEnd.toISOString(),
+      });
     }
     // Query for each hour and each service
     const trend = {};
@@ -20,7 +27,7 @@ export default async function handler(req, res) {
       const rows = await sql`
         SELECT service_name, COUNT(*) as count
         FROM issue_reports
-        WHERE reported_at >= ${hour}:00:00.000Z AND reported_at < (${hour}:00:00.000Z)::timestamp + interval '1 hour'
+        WHERE reported_at >= ${hour.start} AND reported_at < ${hour.end}
         GROUP BY service_name
       `;
       for (const row of rows) {
@@ -28,7 +35,7 @@ export default async function handler(req, res) {
         trend[row.service_name].push(Number(row.count));
       }
     }
-    res.status(200).json({ hours, trend });
+    res.status(200).json({ hours: hours.map(h => h.start), trend });
   } catch (error) {
     res.status(500).json({ error: 'Database error', details: error.message });
   }
