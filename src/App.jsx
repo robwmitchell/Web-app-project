@@ -48,7 +48,7 @@ function getStatusFromZscalerUpdates(updates) {
 
 function getCloudflareStatusFromIncidents(incidents) {
   if (!Array.isArray(incidents) || incidents.length === 0) return { status: 'Operational', indicator: 'none' };
-  // If any incident is not resolved, return Issues Detected
+  // Only consider currently open (unresolved) incidents for pulsing/indicator
   const openIncidents = incidents.filter(inc => !['resolved', 'completed'].includes((inc.status || '').toLowerCase()));
   if (openIncidents.length > 0) {
     // Use the highest impact/indicator among open incidents
@@ -63,6 +63,7 @@ function getCloudflareStatusFromIncidents(incidents) {
     if (!['critical', 'major', 'minor'].includes(indicator)) indicator = 'minor';
     return { status: 'Issues Detected', indicator };
   }
+  // All incidents are resolved, so show green
   return { status: 'Operational', indicator: 'none' };
 }
 
@@ -118,36 +119,14 @@ function parseSendgridRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
   const xml = parser.parseFromString(xmlText, 'text/xml');
   const items = Array.from(xml.querySelectorAll('item'));
-  // Helper to robustly parse RFC 2822 pubDate
-  function parseRfc2822Date(str) {
-    // Example: Wed, 26 Jun 2024 15:00:00 +0000
-    // Safari sometimes fails on this, so parse manually
-    const parts = str.match(/\w{3}, (\d{1,2}) (\w{3}) (\d{4}) (\d{2}):(\d{2}):(\d{2}) ([+-]\d{4})/);
-    if (parts) {
-      const [_, day, mon, year, hour, min, sec, tz] = parts;
-      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      const monthIdx = months.indexOf(mon);
-      if (monthIdx !== -1) {
-        // Construct as UTC
-        return new Date(Date.UTC(Number(year), monthIdx, Number(day), Number(hour), Number(min), Number(sec)));
-      }
-    }
-    // Fallback to Date constructor
-    const d = new Date(str);
-    return isNaN(d) ? null : d;
-  }
   // Only keep the most recent N items
-  return items.slice(0, maxItems).map(item => {
-    const pubDateRaw = item.querySelector('pubDate')?.textContent || '';
-    const parsedDate = parseRfc2822Date(pubDateRaw);
-    return {
-      title: item.querySelector('title')?.textContent || '',
-      link: item.querySelector('link')?.textContent || '',
-      date: parsedDate ? parsedDate.toISOString() : pubDateRaw,
-      description: item.querySelector('description')?.textContent || '',
-      // SendGrid RSS does not have eventType, but you can parse from title/description if needed
-    };
-  });
+  return items.slice(0, maxItems).map(item => ({
+    title: item.querySelector('title')?.textContent || '',
+    link: item.querySelector('link')?.textContent || '',
+    date: item.querySelector('pubDate')?.textContent || '',
+    description: item.querySelector('description')?.textContent || '',
+    // SendGrid RSS does not have eventType, but you can parse from title/description if needed
+  }));
 }
 
 function getStatusFromSendgridUpdates(updates) {
@@ -384,7 +363,7 @@ function App() {
         zIndex: 100,
       }}>
         <div style={{ fontWeight: 700, fontSize: '1.22em', paddingLeft: 24, letterSpacing: 1 }}>
-          Stackstatus
+          Service Status Dashboard
         </div>
         <div style={{ paddingRight: 24 }}>
           <FaBell size={22} color="#1976d2" style={{ cursor: 'pointer' }} title="Notifications" />
@@ -448,7 +427,7 @@ function App() {
             name={cloudflare.name}
             indicator={cloudflare.indicator}
             status={cloudflare.status}
-            incidents={cloudflare.incidents} // Pass incidents correctly
+            incidents={cloudflare.incidents}
           />
           <ZscalerPulseCardContainer
             provider="Zscaler"
