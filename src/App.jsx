@@ -362,7 +362,7 @@ function App() {
         zIndex: 100,
       }}>
         <div style={{ fontWeight: 700, fontSize: '1.22em', paddingLeft: 24, letterSpacing: 1 }}>
-          Service Status Dashboard
+          Stackstatus
         </div>
         <div style={{ paddingRight: 24 }}>
           <FaBell size={22} color="#1976d2" style={{ cursor: 'pointer' }} title="Notifications" />
