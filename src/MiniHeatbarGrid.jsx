@@ -19,16 +19,25 @@ function getTrendArrow(up) {
   return up ? '▲' : '▼';
 }
 
+function sanitizeTrend(trend) {
+  // Ensure trend is an array of 24 non-negative numbers
+  if (!Array.isArray(trend) || trend.length !== 24) return Array(24).fill(0);
+  return trend.map(v => (typeof v === 'number' && isFinite(v) && v >= 0 ? v : 0));
+}
+
 function AreaSpark({ data = [], width = 384, height = 28, color = '#d32f2f', fill = '#ffd6d6' }) {
-  if (!data || data.length === 0) return null;
-  const max = Math.max(...data, 1);
-  const min = Math.min(...data, 0);
+  if (!Array.isArray(data) || data.length === 0) return null;
+  // Defensive: filter out non-numeric values
+  const safeData = data.map(v => (typeof v === 'number' && isFinite(v) ? v : 0));
+  const max = Math.max(...safeData, 1);
+  const min = Math.min(...safeData, 0);
   // Points for the line
-  const points = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * width;
+  const points = safeData.map((v, i) => {
+    const x = (i / (safeData.length - 1)) * width;
     const y = height - ((v - min) / (max - min || 1)) * height;
     return [x, y];
-  });
+  }).filter(([x, y]) => isFinite(x) && isFinite(y));
+  if (points.length === 0) return null;
   // Area polygon: line points + bottom right + bottom left
   const areaPoints = [
     ...points,
@@ -41,11 +50,9 @@ function AreaSpark({ data = [], width = 384, height = 28, color = '#d32f2f', fil
     <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
       <polygon points={areaStr} fill={fill} opacity="0.85" />
       <polyline fill="none" stroke={color} strokeWidth="2" points={lineStr} />
-      {data.map((v, i) => {
-        const x = (i / (data.length - 1)) * width;
-        const y = height - ((v - min) / (max - min || 1)) * height;
-        return <circle key={i} cx={x} cy={y} r="1.5" fill={color} />;
-      })}
+      {points.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r="1.5" fill={color} />
+      ))}
     </svg>
   );
 }
@@ -66,7 +73,7 @@ function TimelineAxis({ points = 24, width = 384, height = 16, issueHours = [] }
         );
       })}
       {/* Issue indicators */}
-      {issueHours.map((h, idx) => {
+      {issueHours.filter(h => typeof h === 'number' && isFinite(h)).map((h, idx) => {
         const x = (h / 24) * width;
         return <circle key={idx} cx={x} cy={height-8} r="4" fill="#d32f2f" stroke="#fff" strokeWidth="1.5" />;
       })}
@@ -112,10 +119,8 @@ export default function MiniHeatbarGrid() {
       });
       const trendMap = trendRes.trend || {};
       const rows = SERVICES.map(service => {
-        // If you have 24-hour data, use it; else fallback to 7-day
-        const trend = trendMap[service] && trendMap[service].length === 24
-          ? trendMap[service]
-          : trendMap[service] || [0,0,0,0,0,0,0];
+        // Defensive: always sanitize trend data
+        const trend = sanitizeTrend(trendMap[service]);
         const count = todayMap[service] || 0;
         const trendUp = trend.length > 1 ? trend[trend.length-1] >= trend[trend.length-2] : false;
         return {
