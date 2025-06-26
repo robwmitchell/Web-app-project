@@ -201,14 +201,8 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
             ))}
           </div>
         </div>
-        {/* Add the action buttons below the day indicator for all providers */}
-        <div className="card-action-row" style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
-          <button
-            className="view-7days-btn"
-            onClick={() => setModalOpen(true)}
-          >
-            View last 7 days
-          </button>
+        {/* Action buttons just below the content */}
+        <div className="card-action-row" style={{ display: 'flex', flexDirection: 'row', gap: 10, marginTop: 18, justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <button
             className="bug-btn"
             aria-label="Report an issue with this service"
@@ -216,6 +210,13 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
           >
             <span className="bug-icon" role="img" aria-label="report issue">⚠️</span>
             <span className="bug-text">Report an issue</span>
+          </button>
+          <button
+            className="view-7days-btn"
+            onClick={() => setModalOpen(true)}
+            style={{ marginLeft: 'auto' }}
+          >
+            View last 7 days
           </button>
         </div>
       </LivePulseCard>

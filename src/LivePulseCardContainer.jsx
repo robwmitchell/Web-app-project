@@ -43,9 +43,13 @@ export default function LivePulseCardContainer({
 
   // Headline: latest incident/update or fallback
   let headline = 'All systems operational.';
-  if (provider === 'Cloudflare' && incidents.length > 0) {
-    const latest = incidents[0];
-    headline = `${latest.name} ${latest.status.replace('_', ' ')} (${formatDate(latest.updated_at || latest.updatedAt)})`;
+  let headlineStyle = { marginBottom: 4, minHeight: 22, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%' };
+  if (provider === 'Cloudflare') {
+    headline = todayIssueCount === 0
+      ? 'No issues reported today.'
+      : `${todayIssueCount} issue${todayIssueCount > 1 ? 's' : ''} reported today.`;
+    // Move left and reduce margin below
+    headlineStyle = { marginBottom: 4, minHeight: 22, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%' };
   } else if (provider === 'Zscaler' && updates.length > 0) {
     const latest = updates[0];
     headline = `${latest.title} (${formatDate(latest.date)})`;
@@ -161,60 +165,63 @@ export default function LivePulseCardContainer({
         provider={provider}
         indicator={indicator}
         status={status}
-        headline={headline}
+        headline={<div style={headlineStyle}>{headline}</div>}
         companyInfo={companyInfoMap[provider]}
       >
-        {/* Service history bar now beneath the button */}
-        <div style={{ marginTop: 18, width: '100%' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-            {last7.map((d, i) => {
-              const isToday = (new Date().toDateString() === d.toDateString());
-              return (
-                <div
-                  key={i}
-                  style={{
-                    flex: 1,
-                    textAlign: 'center',
-                    fontSize: 13,
-                    fontWeight: 500,
-                    color: isToday ? '#1976d2' : '#888',
-                    textDecoration: isToday ? 'underline' : 'none',
-                    letterSpacing: 1,
-                  }}
-                >
-                  {dayLabels[d.getDay()]}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Service history bar now beneath the button */}
+          <div style={{ marginTop: 18, width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+              {last7.map((d, i) => {
+                const isToday = (new Date().toDateString() === d.toDateString());
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      textAlign: 'center',
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: isToday ? '#1976d2' : '#888',
+                      textDecoration: isToday ? 'underline' : 'none',
+                      letterSpacing: 1,
+                    }}
+                  >
+                    {dayLabels[d.getDay()]}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {last7.map((d, i) => (
+                <div key={i} style={{ flex: 1, textAlign: 'center' }}>
+                  <span
+                    className={`status-indicator ${getDayIndicator(d)}`}
+                    style={{ margin: '0 auto', display: 'inline-block' }}
+                    title={getDayIndicator(d)}
+                  ></span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            {last7.map((d, i) => (
-              <div key={i} style={{ flex: 1, textAlign: 'center' }}>
-                <span
-                  className={`status-indicator ${getDayIndicator(d)}`}
-                  style={{ margin: '0 auto', display: 'inline-block' }}
-                  title={getDayIndicator(d)}
-                ></span>
-              </div>
-            ))}
+          {/* Action buttons just below the content */}
+          <div className="card-action-row" style={{ display: 'flex', flexDirection: 'row', gap: 10, marginTop: 18, justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <button
+              className="bug-btn"
+              aria-label="Report an issue with this service"
+              onClick={() => setBugModalOpen(true)}
+            >
+              <span className="bug-icon" role="img" aria-label="report issue">⚠️</span>
+              <span className="bug-text">Report an issue</span>
+            </button>
+            <button
+              className="view-7days-btn"
+              onClick={() => setModalOpen(true)}
+              style={{ marginLeft: 'auto' }}
+            >
+              View last 7 days
+            </button>
           </div>
-        </div>
-        {/* Move the button group here, just below the day indicator */}
-        <div className="card-action-row" style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
-          <button
-            className="view-7days-btn"
-            onClick={() => setModalOpen(true)}
-          >
-            View last 7 days
-          </button>
-          <button
-            className="bug-btn"
-            aria-label="Report an issue with this service"
-            onClick={() => setBugModalOpen(true)}
-          >
-            <span className="bug-icon" role="img" aria-label="report issue">⚠️</span>
-            <span className="bug-text">Report an issue</span>
-          </button>
         </div>
       </LivePulseCard>
       {/* Modal and all closing tags */}
@@ -241,9 +248,9 @@ export default function LivePulseCardContainer({
               </li>
             ))}
           </ul>
-        ) : provider === 'Zscaler' && filteredUpdates.length > 0 ? (
+        ) : provider === 'Zscaler' && updates.length > 0 ? (
           <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
-            {filteredUpdates.map((issue, idx) => (
+            {updates.map((issue, idx) => (
               <li key={idx} style={{ marginBottom: 18 }}>
                 <a href={issue.link} target="_blank" rel="noopener noreferrer"><strong>{issue.title}</strong></a><br />
                 <span style={{ color: '#888' }}>{formatDate(issue.date)}</span><br />
@@ -301,80 +308,9 @@ export default function LivePulseCardContainer({
             ))}
           </ul>
         ) : (
-          <div style={{ color: '#888', padding: 24, textAlign: 'center' }}>No recent updates.</div>
+          <div style={{ color: '#888', padding: 16, textAlign: 'center' }}>No recent updates.</div>
         )}
       </Modal>
-      <Modal open={bugModalOpen} onClose={() => setBugModalOpen(false)} title={`Report Service Impact: ${name || provider}`}>
-        <p>Let us know if you're currently impacted by an issue with <strong>{name || provider}</strong>.</p>
-        <ReportImpactForm serviceName={name || provider} onClose={() => setBugModalOpen(false)} />
-      </Modal>
     </>
-  );
-}
-
-// Add ReportImpactForm definition
-function ReportImpactForm({ serviceName, onClose }) {
-  const [name, setName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [description, setDescription] = React.useState('');
-  const [impactedProvider] = React.useState(serviceName || '');
-  const [loading, setLoading] = React.useState(false);
-  const [success, setSuccess] = React.useState(false);
-  const [error, setError] = React.useState('');
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    setSuccess(false);
-    try {
-      const res = await fetch('/api/report-issue', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_name: impactedProvider, // always send the provider as service_name
-          impacted_provider: impactedProvider,
-          description,
-          user_email: email || undefined,
-          status: 'open',
-          metadata: name ? { name } : undefined
-        })
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Submission failed');
-      }
-      setSuccess(true);
-      setName('');
-      setEmail('');
-      setDescription('');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  if (success) return (
-    <div style={{ color: '#388e3c', padding: 12, textAlign: 'center' }}>
-      Thank you for reporting your issue!
-      <br />
-      <button onClick={onClose} style={{ marginTop: 16, background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Close</button>
-    </div>
-  );
-
-  return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {/* Honeypot field for spam protection */}
-      <input type="text" name="website" autoComplete="off" tabIndex="-1" style={{ display: 'none' }} />
-      <input type="hidden" name="service_name" value={impactedProvider} />
-      <input type="text" name="impacted_provider" value={impactedProvider} readOnly style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', background: '#f5f5f5', color: '#888' }} />
-      <input type="text" placeholder="Your name (optional)" value={name} onChange={e => setName(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-      <input type="email" placeholder="Your email (optional)" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-      <textarea placeholder="Describe your issue..." required value={description} onChange={e => setDescription(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }} />
-      {error && <div style={{ color: '#b71c1c', fontSize: '0.98em' }}>{error}</div>}
-      <button type="submit" disabled={loading} style={{ background: '#b71c1c', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 18px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Submitting...' : 'Submit'}</button>
-      <button type="button" onClick={onClose} style={{ background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Cancel</button>
-    </form>
   );
 }
