@@ -19,7 +19,7 @@ function getTrendArrow(up) {
   return up ? '▲' : '▼';
 }
 
-function AreaSpark({ data = [], width = 96, height = 28, color = '#d32f2f', fill = '#ffd6d6' }) {
+function AreaSpark({ data = [], width = 384, height = 28, color = '#d32f2f', fill = '#ffd6d6' }) {
   if (!data || data.length === 0) return null;
   const max = Math.max(...data, 1);
   const min = Math.min(...data, 0);
@@ -50,7 +50,7 @@ function AreaSpark({ data = [], width = 96, height = 28, color = '#d32f2f', fill
   );
 }
 
-function TimelineAxis({ points = 24, width = 96, height = 16 }) {
+function TimelineAxis({ points = 24, width = 384, height = 16, issueHours = [] }) {
   // Show 24h axis: 0, 4, 8, 12, 16, 20, 24
   const labels = [0, 4, 8, 12, 16, 20, 24];
   return (
@@ -65,6 +65,11 @@ function TimelineAxis({ points = 24, width = 96, height = 16 }) {
           </g>
         );
       })}
+      {/* Issue indicators */}
+      {issueHours.map((h, idx) => {
+        const x = (h / 24) * width;
+        return <circle key={idx} cx={x} cy={height-8} r="4" fill="#d32f2f" stroke="#fff" strokeWidth="1.5" />;
+      })}
     </svg>
   );
 }
@@ -74,10 +79,31 @@ export default function MiniHeatbarGrid() {
 
   React.useEffect(() => {
     async function fetchData() {
-      const [todayRes, trendRes] = await Promise.all([
-        fetch('/api/issue-reports-today').then(r => r.json()),
-        fetch('/api/issue-reports-trend').then(r => r.json()),
-      ]);
+      let todayRes, trendRes;
+      let isLocal = false;
+      try {
+        isLocal = ["localhost", "127.0.0.1"].some(h => window.location.hostname.includes(h));
+      } catch {}
+      if (isLocal) {
+        // Dummy data for local development
+        todayRes = { data: [
+          { service_name: 'Cloudflare', count: 2 },
+          { service_name: 'Okta', count: 0 },
+          { service_name: 'SendGrid', count: 1 },
+          { service_name: 'Zscaler', count: 3 },
+        ] };
+        trendRes = { trend: {
+          Cloudflare: [0,1,0,2,1,0,2,1,0,0,1,2,1,0,0,1,2,1,0,0,1,2,1,0],
+          Okta: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+          SendGrid: [0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1],
+          Zscaler: [1,2,1,3,2,1,3,2,1,3,2,1,3,2,1,3,2,1,3,2,1,3,2,1],
+        } };
+      } else {
+        [todayRes, trendRes] = await Promise.all([
+          fetch('/api/issue-reports-today').then(r => r.json()),
+          fetch('/api/issue-reports-trend').then(r => r.json()),
+        ]);
+      }
       // todayRes.data: [{ service_name, count }]
       // trendRes.trend: { service_name: [counts...] }
       const todayMap = {};
@@ -113,21 +139,25 @@ export default function MiniHeatbarGrid() {
         <span></span>
         <span></span>
       </div>
-      {data.map((row) => (
-        <div className="mini-heatbar-row" key={row.service} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
-          <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-            <span style={{ minWidth: 80 }}>{row.service}</span>
-            <span style={{ minWidth: 70 }}>{row.status}</span>
-            <span className="mini-heatbar-trend">
-              <AreaSpark data={row.trend} width={96} height={28} color="#d32f2f" fill="#ffd6d6" />
-            </span>
-            <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
+      {data.map((row) => {
+        // Find hours with issues (trend > 0)
+        const issueHours = (row.trend || []).map((v, i) => v > 0 ? i : null).filter(i => i !== null);
+        return (
+          <div className="mini-heatbar-row" key={row.service} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
+            <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+              <span style={{ minWidth: 80 }}>{row.service}</span>
+              <span style={{ minWidth: 70 }}>{row.status}</span>
+              <span className="mini-heatbar-trend">
+                <AreaSpark data={row.trend} width={384} height={28} color="#d32f2f" fill="#ffd6d6" />
+              </span>
+              <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
+            </div>
+            <div style={{ width: 384, marginLeft: 150, marginTop: 0 }}>
+              <TimelineAxis width={384} issueHours={issueHours} />
+            </div>
           </div>
-          <div style={{ width: 96, marginLeft: 150, marginTop: 0 }}>
-            <TimelineAxis />
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
