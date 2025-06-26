@@ -65,35 +65,6 @@ function AreaSpark({ data = [], width = 384, height = 28, color = '#d32f2f', fil
   );
 }
 
-function TimelineAxis({ points = 24, width = 384, height = 16, issueHours = [] }) {
-  // issueHours: [{ hourIdx, timestamps }]
-  const labels = [0, 4, 8, 12, 16, 20, 24];
-  return (
-    <svg width={width} height={height} style={{ display: 'block', overflow: 'visible' }}>
-      <line x1={0} y1={height-1} x2={width} y2={height-1} stroke="#bbb" strokeWidth="1" />
-      {labels.map(hr => {
-        const x = (hr / 24) * width;
-        return (
-          <g key={hr}>
-            <line x1={x} y1={height-6} x2={x} y2={height} stroke="#bbb" strokeWidth="1" />
-            <text x={x} y={height+10} textAnchor="middle" fontSize="9" fill="#888">{hr === 0 ? '12AM' : hr === 12 ? '12PM' : hr}</text>
-          </g>
-        );
-      })}
-      {/* Issue indicators with tooltips */}
-      {issueHours.map(({ hourIdx, timestamps }, idx) => {
-        const x = (hourIdx / 24) * width;
-        const tooltip = timestamps && timestamps.length > 0
-          ? timestamps.map(ts => new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })).join(', ')
-          : '';
-        return (
-          <circle key={idx} cx={x} cy={height-8} r="4" fill="#d32f2f" stroke="#fff" strokeWidth="1.5" title={tooltip} />
-        );
-      })}
-    </svg>
-  );
-}
-
 export default function MiniHeatbarGrid() {
   const [data, setData] = React.useState([]);
 
@@ -154,25 +125,18 @@ export default function MiniHeatbarGrid() {
         <span></span>
         <span></span>
       </div>
-      {data.map((row) => {
-        // Find hours with issues (trend > 0)
-        const issueHours = (row.trend || []).map((v, i) => v.count > 0 ? { hourIdx: i, timestamps: v.timestamps } : null).filter(Boolean);
-        return (
-          <div className="mini-heatbar-row" key={row.service} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
-            <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-              <span style={{ minWidth: 80 }}>{row.service}</span>
-              <span style={{ minWidth: 70 }}>{row.status}</span>
-              <span className="mini-heatbar-trend">
-                <AreaSpark data={row.trend} width={384} height={28} color="#d32f2f" fill="#ffd6d6" />
-              </span>
-              <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
-            </div>
-            <div style={{ width: 384, marginLeft: 150, marginTop: 0 }}>
-              <TimelineAxis width={384} issueHours={issueHours} />
-            </div>
+      {data.map((row) => (
+        <div className="mini-heatbar-row" key={row.service} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
+          <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
+            <span style={{ minWidth: 80 }}>{row.service}</span>
+            <span style={{ minWidth: 70 }}>{row.status}</span>
+            <span className="mini-heatbar-trend">
+              <AreaSpark data={row.trend} width={384} height={28} color="#d32f2f" fill="#ffd6d6" />
+            </span>
+            <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }
