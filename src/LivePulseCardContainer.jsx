@@ -99,24 +99,40 @@ export default function LivePulseCardContainer({
 
   // Helper: get indicator for a given day
   function getDayIndicator(day) {
-    const dayStr = day.toISOString().slice(0, 10);
+    const dayStart = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 0, 0, 0, 0));
+    const dayEnd = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 23, 59, 59, 999));
     if (provider === 'Cloudflare' && incidents.length > 0) {
-      // Show indicator if any incident is open during this day
-      const found = incidents.find(inc => {
-        const started = new Date(inc.created_at || inc.createdAt);
+      // Collect all incidents open during this day
+      const openIncidents = incidents.filter(inc => {
+        const started = inc.created_at ? new Date(inc.created_at) : (inc.createdAt ? new Date(inc.createdAt) : null);
         const ended = inc.resolved_at ? new Date(inc.resolved_at) : null;
-        const dayStart = new Date(day);
-        dayStart.setHours(0, 0, 0, 0);
-        const dayEnd = new Date(day);
-        dayEnd.setHours(23, 59, 59, 999);
-        if (isNaN(started)) return false;
-        if (ended) {
-          return started <= dayEnd && ended >= dayStart;
+        if (!started || isNaN(started)) return false;
+        // Use UTC for comparison
+        const startedUTC = new Date(Date.UTC(started.getUTCFullYear(), started.getUTCMonth(), started.getUTCDate(), started.getUTCHours(), started.getUTCMinutes(), started.getUTCSeconds(), started.getUTCMilliseconds()));
+        let endedUTC = null;
+        if (ended && !isNaN(ended)) {
+          endedUTC = new Date(Date.UTC(ended.getUTCFullYear(), ended.getUTCMonth(), ended.getUTCDate(), ended.getUTCHours(), ended.getUTCMinutes(), ended.getUTCSeconds(), ended.getUTCMilliseconds()));
+        }
+        if (endedUTC) {
+          return startedUTC <= dayEnd && endedUTC >= dayStart;
         } else {
-          return started <= dayEnd;
+          return startedUTC <= dayEnd;
         }
       });
-      if (found) return (found.impact || 'minor').toLowerCase();
+      if (openIncidents.length > 0) {
+        // Show the highest impact for the day
+        const impactPriority = { critical: 3, major: 2, minor: 1, none: 0 };
+        let maxImpact = 'minor';
+        openIncidents.forEach(inc => {
+          const impact = (inc.impact || '').toLowerCase();
+          if (impactPriority[impact] > impactPriority[maxImpact]) {
+            maxImpact = impact;
+          }
+        });
+        let indicator = maxImpact;
+        if (!['critical', 'major', 'minor'].includes(indicator)) indicator = 'minor';
+        return indicator;
+      }
     } else if (provider === 'Zscaler' && updates.length > 0) {
       // Only show indicator if a service interruption/disruption is present for this day
       const disruptionKeywords = [

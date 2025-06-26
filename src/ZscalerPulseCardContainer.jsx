@@ -92,23 +92,19 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
   }
 
   function getDayIndicator(day) {
-    const disruptionKeywords = [
-      'disruption', 'outage', 'service disruption', 'service interruption', 'service issue', 'incident', 'degraded', 'problem', 'error', 'failure', 'downtime'
-    ];
-    // Only show indicator if a disruption is present for this day
-    const dayDisruptions = updates.filter(u => {
+    // Only show indicator if a Service Degradation is present for this day
+    const dayDegradations = updates.filter(u => {
       const updateDate = getUpdateDate(u);
       if (!updateDate) return false;
       // Compare UTC midnight
       if (updateDate.getTime() !== day.getTime()) return false;
-      // Check for disruption in eventType, title, or description
-      const text = `${u.eventType || ''} ${u.title || ''} ${u.description || ''}`.toLowerCase();
-      return disruptionKeywords.some(k => text.includes(k));
+      // Only consider eventType === "Service Degradation"
+      return u.eventType === "Service Degradation";
     });
-    if (dayDisruptions.length > 0) {
-      return 'major'; // Show orange for service interruptions
+    if (dayDegradations.length > 0) {
+      return 'major'; // Show orange for service degradations
     }
-    return 'none'; // Green if no disruption
+    return 'none'; // Green if no degradation
   }
 
   // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)
@@ -127,16 +123,12 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
   }
   const todayStr = getTodayStr();
 
-  // Count issues for today for Zscaler
-  const disruptionKeywords = [
-    'disruption', 'outage', 'service disruption', 'service interruption', 'service issue', 'incident', 'degraded', 'problem', 'error', 'failure', 'downtime'
-  ];
+  // Count issues for today for Zscaler (only Service Degradation)
   const todayIssueCount = updates.filter(u => {
     const updateDate = getUpdateDate(u);
     if (!updateDate) return false;
     if (updateDate.toISOString().slice(0, 10) !== todayStr) return false;
-    const text = `${u.eventType || ''} ${u.title || ''} ${u.description || ''}`.toLowerCase();
-    return disruptionKeywords.some(k => text.includes(k));
+    return u.eventType === "Service Degradation";
   }).length;
 
   // Headline: show issue count for today
