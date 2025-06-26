@@ -1,5 +1,5 @@
 .mini-heatbar-grid {
-  width: 100%;
+  width: 75%;
   max-width: none;
   margin: 32px 0 0 0;
   border-radius: 10px;
@@ -8,18 +8,25 @@
   padding: 18px 0 10px 0;
   font-family: inherit;
   font-size: 1.04em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .mini-heatbar-header, .mini-heatbar-row {
   padding-left: 32px;
   padding-right: 32px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 .mini-heatbar-row {
   display: grid;
-  grid-template-columns: 120px 1fr 120px;
+  grid-template-columns: 1.5fr 1fr 2fr 1.2fr;
   align-items: center;
-  padding: 6px 0 6px 32px;
+  padding: 6px 0;
   border-bottom: 1px solid #f0f0f0;
   font-size: 1em;
+  justify-items: center;
 }
 .mini-heatbar-row:last-child {
   border-bottom: none;
@@ -35,9 +42,8 @@
   letter-spacing: 1px;
   color: #1976d2;
   font-size: 1.1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
+  justify-self: center;
 }
 .mini-heatbar-reports {
   font-family: 'Menlo', 'Consolas', monospace;
