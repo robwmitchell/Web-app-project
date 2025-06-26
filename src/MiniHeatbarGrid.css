@@ -15,7 +15,7 @@
 }
 .mini-heatbar-row {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 2fr 1.2fr;
+  grid-template-columns: 120px 1fr 120px;
   align-items: center;
   padding: 6px 0;
   border-bottom: 1px solid #f0f0f0;
@@ -35,6 +35,9 @@
   letter-spacing: 1px;
   color: #1976d2;
   font-size: 1.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .mini-heatbar-reports {
   font-family: 'Menlo', 'Consolas', monospace;

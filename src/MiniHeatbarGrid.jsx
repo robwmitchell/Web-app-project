@@ -1,5 +1,6 @@
 import React from 'react';
 import './MiniHeatbarGrid.css';
+import { serviceLogos } from './serviceLogos';
 
 const SERVICES = [
   'Cloudflare',
@@ -126,15 +127,15 @@ export default function MiniHeatbarGrid() {
         <span></span>
       </div>
       {data.map((row) => (
-        <div className="mini-heatbar-row" key={row.service} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 0 }}>
-          <div style={{ display: 'flex', width: '100%', alignItems: 'center' }}>
-            <span style={{ minWidth: 80 }}>{row.service}</span>
-            <span style={{ minWidth: 70 }}>{row.status}</span>
-            <span className="mini-heatbar-trend">
-              <AreaSpark data={row.trend} width={384} height={28} color="#d32f2f" fill="#ffd6d6" />
-            </span>
-            <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
-          </div>
+        <div className="mini-heatbar-row" key={row.service}>
+          <span style={{ minWidth: 120, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+            <img src={serviceLogos[row.service]} alt={row.service + ' logo'} style={{ height: 28 }} />
+            {/* Service name hidden for minimalist look */}
+          </span>
+          <span className="mini-heatbar-trend">
+            <AreaSpark data={row.trend} width={384} height={28} color="#d32f2f" fill="#ffd6d6" />
+          </span>
+          <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
         </div>
       ))}
     </div>

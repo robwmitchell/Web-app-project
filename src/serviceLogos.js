@@ -1,5 +1,11 @@
-import React from 'react';
+import cloudflareLogo from './assets/cloudflare-logo.svg';
+import oktaLogo from './assets/Okta-logo.svg';
+import sendgridLogo from './assets/SendGrid.svg';
+import zscalerLogo from './assets/Zscaler.svg';
 
-export function getServiceLogo(provider) {
-  return null;
-}
+export const serviceLogos = {
+  Cloudflare: cloudflareLogo,
+  Okta: oktaLogo,
+  SendGrid: sendgridLogo,
+  Zscaler: zscalerLogo,
+};
