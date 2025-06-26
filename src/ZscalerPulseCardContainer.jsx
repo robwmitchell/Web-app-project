@@ -92,6 +92,16 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
   }
 
   function getDayIndicator(day) {
+    if (provider === 'SendGrid' && updates.length > 0) {
+      // For SendGrid, highlight any day with an update (RSS event)
+      const hasEvent = updates.some(u => {
+        const updateDate = getUpdateDate(u);
+        if (!updateDate) return false;
+        return updateDate.getTime() === day.getTime();
+      });
+      if (hasEvent) return 'major'; // Orange for any event
+      return 'none';
+    }
     // Only show indicator if a Service Degradation is present for this day
     const dayDegradations = updates.filter(u => {
       const updateDate = getUpdateDate(u);
