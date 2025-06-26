@@ -3,11 +3,7 @@ import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
-
+  // Remove all authentication for public access
   try {
     // Get counts of issues for each service for the last 24 hours
     const now = new Date();
