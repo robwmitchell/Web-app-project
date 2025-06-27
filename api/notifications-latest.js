@@ -84,22 +84,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. User-reported issues from DB (last 7 days)
+    // Get time range for last 7 days
     const now = new Date();
     const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const last7dStr = last7d.toISOString();
-    const dbIssues = await sql`
-      SELECT id, service_name as provider, service_name as title, issue_details as description, reported_at
-      FROM issue_reports
-      WHERE reported_at >= ${last7dStr}
-      ORDER BY reported_at DESC
-    `;
 
-    // 2. Cloudflare open incidents (created in last 7 days only)
+    // 1. Cloudflare open incidents (created in last 7 days only)
     const cloudflareIncidents = await fetchCloudflareIncidents(last7d);
     console.log(`Cloudflare incidents found: ${cloudflareIncidents.length}`);
 
-    // 3. Zscaler, Okta, SendGrid RSS feeds (last 7 days)
+    // 2. Zscaler, Okta, SendGrid RSS feeds (last 7 days)
     const [zscaler, okta, sendgrid] = await Promise.all([
       fetchRSSFeed('https://trust.zscaler.com/rss', 'Zscaler', 7),
       fetchRSSFeed('https://status.okta.com/history.rss', 'Okta', 7),
@@ -108,9 +101,8 @@ export default async function handler(req, res) {
 
     console.log(`RSS results - Zscaler: ${zscaler.length}, Okta: ${okta.length}, SendGrid: ${sendgrid.length}`);
 
-    // Merge all
+    // Merge all (only RSS feeds and Cloudflare API)
     const all = [
-      ...dbIssues,
       ...cloudflareIncidents,
       ...zscaler,
       ...okta,
