@@ -242,90 +242,265 @@ export default function LivePulseCardContainer({
         </div>
       </LivePulseCard>
       {/* Modal and all closing tags */}
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={`${name || provider} Changelog`}>
+      <Modal 
+        open={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        title={`📊 ${name || provider} Changelog`}
+        enhanced={true}
+      >
         {provider === 'Cloudflare' && incidents.length > 0 ? (
-          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+          <div>
             {incidents.map((incident, idx) => (
-              <li key={idx} style={{ marginBottom: 18 }}>
-                <strong>{incident.name}</strong> <span style={{ color: '#888' }}>{formatDate(incident.updated_at || incident.updatedAt)}</span><br />
-                <span style={{ color: '#444' }}>{incident.status.replace('_', ' ')}</span>
-                {incident.shortlink && (
-                  <div><a href={incident.shortlink} target="_blank" rel="noopener noreferrer">More details</a></div>
-                )}
-                {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
-                  <ul style={{ margin: '4px 0 0 12px', padding: 0, listStyle: 'circle' }}>
-                    {incident.incident_updates.map((update, uidx) => (
-                      <li key={uidx} style={{ fontSize: '0.95em', color: '#555', marginBottom: 4 }}>
-                        {htmlToText(update.body)}<br />
-                        <span style={{ fontSize: '0.85em' }}>{formatDate(update.updated_at || update.updatedAt)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : provider === 'Zscaler' && updates.length > 0 ? (
-          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
-            {updates.map((issue, idx) => (
-              <li key={idx} style={{ marginBottom: 18 }}>
-                <a href={issue.link} target="_blank" rel="noopener noreferrer"><strong>{issue.title}</strong></a><br />
-                <span style={{ color: '#888' }}>{formatDate(issue.date)}</span><br />
-                <span style={{ color: '#444' }}>{htmlToText(issue.description)}</span>
-                {issue.eventType && (
-                  <div style={{ fontSize: '0.95em', color: '#555', marginTop: 4 }}>
-                    <strong>Event Type:</strong> {issue.eventType}
+              <div key={idx} style={{ 
+                borderBottom: idx < incidents.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                padding: '16px 20px',
+                transition: 'background-color 0.2s ease'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: incident.status === 'resolved' ? '#4caf50' : '#f57c00',
+                    marginTop: 6,
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      marginBottom: 4,
+                      fontSize: 14,
+                      color: '#2c3e50'
+                    }}>
+                      {incident.name}
+                    </div>
+                    <div style={{ 
+                      fontSize: 13, 
+                      color: '#666', 
+                      marginBottom: 6,
+                      lineHeight: 1.4
+                    }}>
+                      Status: {incident.status.replace('_', ' ')}
+                    </div>
+                    <div style={{ 
+                      fontSize: 11, 
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      marginBottom: 8
+                    }}>
+                      <span>🕒 {formatDate(incident.updated_at || incident.updatedAt)}</span>
+                      {incident.shortlink && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                    </div>
+                    {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
+                      <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid #f0f0f0' }}>
+                        {incident.incident_updates.slice(0, 2).map((update, uidx) => (
+                          <div key={uidx} style={{ fontSize: '12px', color: '#666', marginBottom: 4 }}>
+                            {htmlToText(update.body).slice(0, 100)}...
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
-              </li>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
+        ) : provider === 'Zscaler' && filteredUpdates.length > 0 ? (
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            {filteredUpdates.map((issue, idx) => (
+              <div key={idx} style={{ 
+                borderBottom: idx < filteredUpdates.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                padding: '16px 20px',
+                transition: 'background-color 0.2s ease',
+                cursor: issue.link ? 'pointer' : 'default'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={() => issue.link && window.open(issue.link, '_blank')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: issue.eventType === 'Service Degradation' ? '#f57c00' : '#2196f3',
+                    marginTop: 6,
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      marginBottom: 4,
+                      fontSize: 14,
+                      color: '#2c3e50'
+                    }}>
+                      {issue.title}
+                    </div>
+                    <div style={{ 
+                      fontSize: 13, 
+                      color: '#666', 
+                      marginBottom: 6,
+                      lineHeight: 1.4,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {htmlToText(issue.description) || 'No description available'}
+                    </div>
+                    <div style={{ 
+                      fontSize: 11, 
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}>
+                      <span>🕒 {formatDate(issue.date)}</span>
+                      {issue.eventType && <span style={{ color: '#f57c00' }}>⚠️ {issue.eventType}</span>}
+                      {issue.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : provider === 'Okta' && incidents.length > 0 ? (
-          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
             {incidents.map((incident, idx) => (
-              <li key={idx} style={{ marginBottom: 18 }}>
-                <strong>{incident.name}</strong> <span style={{ color: '#888' }}>{formatDate(incident.updated_at || incident.updatedAt)}</span><br />
-                <span style={{ color: '#444' }}>{incident.status.replace('_', ' ')}</span>
-                {incident.link && (
-                  <div><a href={incident.link} target="_blank" rel="noopener noreferrer">More details</a></div>
-                )}
-                {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
-                  <ul style={{ margin: '4px 0 0 12px', padding: 0, listStyle: 'circle' }}>
-                    {incident.incident_updates.map((update, uidx) => (
-                      <li key={uidx} style={{ fontSize: '0.95em', color: '#555', marginBottom: 4 }}>
-                        {htmlToText(update.body)}<br />
-                        <span style={{ fontSize: '0.85em' }}>{formatDate(update.updated_at || update.updatedAt)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
+              <div key={idx} style={{ 
+                borderBottom: idx < incidents.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                padding: '16px 20px',
+                transition: 'background-color 0.2s ease',
+                cursor: incident.link ? 'pointer' : 'default'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={() => incident.link && window.open(incident.link, '_blank')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#007dc1',
+                    marginTop: 6,
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      marginBottom: 4,
+                      fontSize: 14,
+                      color: '#2c3e50'
+                    }}>
+                      {incident.name}
+                    </div>
+                    <div style={{ 
+                      fontSize: 13, 
+                      color: '#666', 
+                      marginBottom: 6,
+                      lineHeight: 1.4
+                    }}>
+                      {incident.status.replace('_', ' ')}
+                    </div>
+                    <div style={{ 
+                      fontSize: 11, 
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}>
+                      <span>🕒 {formatDate(incident.updated_at || incident.updatedAt)}</span>
+                      {incident.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                    </div>
+                    {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
+                      <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid #f0f0f0' }}>
+                        {incident.incident_updates.slice(0, 2).map((update, uidx) => (
+                          <div key={uidx} style={{ fontSize: '12px', color: '#666', marginBottom: 4 }}>
+                            {htmlToText(update.body).slice(0, 100)}...
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : provider === 'SendGrid' && incidents.length > 0 ? (
-          <ul style={{ paddingLeft: 0, listStyle: 'none' }}>
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
             {incidents.map((incident, idx) => (
-              <li key={idx} style={{ marginBottom: 18 }}>
-                <strong>{incident.name}</strong> <span style={{ color: '#888' }}>{formatDate(incident.updated_at || incident.updatedAt)}</span><br />
-                <span style={{ color: '#444' }}>{incident.status.replace('_', ' ')}</span>
-                {incident.shortlink && (
-                  <div><a href={incident.shortlink} target="_blank" rel="noopener noreferrer">More details</a></div>
-                )}
-                {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
-                  <ul style={{ margin: '4px 0 0 12px', padding: 0, listStyle: 'circle' }}>
-                    {incident.incident_updates.map((update, uidx) => (
-                      <li key={uidx} style={{ fontSize: '0.95em', color: '#555', marginBottom: 4 }}>
-                        {htmlToText(update.body)}<br />
-                        <span style={{ fontSize: '0.85em' }}>{formatDate(update.updated_at || update.updatedAt)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
+              <div key={idx} style={{ 
+                borderBottom: idx < incidents.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                padding: '16px 20px',
+                transition: 'background-color 0.2s ease',
+                cursor: incident.shortlink ? 'pointer' : 'default'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={() => incident.shortlink && window.open(incident.shortlink, '_blank')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#1a82e2',
+                    marginTop: 6,
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      marginBottom: 4,
+                      fontSize: 14,
+                      color: '#2c3e50'
+                    }}>
+                      {incident.name}
+                    </div>
+                    <div style={{ 
+                      fontSize: 13, 
+                      color: '#666', 
+                      marginBottom: 6,
+                      lineHeight: 1.4
+                    }}>
+                      {incident.status.replace('_', ' ')}
+                    </div>
+                    <div style={{ 
+                      fontSize: 11, 
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}>
+                      <span>🕒 {formatDate(incident.updated_at || incident.updatedAt)}</span>
+                      {incident.shortlink && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                    </div>
+                    {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
+                      <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid #f0f0f0' }}>
+                        {incident.incident_updates.slice(0, 2).map((update, uidx) => (
+                          <div key={uidx} style={{ fontSize: '12px', color: '#666', marginBottom: 4 }}>
+                            {htmlToText(update.body).slice(0, 100)}...
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
-          <div style={{ color: '#888', padding: 16, textAlign: 'center' }}>No recent updates.</div>
+          <div style={{ padding: 24, color: '#888', textAlign: 'center' }}>
+            <div style={{ fontSize: 16, marginBottom: 8 }}>✅</div>
+            <div style={{ fontSize: 14 }}>No recent updates</div>
+            <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>All systems operational in the last 7 days</div>
+          </div>
         )}
       </Modal>
       {/* Bug/Issue Submission Modal (same as other cards) */}
