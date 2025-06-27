@@ -1,12 +1,6 @@
 import React from 'react';
 import './MiniHeatbarGrid.css';
-import { serviceLogos        } };
-        trendRes = { trend: {
-          Cloudflare: Array(7).fill(0),
-          Okta: Array(7).fill(0),
-          SendGrid: Array(7).fill(0),
-          Zscaler: Array(7).fill(0),
-        } }; './serviceLogos';
+import { serviceLogos } from './serviceLogos';
 
 const SERVICES = [
   'Cloudflare',
