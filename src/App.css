@@ -221,14 +221,14 @@
 /* Fix notification flyout z-index stacking */
 .header-notification {
   position: relative;
-  z-index: 1001;
+  z-index: 9999;
 }
 
 .notification-flyout {
-  position: fixed !important;
+  position: absolute !important;
   z-index: 9999 !important;
-  right: 28px !important;
-  top: 80px !important;
+  right: 0 !important;
+  top: calc(100% + 8px) !important;
   margin-top: 0 !important;
 }
 
@@ -254,8 +254,7 @@
   }
   
   .notification-flyout {
-    right: 16px !important;
-    top: 70px !important;
+    right: 0 !important;
     min-width: 320px !important;
     max-width: calc(100vw - 32px) !important;
   }
