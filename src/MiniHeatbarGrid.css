@@ -44,6 +44,9 @@
   font-size: 1.1em;
   text-align: center;
   justify-self: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .mini-heatbar-reports {
   font-family: 'Menlo', 'Consolas', monospace;
