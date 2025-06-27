@@ -630,45 +630,156 @@ function App() {
             <span style={{ fontSize: 14, color: '#888' }}>Last updated: {lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
           </div>
         </div>
-        {/* Critical Mode Strip (with example for demo) */}
+        {/* Enhanced Critical Alert Banner */}
         {(
           criticalMode.active || process.env.NODE_ENV === 'development'
         ) && (
           <div style={{
             width: '100%',
-            background: 'linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%)',
+            background: 'linear-gradient(135deg, #ff4757 0%, #ff3742 50%, #c44569 100%)',
             color: '#fff',
             fontWeight: 600,
-            fontSize: 17,
-            padding: '8px 0',
-            marginBottom: 18,
+            fontSize: 16,
+            padding: '16px 20px',
+            marginBottom: 20,
             display: 'flex',
             alignItems: 'center',
             overflow: 'hidden',
             position: 'relative',
             zIndex: 10,
-            minHeight: 32,
+            minHeight: 48,
+            borderRadius: 12,
+            boxShadow: '0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+            animation: 'alertPulse 3s ease-in-out infinite',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
           }}>
+            {/* Alert Icon */}
             <div style={{
-              width: '100%',
-              textAlign: 'center',
-              transition: 'opacity 0.6s',
-              opacity: 1,
-              position: 'relative',
+              marginRight: 12,
+              fontSize: 20,
+              animation: 'alertIcon 2s ease-in-out infinite',
+              filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))'
             }}>
-              {(() => {
-                const issues = criticalMode.active ? criticalMode.details : demoIssues;
-                const idx = tickerIndex % issues.length;
-                const c = issues[idx];
-                return (
-                  <span key={idx} style={{ display: 'inline-block', transition: 'opacity 0.6s' }}>
-                    [{c.provider}] <b>{c.name}</b> - {c.status} {c.updated ? `(${new Date(c.updated).toLocaleString()})` : ''}
-                    {c.url && (
-                      <a href={c.url} target="_blank" rel="noopener noreferrer" style={{ color: '#fff', textDecoration: 'underline', marginLeft: 8 }}>Details</a>
-                    )}
-                  </span>
-                );
-              })()}
+              ⚠️
+            </div>
+            
+            {/* Content Container */}
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 16
+            }}>
+              {/* Alert Content */}
+              <div style={{
+                flex: 1,
+                minWidth: 0,
+                textAlign: 'left'
+              }}>
+                {(() => {
+                  const issues = criticalMode.active ? criticalMode.details : demoIssues;
+                  const idx = tickerIndex % issues.length;
+                  const c = issues[idx];
+                  return (
+                    <div key={idx} style={{ 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      gap: 4,
+                      animation: 'fadeIn 0.6s ease-out'
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        flexWrap: 'wrap'
+                      }}>
+                        <span style={{
+                          background: 'rgba(255, 255, 255, 0.2)',
+                          padding: '2px 8px',
+                          borderRadius: 12,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px'
+                        }}>
+                          {c.provider}
+                        </span>
+                        <span style={{ fontWeight: 700 }}>{c.name}</span>
+                        <span style={{
+                          background: c.status === 'critical' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 193, 7, 0.8)',
+                          color: c.status === 'critical' ? '#fff' : '#000',
+                          padding: '2px 6px',
+                          borderRadius: 8,
+                          fontSize: 11,
+                          fontWeight: 600,
+                          textTransform: 'capitalize'
+                        }}>
+                          {c.status}
+                        </span>
+                      </div>
+                      {c.updated && (
+                        <div style={{
+                          fontSize: 12,
+                          opacity: 0.9,
+                          fontWeight: 400
+                        }}>
+                          Last updated: {new Date(c.updated).toLocaleString()}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+              
+              {/* Action Button */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                flexShrink: 0
+              }}>
+                {(() => {
+                  const issues = criticalMode.active ? criticalMode.details : demoIssues;
+                  const idx = tickerIndex % issues.length;
+                  const c = issues[idx];
+                  return c.url && (
+                    <a 
+                      href={c.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      style={{ 
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        color: '#fff',
+                        textDecoration: 'none',
+                        padding: '8px 16px',
+                        borderRadius: 20,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        transition: 'all 0.2s ease',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                        e.target.style.transform = 'translateY(-1px)';
+                        e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = 'none';
+                      }}
+                    >
+                      View Details
+                      <span style={{ fontSize: 11 }}>↗</span>
+                    </a>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         )}
