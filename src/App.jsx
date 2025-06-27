@@ -350,12 +350,12 @@ function App() {
     }
   }, [criticalMode.active, criticalMode.details.length]);
 
-  // Fetch notifications (issues from last 24h)
+  // Fetch notifications (issues from last 24h + provider incidents)
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
     setNotificationsError(null);
     try {
-      const res = await fetch('/api/issue-reports-latest');
+      const res = await fetch('/api/notifications-latest');
       const json = await res.json();
       if (json.data) {
         setNotifications(json.data);
