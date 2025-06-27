@@ -1,11 +1,16 @@
-import { neon } from '@neondatabase/serverless';
+// Polyfill fetch for Node.js < 18
+let fetchImpl = globalThis.fetch;
+if (!fetchImpl) {
+  fetchImpl = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+}
 
+import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
 // Helper to fetch Cloudflare open incidents (optionally filter by last 24h)
 async function fetchCloudflareIncidents(last24hDate = null) {
   try {
-    const res = await fetch('https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json');
+    const res = await fetchImpl('https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json');
     const json = await res.json();
     let incidents = (json.incidents || []).map(inc => ({
       provider: 'Cloudflare',
@@ -22,7 +27,8 @@ async function fetchCloudflareIncidents(last24hDate = null) {
       });
     }
     return incidents;
-  } catch {
+  } catch (err) {
+    console.error('Cloudflare fetch error:', err);
     return [];
   }
 }
@@ -37,18 +43,18 @@ function isOpenRssItem(item) {
 }
 
 // Helper to fetch and parse RSS feeds (Zscaler, Okta, SendGrid)
-async function fetchRSSFeed(url, provider) {
+async function fetchRSSFeed(url, provider, days = 1) {
   try {
-    const res = await fetch(url);
+    const res = await fetchImpl(url);
     const text = await res.text();
     const parser = require('xml2js');
     let items = [];
     await parser.parseStringPromise(text).then(result => {
       items = result.rss.channel[0].item || [];
     });
-    // Only keep open/unresolved items from last 24h
+    // Only keep open/unresolved items from last N days
     const now = new Date();
-    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     return items
       .filter(isOpenRssItem)
       .map(item => ({
@@ -61,9 +67,10 @@ async function fetchRSSFeed(url, provider) {
       }))
       .filter(item => {
         const date = new Date(item.reported_at);
-        return !isNaN(date) && date >= last24h;
+        return !isNaN(date) && date >= since;
       });
-  } catch {
+  } catch (err) {
+    console.error(`${provider} RSS fetch error:`, err);
     return [];
   }
 }
@@ -75,25 +82,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. User-reported issues from DB (last 24h)
+    // 1. User-reported issues from DB (last 7 days)
     const now = new Date();
-    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const last24hStr = last24h.toISOString();
+    const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const last7dStr = last7d.toISOString();
     const dbIssues = await sql`
       SELECT id, service_name as provider, title, description, reported_at
       FROM issue_reports
-      WHERE reported_at >= ${last24hStr}
+      WHERE reported_at >= ${last7dStr}
       ORDER BY reported_at DESC
     `;
 
-    // 2. Cloudflare open incidents (last 24h only)
-    const cloudflareIncidents = await fetchCloudflareIncidents(last24h);
+    // 2. Cloudflare open incidents (created in last 7 days only)
+    const cloudflareIncidents = await fetchCloudflareIncidents(last7d);
 
-    // 3. Zscaler, Okta, SendGrid RSS feeds (last 24h)
+    // 3. Zscaler, Okta, SendGrid RSS feeds (last 7 days)
     const [zscaler, okta, sendgrid] = await Promise.all([
-      fetchRSSFeed('https://trust.zscaler.com/rss', 'Zscaler'),
-      fetchRSSFeed('https://status.okta.com/history.rss', 'Okta'),
-      fetchRSSFeed('https://status.sendgrid.com/history.rss', 'SendGrid'),
+      fetchRSSFeed('https://trust.zscaler.com/rss', 'Zscaler', 7),
+      fetchRSSFeed('https://status.okta.com/history.rss', 'Okta', 7),
+      fetchRSSFeed('https://status.sendgrid.com/history.rss', 'SendGrid', 7),
     ]);
 
     // Merge all
