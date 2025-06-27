@@ -49,14 +49,15 @@ export default async function handler(req, res) {
 
   try {
     const result = await sql`
-      INSERT INTO issue_reports (service_name, impacted_provider, description, user_email, status, metadata)
+      INSERT INTO issue_reports (service_name, impacted_provider, description, user_email, status, metadata, reported_at)
       VALUES (
         ${safeService},
         ${safeProvider || null},
         ${safeDesc},
         ${safeEmail},
         ${safeStatus || 'open'},
-        ${safeMeta}
+        ${safeMeta},
+        NOW()
       )
       RETURNING id, reported_at;
     `;
