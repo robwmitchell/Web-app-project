@@ -405,90 +405,123 @@ function App() {
 
   return (
     <>
-      <div style={{
+      <div className="header-gradient" style={{
         width: '100%',
-        background: '#fff',
-        borderBottom: '1px solid #e0e0e0',
-        padding: '0 0 0 0',
+        color: '#fff',
+        padding: '0',
         marginBottom: 18,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        minHeight: 56,
-        boxShadow: '0 2px 8px #0001',
+        minHeight: 64,
+        boxShadow: '0 8px 32px rgba(102, 126, 234, 0.15), 0 4px 16px rgba(0,0,0,0.1)',
         position: 'sticky',
         top: 0,
         zIndex: 100,
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
       }}>
-        <div style={{ fontWeight: 700, fontSize: '1.22em', paddingLeft: 24, letterSpacing: 1 }}>
+        <div className="header-title" style={{ 
+          fontWeight: 800, 
+          fontSize: '1.4em', 
+          paddingLeft: 28, 
+          letterSpacing: 0.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12
+        }}>
+          <div className="header-status-dot" style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: '#4ade80',
+          }}></div>
           Stack Status IO
+          <div className="header-live-badge" style={{
+            background: 'rgba(255,255,255,0.15)',
+            padding: '2px 8px',
+            borderRadius: 12,
+            fontSize: '0.6em',
+            fontWeight: 500,
+            letterSpacing: 0.5,
+            marginLeft: 8
+          }}>
+            LIVE
+          </div>
         </div>
-        <div style={{ paddingRight: 24, position: 'relative' }}>
+        <div className="header-notification" style={{ paddingRight: 28, position: 'relative', zIndex: 1001 }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>
             <button
               onClick={handleBellClick}
-              title="Notifications"
+              title="Service Notifications"
               style={{
-                background: 'none',
-                border: 'none',
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
                 cursor: 'pointer',
-                padding: '12px',
-                borderRadius: '50%',
+                padding: '14px',
+                borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'background-color 0.2s ease',
-                position: 'relative'
+                transition: 'all 0.3s ease',
+                position: 'relative',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
               }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.05)'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255,255,255,0.2)';
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255,255,255,0.1)';
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
+              }}
             >
               <FaBell
-                size={24}
-                color={notifications.length > 0 ? "#f57c00" : "#1976d2"}
+                size={20}
+                color="#fff"
                 style={{ 
                   transition: 'all 0.3s ease',
-                  transform: notificationsOpen ? 'scale(1.1)' : 'scale(1)',
-                  filter: notifications.length > 0 ? 'drop-shadow(0 0 8px rgba(245,124,0,0.4))' : 'none'
+                  transform: notificationsOpen ? 'scale(1.1) rotate(15deg)' : 'scale(1)',
+                  filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))'
                 }}
               />
             </button>
             {notifications.length > 0 && (
               <span style={{
                 position: 'absolute',
-                top: -6,
-                right: -6,
-                background: 'linear-gradient(135deg, #ff4444, #cc0000)',
+                top: -8,
+                right: -8,
+                background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
                 color: '#fff',
                 borderRadius: '50%',
-                minWidth: 20,
-                height: 20,
+                minWidth: 22,
+                height: 22,
                 fontSize: 11,
                 fontWeight: 'bold',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                border: '2px solid #fff',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-                animation: notifications.length > 0 ? 'pulse 2s infinite' : 'none',
+                border: '2px solid rgba(255,255,255,0.9)',
+                boxShadow: '0 4px 12px rgba(255, 107, 107, 0.4), 0 2px 4px rgba(0,0,0,0.2)',
+                animation: 'pulse 2s infinite',
                 zIndex: 2,
+                backdropFilter: 'blur(10px)'
               }}>
                 {notifications.length > 99 ? '99+' : notifications.length}
               </span>
             )}
           </div>
           {notificationsOpen && (
-            <div style={{
-              position: 'absolute',
-              right: 0,
-              top: 32,
+            <div className="notification-flyout" style={{
               minWidth: 380,
               maxWidth: 420,
               background: '#fff',
               border: '1px solid #e0e0e0',
               boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
               borderRadius: 12,
-              zIndex: 1000,
               padding: 0,
               animation: 'slideIn 0.2s ease-out',
               maxHeight: '70vh',
@@ -634,25 +667,24 @@ function App() {
         {(
           criticalMode.active || process.env.NODE_ENV === 'development'
         ) && (
-          <div style={{
-            width: '100%',
-            background: 'linear-gradient(135deg, #ff4757 0%, #ff3742 50%, #c44569 100%)',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: 16,
-            padding: '16px 20px',
-            marginBottom: 20,
-            display: 'flex',
-            alignItems: 'center',
-            overflow: 'hidden',
-            position: 'relative',
-            zIndex: 10,
-            minHeight: 48,
-            borderRadius: 12,
-            boxShadow: '0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-            animation: 'alertPulse 3s ease-in-out infinite',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-          }}>
+          <div className="alert-banner-container">
+            <div className="alert-banner-content" style={{
+              background: 'linear-gradient(135deg, #ff4757 0%, #ff3742 50%, #c44569 100%)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: 16,
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              overflow: 'hidden',
+              position: 'relative',
+              zIndex: 10,
+              minHeight: 48,
+              borderRadius: 12,
+              boxShadow: '0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+              animation: 'alertPulse 3s ease-in-out infinite',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}>
             {/* Alert Icon */}
             <div style={{
               marginRight: 12,
@@ -780,6 +812,7 @@ function App() {
                   );
                 })()}
               </div>
+            </div>
             </div>
           </div>
         )}
