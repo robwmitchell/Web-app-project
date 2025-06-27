@@ -515,18 +515,32 @@ function App() {
             )}
           </div>
           {notificationsOpen && (
-            <div className="notification-flyout" style={{
-              minWidth: 380,
-              maxWidth: 420,
-              background: '#fff',
-              border: '1px solid #e0e0e0',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-              borderRadius: 12,
-              padding: 0,
-              animation: 'slideIn 0.2s ease-out',
-              maxHeight: '70vh',
-              overflow: 'hidden',
-            }}>
+            <>
+              {/* Backdrop overlay */}
+              <div 
+                style={{
+                  position: 'fixed',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 9998,
+                  background: 'transparent'
+                }}
+                onClick={() => setNotificationsOpen(false)}
+              />
+              <div className="notification-flyout" style={{
+                minWidth: 380,
+                maxWidth: 420,
+                background: '#fff',
+                border: '1px solid #e0e0e0',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                borderRadius: 12,
+                padding: 0,
+                animation: 'slideIn 0.2s ease-out',
+                maxHeight: '70vh',
+                overflow: 'hidden',
+              }}>
               <div style={{ 
                 padding: '16px 20px', 
                 borderBottom: '1px solid #f0f0f0', 
@@ -650,6 +664,7 @@ function App() {
                 </Button>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>

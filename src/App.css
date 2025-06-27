@@ -225,11 +225,11 @@
 }
 
 .notification-flyout {
-  position: absolute;
-  z-index: 1002 !important;
-  right: 0;
-  top: 100%;
-  margin-top: 8px;
+  position: fixed !important;
+  z-index: 9999 !important;
+  right: 28px !important;
+  top: 80px !important;
+  margin-top: 0 !important;
 }
 
 /* Ensure header has proper stacking context */
@@ -251,6 +251,13 @@
   
   .header-notification button {
     padding: 12px !important;
+  }
+  
+  .notification-flyout {
+    right: 16px !important;
+    top: 70px !important;
+    min-width: 320px !important;
+    max-width: calc(100vw - 32px) !important;
   }
 }
 
