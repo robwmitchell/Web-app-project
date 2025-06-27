@@ -363,7 +363,7 @@ function App() {
   }, [criticalMode.active, criticalMode.details.length]);
 
   // Fetch notifications (issues from last 24h + provider incidents)
-  const fetchNotifications = async () => {
+  const fetchNotifications = React.useCallback(async () => {
     setNotificationsLoading(true);
     setNotificationsError(null);
     try {
@@ -380,12 +380,19 @@ function App() {
     } finally {
       setNotificationsLoading(false);
     }
-  };
+  }, []);
+
+  // Auto-fetch notifications on page load and every 5 minutes
+  useEffect(() => {
+    fetchNotifications(); // Initial fetch
+    const interval = setInterval(fetchNotifications, 5 * 60 * 1000); // Every 5 minutes
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   // Handle bell click
   const handleBellClick = () => {
     setNotificationsOpen((open) => {
-      if (!open) fetchNotifications();
+      if (!open) fetchNotifications(); // Refresh when opening
       return !open;
     });
   };
