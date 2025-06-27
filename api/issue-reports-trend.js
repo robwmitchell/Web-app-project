@@ -18,20 +18,34 @@ export default async function handler(req, res) {
       d.setDate(today.getDate() - i);
       days.push(d.toISOString().slice(0, 10));
     }
-    // Query for each day and each service
+
+    // Initialize trend object to ensure all services have complete arrays
     const trend = {};
-    for (const day of days) {
+    const services = ['Cloudflare', 'Okta', 'SendGrid', 'Zscaler'];
+    
+    // Initialize all services with zeros
+    services.forEach(service => {
+      trend[service] = new Array(7).fill(0);
+    });
+
+    // Query for each day and populate actual counts
+    for (let dayIndex = 0; dayIndex < days.length; dayIndex++) {
+      const day = days[dayIndex];
       const rows = await sql`
         SELECT service_name, COUNT(*) as count
         FROM issue_reports
         WHERE reported_at >= ${day} AND reported_at < ${day}::date + interval '1 day'
         GROUP BY service_name
       `;
+      
+      // Update counts for services that have issues on this day
       for (const row of rows) {
-        if (!trend[row.service_name]) trend[row.service_name] = [];
-        trend[row.service_name].push(Number(row.count));
+        if (trend[row.service_name]) {
+          trend[row.service_name][dayIndex] = Number(row.count);
+        }
       }
     }
+    
     res.status(200).json({ days, trend });
   } catch (error) {
     res.status(500).json({ error: 'Database error', details: error.message });

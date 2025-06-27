@@ -1,6 +1,12 @@
 import React from 'react';
 import './MiniHeatbarGrid.css';
-import { serviceLogos } from './serviceLogos';
+import { serviceLogos        } };
+        trendRes = { trend: {
+          Cloudflare: Array(7).fill(0),
+          Okta: Array(7).fill(0),
+          SendGrid: Array(7).fill(0),
+          Zscaler: Array(7).fill(0),
+        } }; './serviceLogos';
 
 const SERVICES = [
   'Cloudflare',
@@ -21,23 +27,18 @@ function getTrendArrow(up) {
 }
 
 function sanitizeTrend(trend) {
-  // Ensure trend is an array of 24 objects: { count, timestamps }
-  if (!Array.isArray(trend) || trend.length !== 24) return Array(24).fill({ count: 0, timestamps: [] });
+  // Ensure trend is an array of 7 numbers for the last 7 days
+  if (!Array.isArray(trend) || trend.length !== 7) return Array(7).fill(0);
   return trend.map(v => {
-    if (typeof v === 'object' && v !== null && typeof v.count === 'number' && Array.isArray(v.timestamps)) {
-      return { count: v.count, timestamps: v.timestamps };
-    }
-    if (typeof v === 'number') {
-      return { count: v, timestamps: [] };
-    }
-    return { count: 0, timestamps: [] };
+    if (typeof v === 'number') return v;
+    return 0;
   });
 }
 
 function AreaSpark({ data = [], width = 384, height = 28, color = '#d32f2f', fill = '#ffd6d6' }) {
-  // Accepts array of { count, timestamps }
+  // Accepts array of numbers (7-day trend data)
   if (!Array.isArray(data) || data.length === 0) return null;
-  const safeData = data.map(v => (typeof v === 'object' && v !== null ? v.count : 0));
+  const safeData = data.map(v => (typeof v === 'number' ? v : 0));
   const max = Math.max(...safeData, 1);
   const min = Math.min(...safeData, 0);
   // Points for the line
@@ -104,7 +105,7 @@ export default function MiniHeatbarGrid() {
       const rows = SERVICES.map(service => {
         const trend = sanitizeTrend(trendMap[service]);
         const count = todayMap[service] || 0;
-        const trendUp = trend.length > 1 ? trend[trend.length-1].count >= trend[trend.length-2].count : false;
+        const trendUp = trend.length > 1 ? trend[trend.length-1] >= trend[trend.length-2] : false;
         return {
           service,
           status: STATUS_MAP[service],
