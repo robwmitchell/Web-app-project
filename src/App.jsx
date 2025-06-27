@@ -425,18 +425,34 @@ function App() {
         </div>
         <div style={{ paddingRight: 24, position: 'relative' }}>
           <div style={{ position: 'relative', display: 'inline-block' }}>
-            <FaBell
-              size={24}
-              color={notifications.length > 0 ? "#f57c00" : "#1976d2"}
-              style={{ 
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                transform: notificationsOpen ? 'scale(1.1)' : 'scale(1)',
-                filter: notifications.length > 0 ? 'drop-shadow(0 0 8px rgba(245,124,0,0.4))' : 'none'
-              }}
-              title="Notifications"
+            <button
               onClick={handleBellClick}
-            />
+              title="Notifications"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '12px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background-color 0.2s ease',
+                position: 'relative'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+            >
+              <FaBell
+                size={24}
+                color={notifications.length > 0 ? "#f57c00" : "#1976d2"}
+                style={{ 
+                  transition: 'all 0.3s ease',
+                  transform: notificationsOpen ? 'scale(1.1)' : 'scale(1)',
+                  filter: notifications.length > 0 ? 'drop-shadow(0 0 8px rgba(245,124,0,0.4))' : 'none'
+                }}
+              />
+            </button>
             {notifications.length > 0 && (
               <span style={{
                 position: 'absolute',
