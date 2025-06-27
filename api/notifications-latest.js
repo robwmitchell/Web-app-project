@@ -2,12 +2,12 @@ import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL);
 
-// Helper to fetch Cloudflare open incidents
-async function fetchCloudflareIncidents() {
+// Helper to fetch Cloudflare open incidents (optionally filter by last 24h)
+async function fetchCloudflareIncidents(last24hDate = null) {
   try {
     const res = await fetch('https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json');
     const json = await res.json();
-    return (json.incidents || []).map(inc => ({
+    let incidents = (json.incidents || []).map(inc => ({
       provider: 'Cloudflare',
       title: inc.name,
       description: inc.incident_updates?.[0]?.body || '',
@@ -15,6 +15,13 @@ async function fetchCloudflareIncidents() {
       url: inc.shortlink || inc.url || '',
       id: `cloudflare-${inc.id}`,
     }));
+    if (last24hDate) {
+      incidents = incidents.filter(inc => {
+        const date = new Date(inc.reported_at);
+        return !isNaN(date) && date >= last24hDate;
+      });
+    }
+    return incidents;
   } catch {
     return [];
   }
@@ -79,8 +86,8 @@ export default async function handler(req, res) {
       ORDER BY reported_at DESC
     `;
 
-    // 2. Cloudflare open incidents (last 24h)
-    const cloudflareIncidents = await fetchCloudflareIncidents();
+    // 2. Cloudflare open incidents (last 24h only)
+    const cloudflareIncidents = await fetchCloudflareIncidents(last24h);
 
     // 3. Zscaler, Okta, SendGrid RSS feeds (last 24h)
     const [zscaler, okta, sendgrid] = await Promise.all([
