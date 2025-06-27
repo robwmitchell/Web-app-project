@@ -3,6 +3,15 @@ import { neon } from '@neondatabase/serverless';
 // Use the environment variable for your connection string
 const sql = neon(process.env.DATABASE_URL);
 
+function sanitizeString(str, maxLen = 500) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[<>$;]/g, '').trim().slice(0, maxLen);
+}
+
+function isValidEmail(email) {
+  return typeof email === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -24,21 +33,30 @@ export default async function handler(req, res) {
     return;
   }
 
+  // Validate required fields
   if (!service_name || !description) {
     res.status(400).json({ error: 'Missing required fields' });
     return;
   }
 
+  // Sanitize inputs
+  const safeService = sanitizeString(service_name, 100);
+  const safeProvider = sanitizeString(impacted_provider, 100);
+  const safeDesc = sanitizeString(description, 1000);
+  const safeEmail = user_email && isValidEmail(user_email) ? user_email : null;
+  const safeStatus = sanitizeString(status, 20);
+  const safeMeta = metadata && typeof metadata === 'object' ? JSON.stringify(metadata) : null;
+
   try {
     const result = await sql`
       INSERT INTO issue_reports (service_name, impacted_provider, description, user_email, status, metadata)
       VALUES (
-        ${service_name},
-        ${impacted_provider || null},
-        ${description},
-        ${user_email || null},
-        ${status || 'open'},
-        ${metadata ? JSON.stringify(metadata) : null}
+        ${safeService},
+        ${safeProvider || null},
+        ${safeDesc},
+        ${safeEmail},
+        ${safeStatus || 'open'},
+        ${safeMeta}
       )
       RETURNING id, reported_at;
     `;

@@ -1,4 +1,5 @@
 import React from 'react';
+import Button from './Button';
 
 export default function ReportImpactForm({ serviceName, onClose }) {
   const [name, setName] = React.useState('');
@@ -46,7 +47,7 @@ export default function ReportImpactForm({ serviceName, onClose }) {
     <div style={{ color: '#388e3c', padding: 12, textAlign: 'center' }}>
       Thank you for reporting your issue!
       <br />
-      <button onClick={onClose} style={{ marginTop: 16, background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Close</button>
+      <Button onClick={onClose} style={{ marginTop: 16, background: '#eee', color: '#333' }}>Close</Button>
     </div>
   );
 
@@ -58,8 +59,8 @@ export default function ReportImpactForm({ serviceName, onClose }) {
       <input type="email" placeholder="Your email (optional)" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
       <textarea placeholder="Describe your issue..." required value={description} onChange={e => setDescription(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }} />
       {error && <div style={{ color: '#b71c1c', fontSize: '0.98em' }}>{error}</div>}
-      <button type="submit" disabled={loading} style={{ background: '#b71c1c', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 18px', fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer' }}>{loading ? 'Submitting...' : 'Submit'}</button>
-      <button type="button" onClick={onClose} style={{ background: '#eee', color: '#333', border: 'none', borderRadius: 4, padding: '6px 14px', cursor: 'pointer' }}>Cancel</button>
+      <Button type="submit" disabled={loading} style={{ background: '#b71c1c' }}>{loading ? 'Submitting...' : 'Submit'}</Button>
+      <Button type="button" onClick={onClose} style={{ background: '#eee', color: '#333' }}>Cancel</Button>
     </form>
   );
 }
