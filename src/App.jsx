@@ -9,6 +9,7 @@ import './MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import { FaBell } from 'react-icons/fa';
+import Button from './Button';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -167,6 +168,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [criticalMode, setCriticalMode] = useState({ active: false, details: [] });
   const [tickerIndex, setTickerIndex] = useState(0);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState(null);
   const demoIssues = [
     { provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' },
     { provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' },
@@ -345,6 +350,40 @@ function App() {
     }
   }, [criticalMode.active, criticalMode.details.length]);
 
+  // Fetch notifications (issues from last 24h)
+  const fetchNotifications = async () => {
+    setNotificationsLoading(true);
+    setNotificationsError(null);
+    try {
+      const res = await fetch('/api/issue-reports-latest');
+      const json = await res.json();
+      if (json.data) {
+        setNotifications(json.data);
+      } else {
+        setNotifications([]);
+      }
+    } catch (err) {
+      setNotificationsError('Failed to load notifications');
+      setNotifications([]);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
+
+  // Handle bell click
+  const handleBellClick = () => {
+    setNotificationsOpen((open) => {
+      if (!open) fetchNotifications();
+      return !open;
+    });
+  };
+
+  // Handle clear notifications (client-side only)
+  const handleClearNotifications = () => {
+    setNotifications([]);
+    setNotificationsOpen(false);
+  };
+
   return (
     <>
       <div style={{
@@ -365,8 +404,72 @@ function App() {
         <div style={{ fontWeight: 700, fontSize: '1.22em', paddingLeft: 24, letterSpacing: 1 }}>
           Service Status Dashboard
         </div>
-        <div style={{ paddingRight: 24 }}>
-          <FaBell size={22} color="#1976d2" style={{ cursor: 'pointer' }} title="Notifications" />
+        <div style={{ paddingRight: 24, position: 'relative' }}>
+          <FaBell
+            size={22}
+            color="#1976d2"
+            style={{ cursor: 'pointer' }}
+            title="Notifications"
+            onClick={handleBellClick}
+          />
+          {notifications.length > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: 2,
+              right: 2,
+              background: '#d32f2f',
+              color: '#fff',
+              borderRadius: '50%',
+              width: 12,
+              height: 12,
+              fontSize: 10,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 2,
+            }}>●</span>
+          )}
+          {notificationsOpen && (
+            <div style={{
+              position: 'absolute',
+              right: 0,
+              top: 28,
+              minWidth: 320,
+              maxWidth: 400,
+              background: '#fff',
+              border: '1px solid #e0e0e0',
+              boxShadow: '0 4px 16px #0002',
+              borderRadius: 8,
+              zIndex: 1000,
+              padding: 0,
+            }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid #eee', fontWeight: 600, fontSize: 16 }}>
+                New Issues (last 24h)
+              </div>
+              {notificationsLoading ? (
+                <div style={{ padding: 16, textAlign: 'center' }}>Loading...</div>
+              ) : notificationsError ? (
+                <div style={{ padding: 16, color: '#d32f2f', textAlign: 'center' }}>{notificationsError}</div>
+              ) : notifications.length === 0 ? (
+                <div style={{ padding: 16, color: '#888', textAlign: 'center' }}>No new issues reported in the last 24 hours.</div>
+              ) : (
+                <ul style={{ listStyle: 'none', margin: 0, padding: 0, maxHeight: 320, overflowY: 'auto' }}>
+                  {notifications.map((n) => (
+                    <li key={n.id} style={{ borderBottom: '1px solid #f0f0f0', padding: '12px 16px' }}>
+                      <div style={{ fontWeight: 500, marginBottom: 4 }}>{n.title || n.service_name}</div>
+                      <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>{n.description}</div>
+                      <div style={{ fontSize: 12, color: '#888' }}>{n.reported_at ? new Date(n.reported_at).toLocaleString() : ''}</div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div style={{ padding: 12, borderTop: '1px solid #eee', textAlign: 'right' }}>
+                <Button onClick={handleClearNotifications} style={{ fontSize: 14, padding: '6px 16px' }}>
+                  Clear
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
