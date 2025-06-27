@@ -110,13 +110,20 @@ export default function LivePulseCard({
             Company Info
           </button>
           */}
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 6 }}>
-            {LOGOS[provider] && (
-              <img src={LOGOS[provider]} alt={provider + ' logo'} className="card-icon glass-icon" style={{ width: 28, height: 28, marginRight: 8 }} />
-            )}
-            <span style={{ fontWeight: 600, fontSize: '1.1em', marginRight: 8 }}>{name || provider}</span>
-            <span className={`status-indicator ${indicator}`} title={indicator}></span>
-            <span className="status-text" style={{ marginLeft: 8, fontWeight: 500, color: '#555', fontSize: '1em' }}>{status}</span>
+          <div className="card-header">
+            <div className={`card-accent ${provider.toLowerCase()}`}></div>
+            <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+              {LOGOS[provider] && (
+                <img src={LOGOS[provider]} alt={provider + ' logo'} className="card-icon glass-icon" />
+              )}
+              <div>
+                <div className="card-title">{name || provider}</div>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
+                  <span className={`status-indicator ${indicator}`} title={indicator}></span>
+                  <span className="status-text" style={{ marginLeft: 8, fontWeight: 500, color: '#64748b', fontSize: '0.9em' }}>{status}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="live-pulse-headline">{headline}</div>
           {children}
