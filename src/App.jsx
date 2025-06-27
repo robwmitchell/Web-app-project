@@ -158,6 +158,18 @@ function getSendgridIndicator(status) {
   return 'minor';
 }
 
+// Helper function to get provider-specific colors
+function getProviderColor(provider) {
+  const colors = {
+    'Cloudflare': '#f38020',
+    'Zscaler': '#0066cc',
+    'Okta': '#007dc1',
+    'SendGrid': '#1a82e2',
+    'default': '#6c757d'
+  };
+  return colors[provider] || colors.default;
+}
+
 function App() {
   const [cloudflare, setCloudflare] = useState({ status: 'Loading...', indicator: '', incidents: [] });
   const [zscaler, setZscaler] = useState({ status: 'Loading...', updates: [] });
@@ -405,67 +417,180 @@ function App() {
           Stack Status IO
         </div>
         <div style={{ paddingRight: 24, position: 'relative' }}>
-          <FaBell
-            size={22}
-            color="#1976d2"
-            style={{ cursor: 'pointer' }}
-            title="Notifications"
-            onClick={handleBellClick}
-          />
-          {notifications.length > 0 && (
-            <span style={{
-              position: 'absolute',
-              top: 2,
-              right: 2,
-              background: '#d32f2f',
-              color: '#fff',
-              borderRadius: '50%',
-              width: 12,
-              height: 12,
-              fontSize: 10,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 2,
-            }}>●</span>
-          )}
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <FaBell
+              size={24}
+              color={notifications.length > 0 ? "#f57c00" : "#1976d2"}
+              style={{ 
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                transform: notificationsOpen ? 'scale(1.1)' : 'scale(1)',
+                filter: notifications.length > 0 ? 'drop-shadow(0 0 8px rgba(245,124,0,0.4))' : 'none'
+              }}
+              title="Notifications"
+              onClick={handleBellClick}
+            />
+            {notifications.length > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: -6,
+                right: -6,
+                background: 'linear-gradient(135deg, #ff4444, #cc0000)',
+                color: '#fff',
+                borderRadius: '50%',
+                minWidth: 20,
+                height: 20,
+                fontSize: 11,
+                fontWeight: 'bold',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid #fff',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                animation: notifications.length > 0 ? 'pulse 2s infinite' : 'none',
+                zIndex: 2,
+              }}>
+                {notifications.length > 99 ? '99+' : notifications.length}
+              </span>
+            )}
+          </div>
           {notificationsOpen && (
             <div style={{
               position: 'absolute',
               right: 0,
-              top: 28,
-              minWidth: 320,
-              maxWidth: 400,
+              top: 32,
+              minWidth: 380,
+              maxWidth: 420,
               background: '#fff',
               border: '1px solid #e0e0e0',
-              boxShadow: '0 4px 16px #0002',
-              borderRadius: 8,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+              borderRadius: 12,
               zIndex: 1000,
               padding: 0,
+              animation: 'slideIn 0.2s ease-out',
+              maxHeight: '70vh',
+              overflow: 'hidden',
             }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #eee', fontWeight: 600, fontSize: 16 }}>
-                New Issues (last 24h)
+              <div style={{ 
+                padding: '16px 20px', 
+                borderBottom: '1px solid #f0f0f0', 
+                fontWeight: 600, 
+                fontSize: 16,
+                background: 'linear-gradient(135deg, #f8f9fa, #e9ecef)',
+                borderRadius: '12px 12px 0 0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <span>🔔 Service Alerts (last 7 days)</span>
+                <button 
+                  onClick={() => setNotificationsOpen(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: 18,
+                    cursor: 'pointer',
+                    color: '#666',
+                    padding: 4
+                  }}
+                >×</button>
               </div>
               {notificationsLoading ? (
-                <div style={{ padding: 16, textAlign: 'center' }}>Loading...</div>
+                <div style={{ padding: 24, textAlign: 'center', color: '#666' }}>
+                  <div style={{ fontSize: 14 }}>🔄 Loading alerts...</div>
+                </div>
               ) : notificationsError ? (
-                <div style={{ padding: 16, color: '#d32f2f', textAlign: 'center' }}>{notificationsError}</div>
+                <div style={{ padding: 24, color: '#d32f2f', textAlign: 'center' }}>
+                  <div style={{ fontSize: 14 }}>❌ {notificationsError}</div>
+                </div>
               ) : notifications.length === 0 ? (
-                <div style={{ padding: 16, color: '#888', textAlign: 'center' }}>No new issues reported in the last 24 hours.</div>
+                <div style={{ padding: 24, color: '#888', textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, marginBottom: 8 }}>✅</div>
+                  <div style={{ fontSize: 14 }}>All systems operational</div>
+                  <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>No new alerts in the last 7 days</div>
+                </div>
               ) : (
-                <ul style={{ listStyle: 'none', margin: 0, padding: 0, maxHeight: 320, overflowY: 'auto' }}>
-                  {notifications.map((n) => (
-                    <li key={n.id} style={{ borderBottom: '1px solid #f0f0f0', padding: '12px 16px' }}>
-                      <div style={{ fontWeight: 500, marginBottom: 4 }}>{n.title || n.service_name}</div>
-                      <div style={{ fontSize: 13, color: '#555', marginBottom: 4 }}>{n.description}</div>
-                      <div style={{ fontSize: 12, color: '#888' }}>{n.reported_at ? new Date(n.reported_at).toLocaleString() : ''}</div>
-                    </li>
+                <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                  {notifications.map((n, index) => (
+                    <div key={n.id} style={{ 
+                      borderBottom: index < notifications.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                      padding: '16px 20px',
+                      transition: 'background-color 0.2s ease',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    onClick={() => n.url && window.open(n.url, '_blank')}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                        <div style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          background: getProviderColor(n.provider),
+                          marginTop: 6,
+                          flexShrink: 0
+                        }}></div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ 
+                            fontWeight: 600, 
+                            marginBottom: 4,
+                            fontSize: 14,
+                            color: '#2c3e50'
+                          }}>
+                            [{n.provider}] {n.title || n.provider}
+                          </div>
+                          <div style={{ 
+                            fontSize: 13, 
+                            color: '#666', 
+                            marginBottom: 6,
+                            lineHeight: 1.4,
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}>
+                            {n.description || 'No description available'}
+                          </div>
+                          <div style={{ 
+                            fontSize: 11, 
+                            color: '#999',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8
+                          }}>
+                            <span>🕒 {n.reported_at ? new Date(n.reported_at).toLocaleString() : 'Unknown time'}</span>
+                            {n.url && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               )}
-              <div style={{ padding: 12, borderTop: '1px solid #eee', textAlign: 'right' }}>
-                <Button onClick={handleClearNotifications} style={{ fontSize: 14, padding: '6px 16px' }}>
-                  Clear
+              <div style={{ 
+                padding: '12px 20px', 
+                borderTop: '1px solid #f0f0f0', 
+                background: '#fafafa',
+                borderRadius: '0 0 12px 12px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span style={{ fontSize: 12, color: '#666' }}>
+                  Auto-refresh every 5min
+                </span>
+                <Button 
+                  onClick={handleClearNotifications} 
+                  style={{ 
+                    fontSize: 12, 
+                    padding: '6px 12px',
+                    background: 'linear-gradient(135deg, #6c757d, #495057)',
+                    border: 'none',
+                    borderRadius: 6
+                  }}
+                >
+                  Clear All
                 </Button>
               </div>
             </div>
