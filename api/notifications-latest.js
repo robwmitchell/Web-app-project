@@ -20,6 +20,15 @@ async function fetchCloudflareIncidents() {
   }
 }
 
+// Helper to determine if an RSS item is open/unresolved
+function isOpenRssItem(item) {
+  const closedKeywords = [
+    'resolved', 'closed', 'completed', 'restored', 'fixed', 'monitoring', 'mitigated', 'ended', 'recovered', 'restoration', 'no further issues', 'postmortem', 'post-mortem', 'final update'
+  ];
+  const text = ((item.title?.[0] || '') + ' ' + (item.description?.[0] || '')).toLowerCase();
+  return !closedKeywords.some(keyword => text.includes(keyword));
+}
+
 // Helper to fetch and parse RSS feeds (Zscaler, Okta, SendGrid)
 async function fetchRSSFeed(url, provider) {
   try {
@@ -30,10 +39,11 @@ async function fetchRSSFeed(url, provider) {
     await parser.parseStringPromise(text).then(result => {
       items = result.rss.channel[0].item || [];
     });
-    // Only keep items from last 24h
+    // Only keep open/unresolved items from last 24h
     const now = new Date();
     const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     return items
+      .filter(isOpenRssItem)
       .map(item => ({
         provider,
         title: item.title?.[0] || provider,
