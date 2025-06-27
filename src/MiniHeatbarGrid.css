@@ -12,16 +12,31 @@
   flex-direction: column;
   align-items: center;
 }
+.mini-heatbar-title {
+  font-size: 1.2em;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 16px;
+  text-align: center;
+}
 .mini-heatbar-header, .mini-heatbar-row {
   padding-left: 32px;
   padding-right: 32px;
   width: 100%;
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
+  justify-items: center;
+}
+.mini-heatbar-header {
+  font-weight: 700;
+  color: #333;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
 }
 .mini-heatbar-row {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 2fr 1.2fr;
+  grid-template-columns: 1fr 2fr 1fr;
   align-items: center;
   padding: 6px 0;
   border-bottom: 1px solid #f0f0f0;
@@ -62,17 +77,81 @@
   font-weight: bold;
 }
 @media (max-width: 900px) {
+  .mini-heatbar-grid {
+    width: 95%;
+    margin: 24px auto 0 auto;
+    padding: 16px 0 8px 0;
+    font-size: 1em;
+  }
   .mini-heatbar-header, .mini-heatbar-row {
-    padding-left: 8px;
-    padding-right: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .mini-heatbar-row {
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 8px;
+    padding: 8px 0;
+  }
+  .mini-heatbar-header {
+    grid-template-columns: 1fr 1.5fr 1fr;
+    display: grid;
   }
 }
 @media (max-width: 600px) {
   .mini-heatbar-grid {
-    padding: 10px 0 6px 0;
+    width: 98%;
+    padding: 12px 0 6px 0;
+    font-size: 0.95em;
+    margin: 16px auto 0 auto;
   }
   .mini-heatbar-header, .mini-heatbar-row {
-    padding-left: 2vw;
-    padding-right: 2vw;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .mini-heatbar-row {
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 6px;
+    padding: 6px 0;
+  }
+  .mini-heatbar-header {
+    grid-template-columns: 1fr 2fr 1fr;
+    display: grid;
+    font-size: 1em;
+  }
+  .mini-heatbar-trend {
+    font-size: 1em;
+  }
+  .mini-heatbar-reports {
+    font-size: 1em;
+  }
+}
+@media (max-width: 480px) {
+  .mini-heatbar-grid {
+    width: 100%;
+    padding: 10px 0 4px 0;
+    font-size: 0.9em;
+    margin: 12px 0 0 0;
+    border-radius: 8px;
+  }
+  .mini-heatbar-header, .mini-heatbar-row {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .mini-heatbar-row {
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 4px;
+    padding: 5px 0;
+  }
+  .mini-heatbar-header {
+    grid-template-columns: 1fr 2fr 1fr;
+    display: grid;
+    font-size: 0.95em;
+    font-weight: 600;
+  }
+  .mini-heatbar-trend {
+    font-size: 0.9em;
+  }
+  .mini-heatbar-reports {
+    font-size: 0.9em;
   }
 }
