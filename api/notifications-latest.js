@@ -39,7 +39,9 @@ function isOpenRssItem(item) {
     'resolved', 'closed', 'completed', 'restored', 'fixed', 'monitoring', 'mitigated', 'ended', 'recovered', 'restoration', 'no further issues', 'postmortem', 'post-mortem', 'final update'
   ];
   const text = ((item.title?.[0] || '') + ' ' + (item.description?.[0] || '')).toLowerCase();
-  return !closedKeywords.some(keyword => text.includes(keyword));
+  const isOpen = !closedKeywords.some(keyword => text.includes(keyword));
+  console.log(`RSS item "${item.title?.[0] || 'No title'}" - is open: ${isOpen}`);
+  return isOpen;
 }
 
 // Helper to fetch and parse RSS feeds (Zscaler, Okta, SendGrid)
@@ -95,6 +97,7 @@ export default async function handler(req, res) {
 
     // 2. Cloudflare open incidents (created in last 7 days only)
     const cloudflareIncidents = await fetchCloudflareIncidents(last7d);
+    console.log(`Cloudflare incidents found: ${cloudflareIncidents.length}`);
 
     // 3. Zscaler, Okta, SendGrid RSS feeds (last 7 days)
     const [zscaler, okta, sendgrid] = await Promise.all([
@@ -102,6 +105,8 @@ export default async function handler(req, res) {
       fetchRSSFeed('https://status.okta.com/history.rss', 'Okta', 7),
       fetchRSSFeed('https://status.sendgrid.com/history.rss', 'SendGrid', 7),
     ]);
+
+    console.log(`RSS results - Zscaler: ${zscaler.length}, Okta: ${okta.length}, SendGrid: ${sendgrid.length}`);
 
     // Merge all
     const all = [
@@ -111,10 +116,13 @@ export default async function handler(req, res) {
       ...okta,
       ...sendgrid,
     ];
+    console.log(`Total notifications: ${all.length}`);
+    
     // Sort by reported_at desc
     all.sort((a, b) => new Date(b.reported_at) - new Date(a.reported_at));
     res.status(200).json({ data: all });
   } catch (error) {
+    console.error('Notifications API error:', error);
     res.status(500).json({ error: 'Error aggregating notifications', details: error.message });
   }
 }
