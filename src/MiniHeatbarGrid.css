@@ -31,9 +31,18 @@
 .mini-heatbar-header {
   font-weight: 700;
   color: #333;
-  border-bottom: 2px solid #e0e0e0;
   padding-bottom: 8px;
   margin-bottom: 8px;
+  position: relative;
+}
+.mini-heatbar-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 32px;
+  right: 32px;
+  height: 2px;
+  background: #e0e0e0;
 }
 .mini-heatbar-row {
   grid-template-columns: 1fr 2fr 1fr;
@@ -87,6 +96,10 @@
     padding-left: 12px;
     padding-right: 12px;
   }
+  .mini-heatbar-header::after {
+    left: 12px;
+    right: 12px;
+  }
   .mini-heatbar-row {
     grid-template-columns: 1fr 1.5fr 1fr;
     gap: 8px;
@@ -107,6 +120,10 @@
   .mini-heatbar-header, .mini-heatbar-row {
     padding-left: 8px;
     padding-right: 8px;
+  }
+  .mini-heatbar-header::after {
+    left: 8px;
+    right: 8px;
   }
   .mini-heatbar-row {
     grid-template-columns: 1fr 2fr 1fr;
@@ -136,6 +153,10 @@
   .mini-heatbar-header, .mini-heatbar-row {
     padding-left: 6px;
     padding-right: 6px;
+  }
+  .mini-heatbar-header::after {
+    left: 6px;
+    right: 6px;
   }
   .mini-heatbar-row {
     grid-template-columns: 1fr 2fr 1fr;

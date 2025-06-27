@@ -154,7 +154,7 @@ export default function MiniHeatbarGrid() {
 
   return (
     <div className="mini-heatbar-grid">
-      <div className="mini-heatbar-title">User Reported Issues (Last 24h)</div>
+      <div className="mini-heatbar-title">User Reported Issues</div>
       <div className="mini-heatbar-header" style={{ fontWeight: 700, fontSize: '1.08em' }}>
         <span>Service</span>
         <span>Trend (7 days)</span>
