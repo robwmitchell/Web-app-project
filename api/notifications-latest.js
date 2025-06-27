@@ -7,7 +7,7 @@ if (!fetchImpl) {
 import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
-// Helper to fetch Cloudflare open incidents (optionally filter by last 24h)
+// Helper to fetch Cloudflare open incidents (all unresolved, optionally filter by date)
 async function fetchCloudflareIncidents(last24hDate = null) {
   try {
     const res = await fetchImpl('https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json');
@@ -20,12 +20,15 @@ async function fetchCloudflareIncidents(last24hDate = null) {
       url: inc.shortlink || inc.url || '',
       id: `cloudflare-${inc.id}`,
     }));
-    if (last24hDate) {
-      incidents = incidents.filter(inc => {
-        const date = new Date(inc.reported_at);
-        return !isNaN(date) && date >= last24hDate;
-      });
-    }
+    
+    // For now, don't filter by date to see all unresolved incidents
+    // if (last24hDate) {
+    //   incidents = incidents.filter(inc => {
+    //     const date = new Date(inc.reported_at);
+    //     return !isNaN(date) && date >= last24hDate;
+    //   });
+    // }
+    
     return incidents;
   } catch (err) {
     console.error('Cloudflare fetch error:', err);
@@ -33,15 +36,13 @@ async function fetchCloudflareIncidents(last24hDate = null) {
   }
 }
 
-// Helper to determine if an RSS item is open/unresolved
+// Helper to determine if an RSS item is open/unresolved (less restrictive)
 function isOpenRssItem(item) {
   const closedKeywords = [
-    'resolved', 'closed', 'completed', 'restored', 'fixed', 'monitoring', 'mitigated', 'ended', 'recovered', 'restoration', 'no further issues', 'postmortem', 'post-mortem', 'final update'
+    'resolved', 'closed', 'completed', 'restored', 'postmortem', 'post-mortem', 'final update', 'no further issues'
   ];
   const text = ((item.title?.[0] || '') + ' ' + (item.description?.[0] || '')).toLowerCase();
-  const isOpen = !closedKeywords.some(keyword => text.includes(keyword));
-  console.log(`RSS item "${item.title?.[0] || 'No title'}" - is open: ${isOpen}`);
-  return isOpen;
+  return !closedKeywords.some(keyword => text.includes(keyword));
 }
 
 // Helper to fetch and parse RSS feeds (Zscaler, Okta, SendGrid)
@@ -54,23 +55,26 @@ async function fetchRSSFeed(url, provider, days = 1) {
     await parser.parseStringPromise(text).then(result => {
       items = result.rss.channel[0].item || [];
     });
-    // Only keep open/unresolved items from last N days
+    
+    // Get time range
     const now = new Date();
     const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
-    return items
-      .filter(isOpenRssItem)
-      .map(item => ({
-        provider,
-        title: item.title?.[0] || provider,
-        description: item.description?.[0] || '',
-        reported_at: item.pubDate?.[0] || '',
-        url: item.link?.[0] || '',
-        id: `${provider.toLowerCase()}-${item.guid?.[0]?._ || item.title?.[0]}`,
-      }))
-      .filter(item => {
-        const date = new Date(item.reported_at);
-        return !isNaN(date) && date >= since;
-      });
+    
+    // Map all items first, then filter by date only (no keyword filtering for now)
+    const mappedItems = items.map(item => ({
+      provider,
+      title: item.title?.[0] || provider,
+      description: item.description?.[0] || '',
+      reported_at: item.pubDate?.[0] || '',
+      url: item.link?.[0] || '',
+      id: `${provider.toLowerCase()}-${item.guid?.[0]?._ || item.title?.[0]}`,
+    }));
+    
+    // Filter by date only for now to see all recent items
+    return mappedItems.filter(item => {
+      const date = new Date(item.reported_at);
+      return !isNaN(date) && date >= since;
+    });
   } catch (err) {
     console.error(`${provider} RSS fetch error:`, err);
     return [];
@@ -88,25 +92,21 @@ export default async function handler(req, res) {
     const now = new Date();
     const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // 1. Cloudflare open incidents (created in last 7 days only)
-    const cloudflareIncidents = await fetchCloudflareIncidents(last7d);
+    // 1. Cloudflare open incidents (all unresolved)
+    const cloudflareIncidents = await fetchCloudflareIncidents();
     console.log(`Cloudflare incidents found: ${cloudflareIncidents.length}`);
 
-    // 2. Zscaler, Okta, SendGrid RSS feeds (last 7 days)
-    const [zscaler, okta, sendgrid] = await Promise.all([
-      fetchRSSFeed('https://trust.zscaler.com/rss', 'Zscaler', 7),
-      fetchRSSFeed('https://status.okta.com/history.rss', 'Okta', 7),
-      fetchRSSFeed('https://status.sendgrid.com/history.rss', 'SendGrid', 7),
+    // 2. RSS feeds (last 7 days) - Using working URLs only
+    const [zscaler] = await Promise.all([
+      fetchRSSFeed('https://trust.zscaler.com/blog-feed', 'Zscaler', 7),
     ]);
 
-    console.log(`RSS results - Zscaler: ${zscaler.length}, Okta: ${okta.length}, SendGrid: ${sendgrid.length}`);
+    console.log(`RSS results - Zscaler: ${zscaler.length}`);
 
     // Merge all (only RSS feeds and Cloudflare API)
     const all = [
       ...cloudflareIncidents,
       ...zscaler,
-      ...okta,
-      ...sendgrid,
     ];
     console.log(`Total notifications: ${all.length}`);
     
