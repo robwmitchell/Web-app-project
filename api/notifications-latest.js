@@ -8,12 +8,12 @@ import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
 // Helper to fetch Cloudflare open incidents (all unresolved, optionally filter by date)
-async function fetchCloudflareIncidents(last24hDate = null) {
+async function fetchCloudflareIncidents() {
   try {
-    const res = await fetchImpl('https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json');
+    const res = await fetchImpl('https://www.cloudflarestatus.com/api/v2/summary.json');
     const json = await res.json();
     let incidents = (json.incidents || [])
-      .filter(inc => !inc.resolved_at) // Only include unresolved incidents
+      .filter(inc => !inc.resolved_at)
       .map(inc => ({
         provider: 'Cloudflare',
         title: inc.name,
@@ -21,16 +21,11 @@ async function fetchCloudflareIncidents(last24hDate = null) {
         reported_at: inc.created_at,
         url: inc.shortlink || inc.url || '',
         id: `cloudflare-${inc.id}`,
+        impact: inc.impact,
+        status: inc.status,
+        resolved_at: inc.resolved_at,
+        updated_at: inc.updated_at,
       }));
-    
-    // For now, don't filter by date to see all unresolved incidents
-    // if (last24hDate) {
-    //   incidents = incidents.filter(inc => {
-    //     const date = new Date(inc.reported_at);
-    //     return !isNaN(date) && date >= last24hDate;
-    //   });
-    // }
-    
     return incidents;
   } catch (err) {
     console.error('Cloudflare fetch error:', err);
