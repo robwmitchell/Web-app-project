@@ -540,9 +540,9 @@ function App() {
               src={logoImage} 
               alt="Stack Status IO Logo" 
               style={{
-                height: 48,
-                width: 48,
-                borderRadius: 8,
+                height: 128,
+                width: 128,
+                borderRadius: 24,
                 objectFit: 'cover'
               }}
             />
