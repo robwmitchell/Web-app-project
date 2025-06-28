@@ -7,13 +7,20 @@ if (!fetchImpl) {
 import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
-// Helper to fetch Cloudflare open incidents (all unresolved, optionally filter by date)
-async function fetchCloudflareIncidents() {
+// Helper to fetch Cloudflare incidents (all in last 7 days, regardless of resolved status)
+async function fetchCloudflareIncidents(days = 7) {
   try {
     const res = await fetchImpl('https://www.cloudflarestatus.com/api/v2/summary.json');
     const json = await res.json();
+    const now = new Date();
+    const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     let incidents = (json.incidents || [])
-      .filter(inc => !inc.resolved_at)
+      .filter(inc => {
+        // Include if created or updated in last 7 days
+        const created = new Date(inc.created_at);
+        const updated = new Date(inc.updated_at);
+        return (!isNaN(created) && created >= since) || (!isNaN(updated) && updated >= since);
+      })
       .map(inc => ({
         provider: 'Cloudflare',
         title: inc.name,
@@ -90,11 +97,11 @@ export default async function handler(req, res) {
     const now = new Date();
     const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // 1. Cloudflare open incidents (all unresolved)
-    const cloudflareIncidents = await fetchCloudflareIncidents();
+    // 1. Cloudflare incidents (all in last 7 days)
+    const cloudflareIncidents = await fetchCloudflareIncidents(7);
     console.log(`Cloudflare incidents found: ${cloudflareIncidents.length}`);
 
-    // 2. RSS feeds (last 7 days) - Using working URLs only
+    // 2. RSS feeds (last 7 days)
     const [zscaler, slack, datadog, aws] = await Promise.all([
       fetchRSSFeed('https://trust.zscaler.com/blog-feed', 'Zscaler', 7),
       fetchRSSFeed('https://status.slack.com/feed/rss', 'Slack', 7),
