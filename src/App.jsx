@@ -309,12 +309,13 @@ function App() {
         }
       });
     }
-    // Zscaler: all open issues (not resolved/closed/completed)
+    // Zscaler: all open issues (not resolved/closed/completed and not operational)
     if (zscaler && zscaler.updates && zscaler.updates.length > 0) {
       zscaler.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
         const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
-        if (!isResolved) {
+        const isOperational = (zscaler.status || '').toLowerCase() === 'operational';
+        if (!isResolved && !isOperational) {
           openIssues.push({ provider: 'Zscaler', name: upd.title, status: zscaler.status, updated: upd.date, url: upd.link });
         }
       });
