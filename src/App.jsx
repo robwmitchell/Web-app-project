@@ -298,48 +298,48 @@ function App() {
       });
   }, []);
 
-  // Check for any major/critical outage across all providers
+  // Check for any open/unresolved issue across all providers
   useEffect(() => {
-    const criticals = [];
-    // Cloudflare
-    if (cloudflare && cloudflare.indicator === 'critical' && cloudflare.incidents && cloudflare.incidents.length > 0) {
+    const openIssues = [];
+    // Cloudflare: all unresolved incidents
+    if (cloudflare && cloudflare.incidents && cloudflare.incidents.length > 0) {
       cloudflare.incidents.forEach(inc => {
-        if ((inc.impact || '').toLowerCase() === 'critical' && !['resolved', 'completed'].includes((inc.status || '').toLowerCase())) {
-          criticals.push({ provider: 'Cloudflare', name: inc.name, status: inc.status, updated: inc.updated_at || inc.updatedAt, url: inc.shortlink || inc.url });
+        if (!inc.resolved_at) {
+          openIssues.push({ provider: 'Cloudflare', name: inc.title || inc.name, status: inc.impact || inc.status, updated: inc.updated_at || inc.updatedAt, url: inc.shortlink || inc.url });
         }
       });
     }
-    // Zscaler
-    if (zscaler && zscaler.status === 'Issues Detected' && getZscalerIndicator(zscaler.status) === 'major' && zscaler.updates && zscaler.updates.length > 0) {
+    // Zscaler: all open issues (not resolved/closed/completed)
+    if (zscaler && zscaler.updates && zscaler.updates.length > 0) {
       zscaler.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
         const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
-        if ((text.includes('outage') || text.includes('critical')) && !isResolved) {
-          criticals.push({ provider: 'Zscaler', name: upd.title, status: zscaler.status, updated: upd.date, url: upd.link });
+        if (!isResolved) {
+          openIssues.push({ provider: 'Zscaler', name: upd.title, status: zscaler.status, updated: upd.date, url: upd.link });
         }
       });
     }
-    // Okta
-    if (okta && okta.status === 'Issues Detected' && okta.indicator === 'major' && okta.updates && okta.updates.length > 0) {
+    // Okta: all open issues (not resolved/closed/completed)
+    if (okta && okta.updates && okta.updates.length > 0) {
       okta.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
         const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
-        if ((text.includes('outage') || text.includes('critical')) && !isResolved) {
-          criticals.push({ provider: 'Okta', name: upd.title, status: okta.status, updated: upd.date, url: upd.link });
+        if (!isResolved) {
+          openIssues.push({ provider: 'Okta', name: upd.title, status: okta.status, updated: upd.date, url: upd.link });
         }
       });
     }
-    // SendGrid
-    if (sendgrid && sendgrid.status === 'Issues Detected' && sendgrid.indicator === 'major' && sendgrid.updates && sendgrid.updates.length > 0) {
+    // SendGrid: all open issues (not resolved/closed/completed)
+    if (sendgrid && sendgrid.updates && sendgrid.updates.length > 0) {
       sendgrid.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
         const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
-        if ((text.includes('outage') || text.includes('critical')) && !isResolved) {
-          criticals.push({ provider: 'SendGrid', name: upd.title, status: sendgrid.status, updated: upd.date, url: upd.link });
+        if (!isResolved) {
+          openIssues.push({ provider: 'SendGrid', name: upd.title, status: sendgrid.status, updated: upd.date, url: upd.link });
         }
       });
     }
-    setCriticalMode({ active: criticals.length > 0, details: criticals });
+    setCriticalMode({ active: openIssues.length > 0, details: openIssues });
   }, [cloudflare, zscaler, okta, sendgrid]);
 
   useEffect(() => {
