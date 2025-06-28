@@ -359,6 +359,15 @@ function App() {
 
   return (
     <>
+      {/* Remove white space at top by setting margin and padding to 0 on body and root container */}
+      <style>{`
+        body, #root {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: #fafbff;
+        }
+      `}</style>
+      {/* Centered, reduced-width header */}
       <div className="header-gradient" style={{
         width: '100%',
         color: '#fff',
@@ -366,7 +375,7 @@ function App() {
         marginBottom: 18,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         minHeight: 64,
         boxShadow: '0 8px 32px rgba(102, 126, 234, 0.15), 0 4px 16px rgba(0,0,0,0.1)',
         position: 'sticky',
@@ -375,32 +384,54 @@ function App() {
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
       }}>
-        <div className="header-title" style={{ 
-          fontWeight: 800, 
-          fontSize: '1.4em', 
-          paddingLeft: 28, 
-          letterSpacing: 0.5,
+        <div style={{
+          maxWidth: 1100,
+          width: '100%',
+          margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
-          gap: 12
+          justifyContent: 'space-between',
+          paddingLeft: 28,
+          paddingRight: 28,
         }}>
-          <div className="header-status-dot" style={{
-            width: 8,
-            height: 8,
-            borderRadius: '50%',
-            background: '#4ade80',
-          }}></div>
-          Stack Status IO
-          <div className="header-live-badge" style={{
-            background: 'rgba(255,255,255,0.15)',
-            padding: '2px 8px',
-            borderRadius: 12,
-            fontSize: '0.6em',
-            fontWeight: 500,
+          <div className="header-title" style={{ 
+            fontWeight: 800, 
+            fontSize: '1.4em', 
             letterSpacing: 0.5,
-            marginLeft: 8
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12
           }}>
-            LIVE
+            <div className="header-status-dot" style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: '#4ade80',
+            }}></div>
+            Stack Status IO
+            <div className="header-live-badge" style={{
+              background: 'rgba(255,255,255,0.15)',
+              padding: '2px 8px',
+              borderRadius: 12,
+              fontSize: '0.6em',
+              fontWeight: 500,
+              letterSpacing: 0.5,
+              marginLeft: 8
+            }}>
+              LIVE
+            </div>
+          </div>
+          {/* Notification bell inline with header/banner */}
+          <div style={{ position: 'relative', top: 0, right: 0, marginLeft: 24, zIndex: 9999 }}>
+            <NotificationChatbot
+              cloudflareIncidents={cloudflare.incidents}
+              zscalerUpdates={zscaler.updates}
+              oktaUpdates={okta.updates}
+              sendgridUpdates={sendgrid.updates}
+              headerMode={true}
+              usePortal={true} // Ensure modal is rendered in a portal
+              modalZIndex={20000} // Pass a very high z-index to modal if supported
+            />
           </div>
         </div>
       </div>
@@ -602,13 +633,6 @@ function App() {
         <MiniHeatbarGrid />
         <SpeedInsights />
         <Analytics />
-        {/* Notification Chatbot Floating Button */}
-        <NotificationChatbot
-          cloudflareIncidents={cloudflare.incidents}
-          zscalerUpdates={zscaler.updates}
-          oktaUpdates={okta.updates}
-          sendgridUpdates={sendgrid.updates}
-        />
       </div>
     </>
   );
