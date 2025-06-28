@@ -1,0 +1,21 @@
+{
+  "name": "Stack Status IO",
+  "short_name": "StackStatus",
+  "description": "Real-time service status monitoring dashboard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafbff",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

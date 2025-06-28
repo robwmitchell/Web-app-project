@@ -10,6 +10,7 @@ import './MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import NotificationChatbot from './NotificationChatbot';
+import logoImage from './assets/stackstatus1.png';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -504,6 +505,16 @@ function App() {
             alignItems: 'center',
             gap: 12
           }}>
+            <img 
+              src={logoImage} 
+              alt="Stack Status IO Logo" 
+              style={{
+                height: 32,
+                width: 32,
+                borderRadius: 6,
+                objectFit: 'cover'
+              }}
+            />
             <div className="header-status-dot" style={{
               width: 8,
               height: 8,
