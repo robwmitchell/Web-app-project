@@ -164,6 +164,9 @@ function getProviderColor(provider) {
     'Zscaler': '#0066cc',
     'Okta': '#007dc1',
     'SendGrid': '#1a82e2',
+    'Slack': '#4a154b',
+    'Datadog': '#632c41',
+    'AWS': '#ff9900',
     'default': '#6c757d'
   };
   return colors[provider] || colors.default;
@@ -174,6 +177,9 @@ function App() {
   const [zscaler, setZscaler] = useState({ status: 'Loading...', updates: [] });
   const [sendgrid, setSendgrid] = useState({ status: 'Loading...', indicator: '', updates: [], name: 'SendGrid' });
   const [okta, setOkta] = useState({ status: 'Loading...', indicator: '', updates: [], name: 'Okta' });
+  const [slack, setSlack] = useState({ status: 'Loading...', updates: [], name: 'Slack' });
+  const [datadog, setDatadog] = useState({ status: 'Loading...', updates: [], name: 'Datadog' });
+  const [aws, setAws] = useState({ status: 'Loading...', updates: [], name: 'AWS' });
   const [today, setToday] = useState(() => new Date());
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
   const [loading, setLoading] = useState(false);
@@ -296,6 +302,19 @@ function App() {
         setLastUpdated(new Date());
         setLoading(false);
       });
+    // Slack RSS fetch
+    fetch('/api/notifications-latest')
+      .then(res => res.json())
+      .then(({ data }) => {
+        setSlack({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Slack'), name: 'Slack' });
+        setDatadog({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Datadog'), name: 'Datadog' });
+        setAws({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'AWS'), name: 'AWS' });
+      })
+      .catch(() => {
+        setSlack({ status: 'Error loading feed', updates: [] });
+        setDatadog({ status: 'Error loading feed', updates: [] });
+        setAws({ status: 'Error loading feed', updates: [] });
+      });
   }, []);
 
   // Check for any open/unresolved issue across all providers
@@ -340,8 +359,26 @@ function App() {
         }
       });
     }
+    // Slack: all open issues
+    if (slack && slack.updates && slack.updates.length > 0) {
+      slack.updates.forEach(upd => {
+        openIssues.push({ provider: 'Slack', name: upd.title, status: slack.status, updated: upd.reported_at, url: upd.url });
+      });
+    }
+    // Datadog: all open issues
+    if (datadog && datadog.updates && datadog.updates.length > 0) {
+      datadog.updates.forEach(upd => {
+        openIssues.push({ provider: 'Datadog', name: upd.title, status: datadog.status, updated: upd.reported_at, url: upd.url });
+      });
+    }
+    // AWS: all open issues
+    if (aws && aws.updates && aws.updates.length > 0) {
+      aws.updates.forEach(upd => {
+        openIssues.push({ provider: 'AWS', name: upd.title, status: aws.status, updated: upd.reported_at, url: upd.url });
+      });
+    }
     setCriticalMode({ active: openIssues.length > 0, details: openIssues });
-  }, [cloudflare, zscaler, okta, sendgrid]);
+  }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws]);
 
   useEffect(() => {
     setToday(new Date()); // Update on mount (in case of SSR)
@@ -633,6 +670,27 @@ function App() {
             indicator={okta.indicator}
             status={okta.status}
             updates={okta.updates}
+          />
+          <ZscalerPulseCardContainer
+            provider="Slack"
+            name="Slack"
+            indicator={slack.updates.length > 0 ? 'major' : 'none'}
+            status={slack.status}
+            updates={slack.updates}
+          />
+          <ZscalerPulseCardContainer
+            provider="Datadog"
+            name="Datadog"
+            indicator={datadog.updates.length > 0 ? 'major' : 'none'}
+            status={datadog.status}
+            updates={datadog.updates}
+          />
+          <ZscalerPulseCardContainer
+            provider="AWS"
+            name="AWS"
+            indicator={aws.updates.length > 0 ? 'major' : 'none'}
+            status={aws.status}
+            updates={aws.updates}
           />
         </div>
         {/* Mini Heatbar Grid at the bottom of the page */}
