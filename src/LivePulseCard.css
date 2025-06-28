@@ -51,10 +51,10 @@
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 20px;
-  padding: 32px 28px 80px 28px;
+  padding: 32px 28px 120px 28px;
   margin: 24px;
   width: 410px;
-  min-height: 420px;
+  min-height: 600px;
   text-align: left;
   box-shadow: 
     0 4px 20px rgba(15, 23, 42, 0.08),
@@ -193,7 +193,7 @@
 
 .card-bottom-center {
   position: absolute;
-  bottom: 20px;
+  bottom: 30px;
   left: 0;
   width: 100%;
   display: flex;
@@ -207,7 +207,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 20px;
+  bottom: 30px;
   z-index: 2;
   display: flex;
   flex-direction: row;
@@ -490,8 +490,8 @@
     width: calc(100vw - 32px);
     min-width: 320px;
     max-width: calc(100vw - 32px);
-    min-height: 400px;
-    padding: 24px 20px 80px 20px;
+    min-height: 520px;
+    padding: 24px 20px 120px 20px;
     margin: 16px auto;
     font-size: 0.96em;
     border-radius: 16px;
@@ -524,8 +524,8 @@
     width: 380px;
     min-width: 380px;
     max-width: 380px;
-    min-height: 420px;
-    padding: 28px 24px 80px 24px;
+    min-height: 580px;
+    padding: 28px 24px 120px 24px;
     margin: 20px auto;
   }
   .card-bottom-row {
@@ -549,8 +549,8 @@
     width: calc(100vw - 32px);
     min-width: 320px;
     max-width: calc(100vw - 32px);
-    min-height: 400px;
-    padding: 24px 20px 80px 20px;
+    min-height: 550px;
+    padding: 24px 20px 120px 20px;
     margin: 16px auto;
     font-size: 0.98em;
     border-radius: 16px;
