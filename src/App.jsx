@@ -519,14 +519,14 @@ function App() {
         borderBottom: '1px solid rgba(255,255,255,0.1)',
       }}>
         <div style={{
-          maxWidth: 1100,
+          maxWidth: 1200,
           width: '100%',
           margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          paddingLeft: 28,
-          paddingRight: 28,
+          paddingLeft: 'clamp(12px, 4vw, 28px)',
+          paddingRight: 'clamp(12px, 4vw, 28px)',
         }}>
           <div className="header-title" style={{ 
             fontWeight: 800, 
@@ -612,7 +612,17 @@ function App() {
           </div>
         </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        position: 'relative',
+        width: '100%',
+        maxWidth: '100vw',
+        overflowX: 'hidden',
+        padding: '0 16px',
+        boxSizing: 'border-box'
+      }}>
         {/* Responsive: stack date and refresh on mobile */}
         <div className="app-top-bar">
           <div className="app-date">
@@ -782,7 +792,15 @@ function App() {
             selected={selectedServices}
           />
         ) : (
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ 
+            display: 'flex', 
+            flexWrap: 'wrap', 
+            justifyContent: 'center', 
+            width: '100%',
+            maxWidth: '1200px',
+            gap: '16px',
+            padding: '0 8px'
+          }}>
             {isServiceSelected('cloudflare') && (
               <LivePulseCardContainer
                 provider="Cloudflare"

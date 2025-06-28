@@ -1,15 +1,16 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
 @media (max-width: 768px) {
   #root {
-    padding: 1rem 0.5rem;
+    padding: 0;
     max-width: 100%;
     width: 100%;
     overflow-x: hidden;
@@ -18,7 +19,7 @@
 
 @media (max-width: 480px) {
   #root {
-    padding: 0.5rem 0.25rem;
+    padding: 0;
   }
 }
 
@@ -128,6 +129,61 @@
     min-width: 0;
     box-sizing: border-box;
   }
+}
+
+/* Improved responsive styles for viewport handling */
+.app-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  padding: 0 16px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .app-top-bar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 12px;
+  }
+  
+  .header-title {
+    font-size: 1.2em !important;
+  }
+  
+  .header-title img {
+    height: 80px !important;
+    width: 80px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-top-bar {
+    padding: 0 8px;
+  }
+  
+  .header-title {
+    font-size: 1.1em !important;
+  }
+  
+  .header-title img {
+    height: 64px !important;
+    width: 64px !important;
+  }
+}
+
+/* Prevent horizontal scrolling */
+* {
+  max-width: 100%;
+}
+
+/* Ensure cards don't overflow */
+.pulse-card-container {
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
 }
 
 /* Notification bell animations */
