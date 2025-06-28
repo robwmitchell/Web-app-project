@@ -21,7 +21,7 @@ export default async function handler(req, res) {
 
     // Initialize trend object to ensure all services have complete arrays
     const trend = {};
-    const services = ['Cloudflare', 'Okta', 'SendGrid', 'Zscaler'];
+    const services = ['Cloudflare', 'Okta', 'SendGrid', 'Zscaler', 'Slack', 'Datadog', 'AWS'];
     
     // Initialize all services with zeros
     services.forEach(service => {

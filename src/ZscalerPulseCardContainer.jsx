@@ -25,12 +25,13 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
   function getUpdateDate(update) {
     if (update.startTime) return getUTCMidnight(update.startTime);
     if (update.date) return getUTCMidnight(update.date);
+    if (update.reported_at) return getUTCMidnight(update.reported_at);
     return null;
   }
 
   function getDayIndicator(day) {
-    if (provider === 'SendGrid' && updates.length > 0) {
-      // For SendGrid, highlight any day with an update (RSS event)
+    if (["SendGrid", "Slack", "Datadog", "AWS"].includes(provider) && updates.length > 0) {
+      // For these providers, highlight any day with an event (RSS event)
       const hasEvent = updates.some(u => {
         const updateDate = getUpdateDate(u);
         if (!updateDate) return false;
@@ -49,9 +50,9 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
       return u.eventType === "Service Degradation";
     });
     if (dayDegradations.length > 0) {
-      return 'major'; // Show orange for service degradations
+      return 'major';
     }
-    return 'none'; // Green if no degradation
+    return 'none';
   }
 
   // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)

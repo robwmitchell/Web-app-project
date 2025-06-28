@@ -24,3 +24,5 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Database error', details: error.message });
   }
 }
+
+// No change needed here, as the query returns all services present in the DB for the last 24h.

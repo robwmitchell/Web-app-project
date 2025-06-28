@@ -7,6 +7,9 @@ const SERVICES = [
   'Okta',
   'SendGrid',
   'Zscaler',
+  'Slack',
+  'Datadog',
+  'AWS',
 ];
 
 const STATUS_MAP = {
@@ -14,6 +17,9 @@ const STATUS_MAP = {
   Okta: '🟠 Minor',
   SendGrid: '🟢 OK',
   Zscaler: '🔴 Major',
+  Slack: '🟢 OK',
+  Datadog: '🟠 Minor',
+  AWS: '🟢 OK',
 };
 
 function getTrendArrow(up) {
@@ -117,12 +123,18 @@ export default function MiniHeatbarGrid() {
           { service_name: 'Okta', count: 0 },
           { service_name: 'SendGrid', count: 1 },
           { service_name: 'Zscaler', count: 3 },
+          { service_name: 'Slack', count: 1 },
+          { service_name: 'Datadog', count: 0 },
+          { service_name: 'AWS', count: 2 },
         ] };
         trendRes = { trend: {
           Cloudflare: Array(24).fill({ count: 0, timestamps: [] }),
           Okta: Array(24).fill({ count: 0, timestamps: [] }),
           SendGrid: Array(24).fill({ count: 0, timestamps: [] }),
           Zscaler: Array(24).fill({ count: 0, timestamps: [] }),
+          Slack: Array(24).fill({ count: 0, timestamps: [] }),
+          Datadog: Array(24).fill({ count: 0, timestamps: [] }),
+          AWS: Array(24).fill({ count: 0, timestamps: [] }),
         } };
       } else {
         [todayRes, trendRes] = await Promise.all([
