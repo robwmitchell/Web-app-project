@@ -6,15 +6,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api/cloudflare': {
-        target: 'https://blog.cloudflare.com/rss/',
+      '/api': {
+        target: 'http://localhost:5173',
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/api\/cloudflare/, ''),
-      },
-      '/api/zscaler': {
-        target: 'https://trust.zscaler.com/blog-feed',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api\/zscaler/, ''),
+        rewrite: path => path.replace(/^\/api/, '/api'),
       },
     },
   },
