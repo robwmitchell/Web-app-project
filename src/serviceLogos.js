@@ -1,17 +1,16 @@
-import cloudflareLogo from './assets/cloudflare-logo.svg';
+// Service logos using proper Vite asset imports
+import cloudFlareLogo from './assets/cloudflare-logo.svg';
 import oktaLogo from './assets/Okta-logo.svg';
-import sendgridLogo from './assets/SendGrid.svg';
+import sendGridLogo from './assets/SendGrid.svg';
 import zscalerLogo from './assets/Zscaler.svg';
 import slackLogo from './assets/slack-logo.png';
 import datadogLogo from './assets/datadog-logo.png';
-
-// Cloud emoji for AWS as placeholder since no AWS logo file found
-const awsLogo = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2601.png';
+import awsLogo from './assets/aws-logo.png';
 
 export const serviceLogos = {
-  Cloudflare: cloudflareLogo,
+  Cloudflare: cloudFlareLogo,
   Okta: oktaLogo,
-  SendGrid: sendgridLogo,
+  SendGrid: sendGridLogo,
   Zscaler: zscalerLogo,
   Slack: slackLogo,
   Datadog: datadogLogo,

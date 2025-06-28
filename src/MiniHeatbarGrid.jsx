@@ -194,7 +194,16 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
             <img 
               src={serviceLogos[row.service]} 
               alt={row.service + ' logo'} 
-              style={{ height: 'clamp(20px, 4vw, 28px)', maxWidth: '100%' }} 
+              style={{ height: 'clamp(20px, 4vw, 28px)', maxWidth: '100%', objectFit: 'contain' }} 
+              onError={(e) => {
+                console.log(`Failed to load logo for ${row.service}:`, serviceLogos[row.service]);
+                // Replace with service initial as fallback
+                e.target.style.display = 'none';
+                const fallback = document.createElement('div');
+                fallback.style.cssText = 'display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #f0f0f0; border-radius: 4px; font-size: 12px; font-weight: bold; color: #666; min-width: 28px;';
+                fallback.textContent = row.service[0];
+                e.target.parentNode.appendChild(fallback);
+              }}
             />
             {/* Service name hidden for minimalist look */}
           </span>
