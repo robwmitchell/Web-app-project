@@ -100,11 +100,37 @@ export default function NotificationChatbot({
 
   // Calculate modal position when using portal
   const getModalPosition = () => {
-    if (!buttonRef.current) return { top: 70, right: 32 };
+    if (!buttonRef.current) return { top: 70, right: 16 };
     const rect = buttonRef.current.getBoundingClientRect();
     return {
       top: rect.bottom + 8,
-      right: window.innerWidth - rect.right
+      right: Math.max(8, window.innerWidth - rect.right)
+    };
+  };
+
+  // Responsive modal width and padding
+  const getModalStyle = () => {
+    const isMobile = window.innerWidth <= 600;
+    return {
+      position: usePortal || headerMode || aboveHeader ? 'fixed' : 'absolute',
+      top: usePortal ? (getModalPosition().top || 70) : (headerMode || aboveHeader ? 54 : undefined),
+      right: usePortal ? (getModalPosition().right || 8) : 0,
+      bottom: !usePortal && !headerMode && !aboveHeader ? 90 : undefined,
+      width: isMobile ? '98vw' : 400,
+      maxWidth: 400,
+      minWidth: isMobile ? 'unset' : 320,
+      maxHeight: isMobile ? '80vh' : 540,
+      background: 'rgba(255,255,255,0.98)',
+      borderRadius: isMobile ? 14 : 22,
+      boxShadow: '0 16px 48px 0 rgba(80,80,180,0.18), 0 2px 8px rgba(99,102,241,0.10)',
+      zIndex: modalZIndex,
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      border: '1.5px solid #e0e7ef',
+      animation: 'slideDown 0.22s cubic-bezier(0.4,0,0.2,1)',
+      backdropFilter: 'blur(16px)',
+      padding: isMobile ? '8px 0 0 0' : undefined
     };
   };
 
@@ -112,73 +138,10 @@ export default function NotificationChatbot({
   const modalContent = open && (
     <div
       ref={panelRef}
-      style={usePortal ? {
-        position: 'fixed',
-        ...getModalPosition(),
-        width: 400,
-        maxHeight: 540,
-        background: 'rgba(255,255,255,0.98)',
-        borderRadius: 22,
-        boxShadow: '0 16px 48px 0 rgba(80,80,180,0.18), 0 2px 8px rgba(99,102,241,0.10)',
-        zIndex: modalZIndex,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1.5px solid #e0e7ef',
-        animation: 'slideDown 0.22s cubic-bezier(0.4,0,0.2,1)',
-        backdropFilter: 'blur(16px)'
-      } : aboveHeader ? {
-        position: 'absolute',
-        top: 54,
-        right: 0,
-        width: 400,
-        maxHeight: 540,
-        background: 'rgba(255,255,255,0.98)',
-        borderRadius: 22,
-        boxShadow: '0 16px 48px 0 rgba(80,80,180,0.18), 0 2px 8px rgba(99,102,241,0.10)',
-        zIndex: 2100,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1.5px solid #e0e7ef',
-        animation: 'slideDown 0.22s cubic-bezier(0.4,0,0.2,1)',
-        backdropFilter: 'blur(16px)'
-      } : headerMode ? {
-        position: 'absolute',
-        top: 54,
-        right: 0,
-        width: 400,
-        maxHeight: 540,
-        background: 'rgba(255,255,255,0.98)',
-        borderRadius: 22,
-        boxShadow: '0 16px 48px 0 rgba(80,80,180,0.18), 0 2px 8px rgba(99,102,241,0.10)',
-        zIndex: 2100,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1.5px solid #e0e7ef',
-        animation: 'slideDown 0.22s cubic-bezier(0.4,0,0.2,1)',
-        backdropFilter: 'blur(16px)'
-      } : {
-        position: 'fixed',
-        bottom: 90,
-        right: 32,
-        width: 400,
-        maxHeight: 540,
-        background: 'rgba(255,255,255,0.98)',
-        borderRadius: 22,
-        boxShadow: '0 16px 48px 0 rgba(80,80,180,0.18), 0 2px 8px rgba(99,102,241,0.10)',
-        zIndex: 2100,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        border: '1.5px solid #e0e7ef',
-        animation: 'slideDown 0.22s cubic-bezier(0.4,0,0.2,1)',
-        backdropFilter: 'blur(16px)'
-      }}
+      style={getModalStyle()}
     >
-      <div style={{ padding: '22px 28px 16px 28px', borderBottom: '1px solid #f1f5f9', background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(99,102,241,0.04)' }}>
-        <span style={{ fontWeight: 800, fontSize: '1.18em', color: '#3730a3', letterSpacing: 0.2 }}>Today's Issues</span>
+      <div style={{ padding: window.innerWidth <= 600 ? '14px 10px 10px 14px' : '22px 28px 16px 28px', borderBottom: '1px solid #f1f5f9', background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(99,102,241,0.04)' }}>
+        <span style={{ fontWeight: 800, fontSize: window.innerWidth <= 600 ? '1em' : '1.18em', color: '#3730a3', letterSpacing: 0.2 }}>Today's Issues</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {allAlerts.length > 0 && (
             <button 
@@ -187,8 +150,8 @@ export default function NotificationChatbot({
                 background: 'rgba(239, 68, 68, 0.1)', 
                 border: '1px solid rgba(239, 68, 68, 0.2)', 
                 borderRadius: 8, 
-                padding: '4px 12px', 
-                fontSize: 12, 
+                padding: window.innerWidth <= 600 ? '2px 8px' : '4px 12px', 
+                fontSize: window.innerWidth <= 600 ? 11 : 12, 
                 fontWeight: 600, 
                 color: '#dc2626', 
                 cursor: 'pointer',
@@ -202,172 +165,44 @@ export default function NotificationChatbot({
               Clear All
             </button>
           )}
-          <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', fontSize: 26, cursor: 'pointer', color: '#64748b', fontWeight: 700, transition: 'color 0.2s' }} aria-label="Close">&times;</button>
+          <button onClick={() => setOpen(false)} style={{ background: 'none', border: 'none', fontSize: window.innerWidth <= 600 ? 22 : 26, cursor: 'pointer', color: '#64748b', fontWeight: 700, transition: 'color 0.2s' }} aria-label="Close">&times;</button>
         </div>
       </div>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '18px 0', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: window.innerWidth <= 600 ? '10px 0' : '18px 0', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' }}>
         {allAlerts.length === 0 ? (
-          <div style={{ padding: 48, textAlign: 'center', color: '#64748b' }}>
-            <span style={{ fontSize: 36, display: 'block', marginBottom: 14 }}>✅</span>
-            <div style={{ fontWeight: 700, color: '#3730a3', fontSize: 18 }}>
+          <div style={{ padding: window.innerWidth <= 600 ? 24 : 48, textAlign: 'center', color: '#64748b', fontSize: window.innerWidth <= 600 ? 14 : 16 }}>
+            <span style={{ fontSize: window.innerWidth <= 600 ? 24 : 36, display: 'block', marginBottom: 14 }}>✅</span>
+            <div style={{ fontWeight: 700, color: '#3730a3', fontSize: window.innerWidth <= 600 ? 15 : 18 }}>
               {clearedAlerts.size > 0 ? 'All notifications cleared' : 'No issues today'}
             </div>
-            <small style={{ color: '#9ca3af', fontSize: 14 }}>
+            <small style={{ color: '#9ca3af', fontSize: window.innerWidth <= 600 ? 11 : 14 }}>
               {clearedAlerts.size > 0 ? 'You\'ve cleared all today\'s notifications' : 'All systems operational'}
             </small>
           </div>
         ) : (
           allAlerts.map((alert, i) => {
-            // Clean up description and meta
-            const description = htmlToText(alert.description || (alert.incident_updates && alert.incident_updates[0]?.body) || '', { wordwrap: false });
-            const statusColor = alert.status && alert.status.toLowerCase().includes('critical') ? '#fee2e2' : '#fef9c3';
-            const statusTextColor = alert.status && alert.status.toLowerCase().includes('critical') ? '#b91c1c' : '#92400e';
-            // Special formatting for Zscaler
-            if (alert.service === 'Zscaler') {
-              return (
-                <div key={i} className="notification-item" style={{ borderLeft: '4px solid #6366f1', margin: '0 0 14px 0', background: 'rgba(255,255,255,0.92)', borderRadius: 14, boxShadow: '0 1px 6px rgba(99,102,241,0.08)', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
-                  <button 
-                    onClick={() => clearNotification(alert.id)}
-                    style={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      background: 'rgba(239, 68, 68, 0.1)',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: 20,
-                      height: 20,
-                      fontSize: 12,
-                      color: '#dc2626',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.2)'}
-                    onMouseLeave={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.1)'}
-                    aria-label="Dismiss notification"
-                  >
-                    ×
-                  </button>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2, flexWrap: 'wrap' }}>
-                    <span style={{ background: 'rgba(99,102,241,0.08)', color: '#6366f1', fontWeight: 800, fontSize: 13, borderRadius: 8, padding: '2px 10px', textTransform: 'uppercase', letterSpacing: 0.5 }}>{alert.service}</span>
-                    <span style={{ color: '#64748b', fontSize: 13, marginLeft: 2, fontWeight: 500 }}>
-                      {new Date(alert.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                    {alert.status && (
-                      <span style={{
-                        background: statusColor,
-                        color: statusTextColor,
-                        borderRadius: 8,
-                        padding: '2px 10px',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        textTransform: 'capitalize',
-                        letterSpacing: 0.2,
-                        marginLeft: 6
-                      }}>{alert.status.replace('_', ' ')}</span>
-                    )}
-                    {alert.eventType && (
-                      <span style={{
-                        background: '#e0e7ef',
-                        color: '#3730a3',
-                        borderRadius: 8,
-                        padding: '2px 10px',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        marginLeft: 6,
-                        letterSpacing: 0.2
-                      }}>{alert.eventType}</span>
-                    )}
-                    {alert.customerImpact && (
-                      <span style={{
-                        background: '#fef9c3',
-                        color: '#92400e',
-                        borderRadius: 8,
-                        padding: '2px 10px',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        marginLeft: 6,
-                        letterSpacing: 0.2
-                      }}>{alert.customerImpact}</span>
-                    )}
-                  </div>
-                  <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 16, marginBottom: 2, lineHeight: 1.3 }}>
-                    {alert.title}
-                  </div>
-                  {description && (
-                    <div style={{ color: '#64748b', fontSize: 14, marginBottom: 2, lineHeight: 1.5, whiteSpace: 'pre-line' }}>
-                      {description}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 2 }}>
-                    {alert.link && (
-                      <a href={alert.link} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', fontWeight: 600, fontSize: 13, textDecoration: 'underline', marginLeft: 2 }}>View Source ↗</a>
-                    )}
-                  </div>
-                </div>
-              );
-            }
-            // Default rendering for other services
+            const description = alert.description ? htmlToText(alert.description) : '';
             return (
-              <div key={i} className="notification-item" style={{ borderLeft: '4px solid #6366f1', margin: '0 0 14px 0', background: 'rgba(255,255,255,0.92)', borderRadius: 14, boxShadow: '0 1px 6px rgba(99,102,241,0.08)', padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 6, position: 'relative' }}>
-                <button 
-                  onClick={() => clearNotification(alert.id)}
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    background: 'rgba(239, 68, 68, 0.1)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: 20,
-                    height: 20,
-                    fontSize: 12,
-                    color: '#dc2626',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.2)'}
-                  onMouseLeave={(e) => e.target.style.background = 'rgba(239, 68, 68, 0.1)'}
-                  aria-label="Dismiss notification"
-                >
-                  ×
-                </button>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 2, flexWrap: 'wrap' }}>
-                  <span style={{ background: 'rgba(99,102,241,0.08)', color: '#6366f1', fontWeight: 800, fontSize: 13, borderRadius: 8, padding: '2px 10px', textTransform: 'uppercase', letterSpacing: 0.5 }}>{alert.service}</span>
-                  <span style={{ color: '#64748b', fontSize: 13, marginLeft: 2, fontWeight: 500 }}>
-                    {new Date(alert.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+              <div key={alert.id} style={{ margin: window.innerWidth <= 600 ? '0 0 12px 0' : '0 0 18px 0', background: '#fff', borderRadius: 10, boxShadow: '0 1px 4px rgba(0,0,0,0.04)', padding: window.innerWidth <= 600 ? '10px 12px' : '16px 22px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                  <span style={{ fontSize: window.innerWidth <= 600 ? 16 : 18, fontWeight: 700 }}>{alert.service}</span>
+                  <span style={{ fontSize: window.innerWidth <= 600 ? 11 : 12, color: '#64748b', fontWeight: 600, marginLeft: 2 }}>{new Date(alert.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <button onClick={() => clearNotification(alert.id)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#888', fontSize: window.innerWidth <= 600 ? 15 : 18, cursor: 'pointer' }} aria-label="Clear notification">×</button>
                   {alert.status && (
-                    <span style={{
-                      background: statusColor,
-                      color: statusTextColor,
-                      borderRadius: 8,
-                      padding: '2px 10px',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      textTransform: 'capitalize',
-                      letterSpacing: 0.2,
-                      marginLeft: 6
-                    }}>{alert.status.replace('_', ' ')}</span>
+                    <span style={{ background: '#f3f4f6', color: '#64748b', borderRadius: 8, padding: window.innerWidth <= 600 ? '1px 6px' : '2px 10px', fontSize: window.innerWidth <= 600 ? 10 : 12, fontWeight: 700, textTransform: 'capitalize', letterSpacing: 0.2, marginLeft: 6 }}>{alert.status.replace('_', ' ')}</span>
                   )}
                 </div>
-                <div style={{ fontWeight: 700, color: '#1e293b', fontSize: 16, marginBottom: 2, lineHeight: 1.3 }}>
+                <div style={{ fontWeight: 700, color: '#1e293b', fontSize: window.innerWidth <= 600 ? 13 : 16, marginBottom: 2, lineHeight: 1.3 }}>
                   {alert.name || alert.title}
                 </div>
                 {description && (
-                  <div style={{ color: '#64748b', fontSize: 14, marginBottom: 2, lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+                  <div style={{ color: '#64748b', fontSize: window.innerWidth <= 600 ? 12 : 14, marginBottom: 2, lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                     {description}
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginTop: 2 }}>
                   {alert.link && (
-                    <a href={alert.link} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', fontWeight: 600, fontSize: 13, textDecoration: 'underline', marginLeft: 2 }}>View Source ↗</a>
+                    <a href={alert.link} target="_blank" rel="noopener noreferrer" style={{ color: '#6366f1', fontWeight: 600, fontSize: window.innerWidth <= 600 ? 11 : 13, textDecoration: 'underline', marginLeft: 2 }}>View Source ↗</a>
                   )}
                 </div>
               </div>
