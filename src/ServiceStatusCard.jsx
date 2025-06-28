@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { serviceLogos } from './serviceLogos';
 
 // Helper to extract country from component name (e.g., "API - US" -> "US")
 function getCountryFromName(name) {
@@ -56,13 +57,19 @@ function ServiceStatusCard({ provider, status, indicator, incidents, updates, na
     <div style={{ border: '1px solid #ccc', borderRadius: 8, padding: 16, margin: 16, width: 350, textAlign: 'left' }}>
       {/* Horizontal header: logo, name, status */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-        {/* Logo placeholder: replace src with actual logo if available */}
-        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700 }}>
-          {/* Example: use provider initial or icon */}
-          {provider === 'Cloudflare' && <span role="img" aria-label="Cloudflare">☁️</span>}
-          {provider === 'Zscaler' && <span role="img" aria-label="Zscaler">🛡️</span>}
-          {provider === 'Okta' && <span role="img" aria-label="Okta">🔒</span>}
-          {provider === 'SendGrid' && <span role="img" aria-label="SendGrid">✉️</span>}
+        {/* Logo: use actual service logo */}
+        <div style={{ width: 32, height: 32, borderRadius: 8, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {serviceLogos[provider] ? (
+            <img 
+              src={serviceLogos[provider]} 
+              alt={provider + ' logo'} 
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          ) : (
+            <div style={{ background: '#f3f4f6', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 700 }}>
+              {provider.charAt(0)}
+            </div>
+          )}
         </div>
         <div style={{ fontSize: '1.1em', color: '#333', fontWeight: 700, flex: 1 }}>
           {name || provider}

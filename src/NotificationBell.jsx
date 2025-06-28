@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './NotificationBell.css';
+import { serviceLogos } from './serviceLogos';
 
 export default function NotificationBell({ 
   cloudflareIncidents = [], 
@@ -146,13 +147,7 @@ export default function NotificationBell({
   };
 
   const getServiceIcon = (service) => {
-    switch (service) {
-      case 'Cloudflare': return '🟠';
-      case 'Zscaler': return '🔵';
-      case 'Okta': return '⚪';
-      case 'SendGrid': return '🔴';
-      default: return '📢';
-    }
+    return serviceLogos[service] || '📢';
   };
 
   const formatTimestamp = (timestamp) => {
@@ -201,7 +196,17 @@ export default function NotificationBell({
                 >
                   <div className="notification-content">
                     <div className="notification-service">
-                      <span className="service-icon">{getServiceIcon(notification.service)}</span>
+                      <span className="service-icon">
+                        {serviceLogos[notification.service] ? (
+                          <img 
+                            src={serviceLogos[notification.service]} 
+                            alt={notification.service + ' logo'} 
+                            style={{ width: 16, height: 16, objectFit: 'contain' }}
+                          />
+                        ) : (
+                          '📢'
+                        )}
+                      </span>
                       <span className="service-name">{notification.service}</span>
                       <span className="notification-time">{formatTimestamp(notification.timestamp)}</span>
                     </div>

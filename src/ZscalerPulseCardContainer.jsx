@@ -4,6 +4,7 @@ import Modal from './Modal';
 import ReportImpactForm from './ReportImpactForm';
 import { formatDate, htmlToText } from './ServiceStatusCard';
 import { getUTCMidnight } from './utils/dateHelpers';
+import { serviceLogos } from './serviceLogos';
 
 // Zscaler-specific: get last 7 days using UTC midnight
 function getLast7DaysUTC() {
@@ -163,7 +164,16 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
       <Modal 
         open={modalOpen} 
         onClose={() => setModalOpen(false)} 
-        title={`📊 ${name || provider} Changelog`}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img 
+              src={serviceLogos[provider]} 
+              alt={`${provider} logo`} 
+              style={{ width: 24, height: 24, objectFit: 'contain' }}
+            />
+            {name || provider} Changelog
+          </div>
+        }
         enhanced={true}
       >
         {provider === 'Zscaler' && filteredUpdates.length > 0 ? (
@@ -216,7 +226,10 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
                       alignItems: 'center',
                       gap: 8
                     }}>
-                      <span>🕒 {formatDate(issue.date)}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <img src={serviceLogos[provider]} alt="time" style={{ width: 12, height: 12 }} />
+                        {formatDate(issue.date)}
+                      </span>
                       {issue.eventType && <span style={{ color: '#f57c00' }}>⚠️ {issue.eventType}</span>}
                       {issue.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
                     </div>
@@ -343,7 +356,9 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
           </div>
         ) : (
           <div style={{ padding: 24, color: '#888', textAlign: 'center' }}>
-            <div style={{ fontSize: 16, marginBottom: 8 }}>✅</div>
+            <div style={{ fontSize: 16, marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
+              <img src={serviceLogos[provider]} alt={`${provider} operational`} style={{ width: 32, height: 32 }} />
+            </div>
             <div style={{ fontSize: 14 }}>No recent updates</div>
             <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>All systems operational in the last 7 days</div>
           </div>

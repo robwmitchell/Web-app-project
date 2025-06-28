@@ -1,55 +1,56 @@
 import React, { useState } from 'react';
 import './ServiceSelectionSplash.css';
 import logoImage from './assets/stackstatus1.png';
+import { serviceLogos } from './serviceLogos';
 
 const AVAILABLE_SERVICES = [
   {
     id: 'cloudflare',
     name: 'Cloudflare',
     description: 'Web infrastructure and website security',
-    logo: '🌐',
+    logo: serviceLogos.Cloudflare,
     color: '#f38020'
   },
   {
     id: 'zscaler',
     name: 'Zscaler',
     description: 'Cloud security and zero trust network access',
-    logo: '🔒',
+    logo: serviceLogos.Zscaler,
     color: '#0066cc'
   },
   {
     id: 'okta',
     name: 'Okta',
     description: 'Identity and access management',
-    logo: '🔑',
+    logo: serviceLogos.Okta,
     color: '#007dc1'
   },
   {
     id: 'sendgrid',
     name: 'SendGrid',
     description: 'Email delivery and marketing platform',
-    logo: '📧',
+    logo: serviceLogos.SendGrid,
     color: '#1a82e2'
   },
   {
     id: 'slack',
     name: 'Slack',
     description: 'Team collaboration and messaging',
-    logo: '💬',
+    logo: serviceLogos.Slack,
     color: '#4a154b'
   },
   {
     id: 'datadog',
     name: 'Datadog',
     description: 'Monitoring and analytics platform',
-    logo: '📊',
+    logo: serviceLogos.Datadog,
     color: '#632c41'
   },
   {
     id: 'aws',
     name: 'AWS',
     description: 'Amazon Web Services cloud platform',
-    logo: '☁️',
+    logo: serviceLogos.AWS,
     color: '#ff9900'
   }
 ];
@@ -124,7 +125,17 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
               onClick={() => toggleService(service.id)}
               style={{ '--service-color': service.color }}
             >
-              <div className="service-logo">{service.logo}</div>
+              <div className="service-logo">
+                <img 
+                  src={service.logo} 
+                  alt={`${service.name} logo`}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
               <div className="service-info">
                 <h3>{service.name}</h3>
                 <p>{service.description}</p>

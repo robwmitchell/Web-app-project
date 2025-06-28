@@ -1,17 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LivePulseCard.css';
 import './Glassmorphism.css';
-import cloudflareLogo from './assets/cloudflare-logo.svg';
-import oktaLogo from './assets/Okta-logo.svg';
-import sendgridLogo from './assets/SendGrid.svg';
-import zscalerLogo from './assets/Zscaler.svg';
-
-const LOGOS = {
-  Cloudflare: cloudflareLogo,
-  Okta: oktaLogo,
-  SendGrid: sendgridLogo,
-  Zscaler: zscalerLogo,
-};
+import { serviceLogos } from './serviceLogos';
 
 // Icon mapping for status
 const STATUS_ICONS = {
@@ -63,7 +53,7 @@ export default function LivePulseCard({
     >
       {/* Card background logo */}
       <img
-        src={LOGOS[provider]}
+        src={serviceLogos[provider]}
         alt={provider + ' background'}
         className={`card-bg-logo${bgVisible ? '' : ' card-bg-logo-fade'}`}
         aria-hidden="true"
@@ -94,7 +84,7 @@ export default function LivePulseCard({
           <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 20, paddingBottom: 12, borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
             <div className={`card-accent ${provider.toLowerCase()}`}></div>
             {/* Logo in white rounded box */}
-            {LOGOS[provider] && (
+            {serviceLogos[provider] && (
               <div style={{
                 background: '#fff',
                 borderRadius: 12,
@@ -107,7 +97,7 @@ export default function LivePulseCard({
                 height: 44,
                 marginRight: 10,
               }}>
-                <img src={LOGOS[provider]} alt={provider + ' logo'} style={{ width: 32, height: 32, borderRadius: 8 }} />
+                <img src={serviceLogos[provider]} alt={provider + ' logo'} style={{ width: 32, height: 32, borderRadius: 8 }} />
               </div>
             )}
             {/* Name and status row */}
