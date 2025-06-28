@@ -509,9 +509,9 @@ function App() {
               src={logoImage} 
               alt="Stack Status IO Logo" 
               style={{
-                height: 32,
-                width: 32,
-                borderRadius: 6,
+                height: 48,
+                width: 48,
+                borderRadius: 8,
                 objectFit: 'cover'
               }}
             />
@@ -521,7 +521,6 @@ function App() {
               borderRadius: '50%',
               background: '#4ade80',
             }}></div>
-            Stack Status IO
             <div className="header-live-badge" style={{
               background: 'rgba(255,255,255,0.15)',
               padding: '2px 8px',

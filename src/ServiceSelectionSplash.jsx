@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './ServiceSelectionSplash.css';
+import logoImage from './assets/stackstatus1.png';
 
 const AVAILABLE_SERVICES = [
   {
@@ -98,8 +99,17 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
       <div className="splash-container">
         <div className="splash-header">
           <div className="splash-logo">
-            <div className="logo-icon">📊</div>
-            <h1>Stack Status IO</h1>
+            <img 
+              src={logoImage} 
+              alt="Stack Status IO Logo" 
+              style={{
+                height: 80,
+                width: 80,
+                borderRadius: 12,
+                objectFit: 'cover',
+                marginBottom: 16
+              }}
+            />
           </div>
           <p className="splash-subtitle">
             Monitor the services that matter to you. Select the platforms you'd like to track.
