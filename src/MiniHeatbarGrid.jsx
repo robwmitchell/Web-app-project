@@ -110,6 +110,9 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   const [data, setData] = React.useState([]);
 
   React.useEffect(() => {
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    
     async function fetchData() {
       let todayRes, trendRes;
       let isLocal = false;
@@ -137,10 +140,18 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
           AWS: Array(24).fill({ count: 0, timestamps: [] }),
         } };
       } else {
-        [todayRes, trendRes] = await Promise.all([
-          fetch('/api/issue-reports-today').then(r => r.json()),
-          fetch('/api/issue-reports-trend').then(r => r.json()),
-        ]);
+        try {
+          [todayRes, trendRes] = await Promise.all([
+            fetch('/api/issue-reports-today', { signal }).then(r => r.json()),
+            fetch('/api/issue-reports-trend', { signal }).then(r => r.json()),
+          ]);
+          if (signal.aborted) return;
+        } catch (error) {
+          if (error.name === 'AbortError') return;
+          // Handle other errors
+          console.error('Failed to fetch data:', error);
+          return;
+        }
       }
       const todayMap = {};
       (todayRes.data || []).forEach(row => {
@@ -162,7 +173,12 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
       setData(rows);
     }
     fetchData();
-  }, []);
+    
+    // Cleanup function to abort requests
+    return () => {
+      abortController.abort();
+    };
+  }, [selectedServices]);
 
   return (
     <div className="mini-heatbar-grid">

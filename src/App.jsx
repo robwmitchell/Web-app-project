@@ -225,16 +225,22 @@ function App() {
   const fetchAllStatuses = React.useCallback(() => {
     if (!selectedServices || selectedServices.length === 0) return;
     
+    // Create AbortController for cancelling requests if component unmounts
+    const abortController = new AbortController();
+    const signal = abortController.signal;
+    
     setLoading(true);
     
     // Cloudflare status (based on open incidents)
     if (isServiceSelected('cloudflare')) {
-      fetch('https://www.cloudflarestatus.com/api/v2/status.json')
+      fetch('https://www.cloudflarestatus.com/api/v2/status.json', { signal })
         .then(res => res.json())
         .then(statusData => {
-          fetch('https://www.cloudflarestatus.com/api/v2/summary.json')
+          if (signal.aborted) return;
+          fetch('https://www.cloudflarestatus.com/api/v2/summary.json', { signal })
             .then(res => res.json())
             .then(summaryData => {
+              if (signal.aborted) return;
               const name = summaryData.page?.name || 'Cloudflare';
               // Only include incidents updated in the last 7 days
               const now = new Date();
@@ -267,16 +273,25 @@ function App() {
               const { status, indicator } = getCloudflareStatusFromIncidents(unresolved);
               setCloudflare({ status, indicator, incidents: unresolved, name });
             })
-            .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
+            .catch((error) => {
+              if (error.name !== 'AbortError') {
+                setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' });
+              }
+            });
         })
-        .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
+        .catch((error) => {
+          if (error.name !== 'AbortError') {
+            setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' });
+          }
+        });
     }
     
     // Zscaler RSS fetch via local proxy to avoid CORS
     if (isServiceSelected('zscaler')) {
-      fetch('/api/zscaler')
+      fetch('/api/zscaler', { signal })
         .then(res => res.text())
         .then(data => {
+          if (signal.aborted) return;
           const updates = parseZscalerRSS(data, 25); // Only keep 25 most recent
           // Filter for last 7 days
           const now = new Date();
@@ -288,14 +303,19 @@ function App() {
           const status = getStatusFromZscalerUpdates(filteredUpdates);
           setZscaler({ status, updates: filteredUpdates });
         })
-        .catch(() => setZscaler({ status: 'Error loading feed', updates: [] }));
+        .catch((error) => {
+          if (error.name !== 'AbortError') {
+            setZscaler({ status: 'Error loading feed', updates: [] });
+          }
+        });
     }
     
     // Okta RSS fetch via local proxy to avoid CORS
     if (isServiceSelected('okta')) {
-      fetch('/api/okta-status')
+      fetch('/api/okta-status', { signal })
         .then(res => res.text())
         .then(data => {
+          if (signal.aborted) return;
           const updates = parseOktaRSS(data, 25); // Only keep 25 most recent
           const now = new Date();
           const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -306,14 +326,19 @@ function App() {
           const status = getStatusFromOktaUpdates(filteredUpdates);
           setOkta({ status, indicator: getOktaIndicator(status), updates: filteredUpdates, name: 'Okta' });
         })
-        .catch(() => setOkta({ status: 'Error loading feed', indicator: '', updates: [], name: 'Okta' }));
+        .catch((error) => {
+          if (error.name !== 'AbortError') {
+            setOkta({ status: 'Error loading feed', indicator: '', updates: [], name: 'Okta' });
+          }
+        });
     }
     
     // SendGrid RSS fetch via local proxy to avoid CORS
     if (isServiceSelected('sendgrid')) {
-      fetch('/api/sendgrid')
+      fetch('/api/sendgrid', { signal })
         .then(res => res.text())
         .then(data => {
+          if (signal.aborted) return;
           const updates = parseSendgridRSS(data, 25); // Only keep 25 most recent
           const now = new Date();
           const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -324,12 +349,16 @@ function App() {
           const status = getStatusFromSendgridUpdates(filteredUpdates);
           setSendgrid({ status, indicator: getSendgridIndicator(status), updates: filteredUpdates, name: 'SendGrid' });
         })
-        .catch(() => setSendgrid({ status: 'Error loading feed', indicator: '', updates: [], name: 'SendGrid' }));
+        .catch((error) => {
+          if (error.name !== 'AbortError') {
+            setSendgrid({ status: 'Error loading feed', indicator: '', updates: [], name: 'SendGrid' });
+          }
+        });
     }
     
     // Slack, Datadog, AWS RSS fetch
     if (isServiceSelected('slack') || isServiceSelected('datadog') || isServiceSelected('aws')) {
-      fetch('/api/notifications-latest')
+      fetch('/api/notifications-latest', { signal })
         .then(res => res.json())
         .then(({ data }) => {
           if (isServiceSelected('slack')) {
@@ -342,15 +371,17 @@ function App() {
             setAws({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'AWS'), name: 'AWS' });
           }
         })
-        .catch(() => {
-          if (isServiceSelected('slack')) {
-            setSlack({ status: 'Error loading feed', updates: [] });
-          }
-          if (isServiceSelected('datadog')) {
-            setDatadog({ status: 'Error loading feed', updates: [] });
-          }
-          if (isServiceSelected('aws')) {
-            setAws({ status: 'Error loading feed', updates: [] });
+        .catch((error) => {
+          if (error.name !== 'AbortError') {
+            if (isServiceSelected('slack')) {
+              setSlack({ status: 'Error loading feed', updates: [] });
+            }
+            if (isServiceSelected('datadog')) {
+              setDatadog({ status: 'Error loading feed', updates: [] });
+            }
+            if (isServiceSelected('aws')) {
+              setAws({ status: 'Error loading feed', updates: [] });
+            }
           }
         });
     }
