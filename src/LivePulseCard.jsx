@@ -61,15 +61,6 @@ export default function LivePulseCard({
         position: 'relative',
       }}
     >
-      {/* Plus/Minus Icon Button - top right of card container */}
-      <button
-        className="card-plus-btn"
-        onClick={() => setFlipped(f => !f)}
-        aria-label={flipped ? "Hide info" : "Show more info"}
-        style={{ position: 'absolute', top: 10, right: 12, width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', zIndex: 3 }}
-      >
-        <span style={{ fontSize: 22, fontWeight: 700, color: '#888' }}>{flipped ? '−' : '+'}</span>
-      </button>
       {/* Card background logo */}
       <img
         src={LOGOS[provider]}
@@ -100,30 +91,42 @@ export default function LivePulseCard({
             left: 0,
           }}
         >
-          {/* Company Info Button - hidden, but kept for revertability */}
-          {/*
-          <button
-            className="company-info-btn"
-            onClick={() => setFlipped(true)}
-            aria-label="Show company info"
-          >
-            Company Info
-          </button>
-          */}
-          <div className="card-header">
+          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 20, paddingBottom: 12, borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
             <div className={`card-accent ${provider.toLowerCase()}`}></div>
-            <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-              {LOGOS[provider] && (
-                <img src={LOGOS[provider]} alt={provider + ' logo'} className="card-icon glass-icon" />
-              )}
-              <div>
-                <div className="card-title">{name || provider}</div>
-                <div style={{ display: 'flex', alignItems: 'center', marginTop: 4 }}>
-                  <span className={`status-indicator ${indicator}`} title={indicator}></span>
-                  <span className="status-text" style={{ marginLeft: 8, fontWeight: 500, color: '#64748b', fontSize: '0.9em' }}>{status}</span>
-                </div>
+            {/* Logo in white rounded box */}
+            {LOGOS[provider] && (
+              <div style={{
+                background: '#fff',
+                borderRadius: 12,
+                boxShadow: '0 2px 8px rgba(15,23,42,0.08)',
+                padding: 4,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 44,
+                height: 44,
+                marginRight: 10,
+              }}>
+                <img src={LOGOS[provider]} alt={provider + ' logo'} style={{ width: 32, height: 32, borderRadius: 8 }} />
               </div>
+            )}
+            {/* Name and status row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+              <span style={{ fontWeight: 800, fontSize: '1.35em', color: '#1e293b', letterSpacing: '-0.01em' }}>{name || provider}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className={`status-indicator ${indicator}`} title={indicator} style={{ boxShadow: '0 0 0 4px #f3f4f6, 0 2px 8px rgba(15,23,42,0.08)' }}></span>
+                <span className="status-text" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>{status}</span>
+              </span>
             </div>
+            {/* Plus/Minus Icon Button - right aligned */}
+            <button
+              className="card-plus-btn"
+              onClick={() => setFlipped(f => !f)}
+              aria-label={flipped ? "Hide info" : "Show more info"}
+              style={{ marginLeft: 12, width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <span style={{ fontSize: 22, fontWeight: 700, color: '#888' }}>{flipped ? '−' : '+'}</span>
+            </button>
           </div>
           <div className="live-pulse-headline">{headline}</div>
           {children}

@@ -54,12 +54,34 @@ function ServiceStatusCard({ provider, status, indicator, incidents, updates, na
 
   return (
     <div style={{ border: '1px solid #ccc', borderRadius: 8, padding: 16, margin: 16, width: 350, textAlign: 'left' }}>
-      <h2>{provider}</h2>
-      {name && (
-        <div style={{ fontSize: '1em', color: '#333', marginBottom: 4 }}>
-          <strong>{name}</strong>
+      {/* Horizontal header: logo, name, status */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+        {/* Logo placeholder: replace src with actual logo if available */}
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 700 }}>
+          {/* Example: use provider initial or icon */}
+          {provider === 'Cloudflare' && <span role="img" aria-label="Cloudflare">☁️</span>}
+          {provider === 'Zscaler' && <span role="img" aria-label="Zscaler">🛡️</span>}
+          {provider === 'Okta' && <span role="img" aria-label="Okta">🔒</span>}
+          {provider === 'SendGrid' && <span role="img" aria-label="SendGrid">✉️</span>}
         </div>
-      )}
+        <div style={{ fontSize: '1.1em', color: '#333', fontWeight: 700, flex: 1 }}>
+          {name || provider}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: indicatorColor, fontWeight: 700 }}>{status}</span>
+          {indicator && (
+            <span style={{
+              display: 'inline-block',
+              marginLeft: 2,
+              width: 12,
+              height: 12,
+              borderRadius: '50%',
+              background: indicatorColor,
+              verticalAlign: 'middle',
+            }} title={indicator}></span>
+          )}
+        </div>
+      </div>
       {provider === 'Cloudflare' && (
         <div style={{ fontSize: '0.95em', color: '#888', marginBottom: 4 }}>
           Showing only incidents updated in the last 7 days
@@ -70,20 +92,6 @@ function ServiceStatusCard({ provider, status, indicator, incidents, updates, na
           Showing only issues from the last 7 days
         </div>
       )}
-      <p>
-        <strong>Status:</strong> <span style={{ color: indicatorColor }}>{status}</span>
-        {indicator && (
-          <span style={{
-            display: 'inline-block',
-            marginLeft: 8,
-            width: 12,
-            height: 12,
-            borderRadius: '50%',
-            background: indicatorColor,
-            verticalAlign: 'middle',
-          }} title={indicator}></span>
-        )}
-      </p>
       {provider === 'Cloudflare' && recentIncidents.length > 0 && (
         <div>
           <button
