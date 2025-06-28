@@ -4,6 +4,7 @@ import LivePulseCardContainer from './LivePulseCardContainer';
 import ZscalerPulseCardContainer from './ZscalerPulseCardContainer';
 import Modal from './Modal';
 import MiniHeatbarGrid from './MiniHeatbarGrid';
+import ServiceSelectionSplash from './ServiceSelectionSplash';
 import './App.css';
 import './MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -173,6 +174,18 @@ function getProviderColor(provider) {
 }
 
 function App() {
+  // Service selection state
+  const [selectedServices, setSelectedServices] = useState(() => {
+    try {
+      const saved = localStorage.getItem('selectedServices');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [showSplash, setShowSplash] = useState(selectedServices === null);
+
+  // Existing state
   const [cloudflare, setCloudflare] = useState({ status: 'Loading...', indicator: '', incidents: [] });
   const [zscaler, setZscaler] = useState({ status: 'Loading...', updates: [] });
   const [sendgrid, setSendgrid] = useState({ status: 'Loading...', indicator: '', updates: [], name: 'SendGrid' });
@@ -209,113 +222,141 @@ function App() {
 
   // Fetch all statuses (extracted for reuse)
   const fetchAllStatuses = React.useCallback(() => {
+    if (!selectedServices || selectedServices.length === 0) return;
+    
     setLoading(true);
+    
     // Cloudflare status (based on open incidents)
-    fetch('https://www.cloudflarestatus.com/api/v2/status.json')
-      .then(res => res.json())
-      .then(statusData => {
-        fetch('https://www.cloudflarestatus.com/api/v2/summary.json')
-          .then(res => res.json())
-          .then(summaryData => {
-            const name = summaryData.page?.name || 'Cloudflare';
-            // Only include incidents updated in the last 7 days
-            const now = new Date();
-            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const apiIncidents = (summaryData.incidents || []).filter(inc => {
-              const updatedAt = inc.updated_at || inc.updatedAt;
-              if (!updatedAt) return false;
-              const updatedDate = new Date(updatedAt);
-              return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
-            });
-            // --- Merge with localStorage ---
-            let stored = getStoredCloudflareIncidents();
-            // Remove old stored incidents
-            stored = stored.filter(inc => {
-              const updatedAt = inc.updated_at || inc.updatedAt;
-              if (!updatedAt) return false;
-              const updatedDate = new Date(updatedAt);
-              return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
-            });
-            // Merge: update or add any from API, keep any not present in API
-            const merged = [...apiIncidents];
-            stored.forEach(storedInc => {
-              if (!merged.some(apiInc => apiInc.id === storedInc.id)) {
-                merged.push(storedInc);
-              }
-            });
-            // Remove any resolved incidents from localStorage and merged list
-            const unresolved = merged.filter(inc => !inc.resolved_at);
-            setStoredCloudflareIncidents(unresolved);
-            const { status, indicator } = getCloudflareStatusFromIncidents(unresolved);
-            setCloudflare({ status, indicator, incidents: unresolved, name });
-          })
-          .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
-      })
-      .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
+    if (isServiceSelected('cloudflare')) {
+      fetch('https://www.cloudflarestatus.com/api/v2/status.json')
+        .then(res => res.json())
+        .then(statusData => {
+          fetch('https://www.cloudflarestatus.com/api/v2/summary.json')
+            .then(res => res.json())
+            .then(summaryData => {
+              const name = summaryData.page?.name || 'Cloudflare';
+              // Only include incidents updated in the last 7 days
+              const now = new Date();
+              const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              const apiIncidents = (summaryData.incidents || []).filter(inc => {
+                const updatedAt = inc.updated_at || inc.updatedAt;
+                if (!updatedAt) return false;
+                const updatedDate = new Date(updatedAt);
+                return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
+              });
+              // --- Merge with localStorage ---
+              let stored = getStoredCloudflareIncidents();
+              // Remove old stored incidents
+              stored = stored.filter(inc => {
+                const updatedAt = inc.updated_at || inc.updatedAt;
+                if (!updatedAt) return false;
+                const updatedDate = new Date(updatedAt);
+                return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
+              });
+              // Merge: update or add any from API, keep any not present in API
+              const merged = [...apiIncidents];
+              stored.forEach(storedInc => {
+                if (!merged.some(apiInc => apiInc.id === storedInc.id)) {
+                  merged.push(storedInc);
+                }
+              });
+              // Remove any resolved incidents from localStorage and merged list
+              const unresolved = merged.filter(inc => !inc.resolved_at);
+              setStoredCloudflareIncidents(unresolved);
+              const { status, indicator } = getCloudflareStatusFromIncidents(unresolved);
+              setCloudflare({ status, indicator, incidents: unresolved, name });
+            })
+            .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
+        })
+        .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
+    }
+    
     // Zscaler RSS fetch via local proxy to avoid CORS
-    fetch('/api/zscaler')
-      .then(res => res.text())
-      .then(data => {
-        const updates = parseZscalerRSS(data, 25); // Only keep 25 most recent
-        // Filter for last 7 days
-        const now = new Date();
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const filteredUpdates = updates.filter(update => {
-          const updateDate = new Date(update.date);
-          return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
-        });
-        const status = getStatusFromZscalerUpdates(filteredUpdates);
-        setZscaler({ status, updates: filteredUpdates });
-      })
-      .catch(() => setZscaler({ status: 'Error loading feed', updates: [] }));
+    if (isServiceSelected('zscaler')) {
+      fetch('/api/zscaler')
+        .then(res => res.text())
+        .then(data => {
+          const updates = parseZscalerRSS(data, 25); // Only keep 25 most recent
+          // Filter for last 7 days
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const filteredUpdates = updates.filter(update => {
+            const updateDate = new Date(update.date);
+            return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+          });
+          const status = getStatusFromZscalerUpdates(filteredUpdates);
+          setZscaler({ status, updates: filteredUpdates });
+        })
+        .catch(() => setZscaler({ status: 'Error loading feed', updates: [] }));
+    }
+    
     // Okta RSS fetch via local proxy to avoid CORS
-    fetch('/api/okta-status')
-      .then(res => res.text())
-      .then(data => {
-        const updates = parseOktaRSS(data, 25); // Only keep 25 most recent
-        const now = new Date();
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const filteredUpdates = updates.filter(update => {
-          const updateDate = new Date(update.date);
-          return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
-        });
-        const status = getStatusFromOktaUpdates(filteredUpdates);
-        setOkta({ status, indicator: getOktaIndicator(status), updates: filteredUpdates, name: 'Okta' });
-      })
-      .catch(() => setOkta({ status: 'Error loading feed', indicator: '', updates: [], name: 'Okta' }));
+    if (isServiceSelected('okta')) {
+      fetch('/api/okta-status')
+        .then(res => res.text())
+        .then(data => {
+          const updates = parseOktaRSS(data, 25); // Only keep 25 most recent
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const filteredUpdates = updates.filter(update => {
+            const updateDate = new Date(update.date);
+            return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+          });
+          const status = getStatusFromOktaUpdates(filteredUpdates);
+          setOkta({ status, indicator: getOktaIndicator(status), updates: filteredUpdates, name: 'Okta' });
+        })
+        .catch(() => setOkta({ status: 'Error loading feed', indicator: '', updates: [], name: 'Okta' }));
+    }
+    
     // SendGrid RSS fetch via local proxy to avoid CORS
-    fetch('/api/sendgrid')
-      .then(res => res.text())
-      .then(data => {
-        const updates = parseSendgridRSS(data, 25); // Only keep 25 most recent
-        const now = new Date();
-        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        const filteredUpdates = updates.filter(update => {
-          const updateDate = new Date(update.date);
-          return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+    if (isServiceSelected('sendgrid')) {
+      fetch('/api/sendgrid')
+        .then(res => res.text())
+        .then(data => {
+          const updates = parseSendgridRSS(data, 25); // Only keep 25 most recent
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const filteredUpdates = updates.filter(update => {
+            const updateDate = new Date(update.date);
+            return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+          });
+          const status = getStatusFromSendgridUpdates(filteredUpdates);
+          setSendgrid({ status, indicator: getSendgridIndicator(status), updates: filteredUpdates, name: 'SendGrid' });
+        })
+        .catch(() => setSendgrid({ status: 'Error loading feed', indicator: '', updates: [], name: 'SendGrid' }));
+    }
+    
+    // Slack, Datadog, AWS RSS fetch
+    if (isServiceSelected('slack') || isServiceSelected('datadog') || isServiceSelected('aws')) {
+      fetch('/api/notifications-latest')
+        .then(res => res.json())
+        .then(({ data }) => {
+          if (isServiceSelected('slack')) {
+            setSlack({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Slack'), name: 'Slack' });
+          }
+          if (isServiceSelected('datadog')) {
+            setDatadog({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Datadog'), name: 'Datadog' });
+          }
+          if (isServiceSelected('aws')) {
+            setAws({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'AWS'), name: 'AWS' });
+          }
+        })
+        .catch(() => {
+          if (isServiceSelected('slack')) {
+            setSlack({ status: 'Error loading feed', updates: [] });
+          }
+          if (isServiceSelected('datadog')) {
+            setDatadog({ status: 'Error loading feed', updates: [] });
+          }
+          if (isServiceSelected('aws')) {
+            setAws({ status: 'Error loading feed', updates: [] });
+          }
         });
-        const status = getStatusFromSendgridUpdates(filteredUpdates);
-        setSendgrid({ status, indicator: getSendgridIndicator(status), updates: filteredUpdates, name: 'SendGrid' });
-      })
-      .catch(() => setSendgrid({ status: 'Error loading feed', indicator: '', updates: [], name: 'SendGrid' }))
-      .finally(() => {
-        setLastUpdated(new Date());
-        setLoading(false);
-      });
-    // Slack RSS fetch
-    fetch('/api/notifications-latest')
-      .then(res => res.json())
-      .then(({ data }) => {
-        setSlack({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Slack'), name: 'Slack' });
-        setDatadog({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Datadog'), name: 'Datadog' });
-        setAws({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'AWS'), name: 'AWS' });
-      })
-      .catch(() => {
-        setSlack({ status: 'Error loading feed', updates: [] });
-        setDatadog({ status: 'Error loading feed', updates: [] });
-        setAws({ status: 'Error loading feed', updates: [] });
-      });
-  }, []);
+    }
+    
+    setLastUpdated(new Date());
+    setLoading(false);
+  }, [selectedServices]);
 
   // Check for any open/unresolved issue across all providers
   useEffect(() => {
@@ -400,6 +441,24 @@ function App() {
     }
   }, [criticalMode.active, criticalMode.details.length]);
 
+  // Handle service selection
+  function handleServiceSelect(services) {
+    setSelectedServices(services);
+    localStorage.setItem('selectedServices', JSON.stringify(services));
+    setShowSplash(false);
+  }
+
+  // Helper function to check if service is selected
+  const isServiceSelected = (serviceId) => {
+    if (!selectedServices) return true; // Show all if no selection yet
+    return selectedServices.includes(serviceId);
+  };
+
+  // Show splash screen if no services selected
+  if (showSplash) {
+    return <ServiceSelectionSplash onServicesSelected={handleServiceSelect} />;
+  }
+
   return (
     <>
       {/* Remove white space at top by setting margin and padding to 0 on body and root container */}
@@ -464,8 +523,39 @@ function App() {
               LIVE
             </div>
           </div>
-          {/* Notification bell inline with header/banner */}
-          <div style={{ position: 'relative', top: 0, right: 0, marginLeft: 24, zIndex: 9999 }}>
+          {/* Notification bell and settings inline with header/banner */}
+          <div style={{ position: 'relative', top: 0, right: 0, marginLeft: 24, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 12 }}>
+            {/* Settings button */}
+            <button
+              onClick={() => setShowSplash(true)}
+              style={{
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                borderRadius: '50%',
+                width: 44,
+                height: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                backdropFilter: 'blur(10px)',
+                color: '#fff',
+                fontSize: 20
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.25)';
+                e.target.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                e.target.style.transform = 'translateY(0)';
+              }}
+              title="Change service selection"
+            >
+              ⚙️
+            </button>
+            
             <NotificationChatbot
               cloudflareIncidents={cloudflare.incidents}
               zscalerUpdates={zscaler.updates}
@@ -641,58 +731,80 @@ function App() {
             </div>
           </div>
         )}
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <LivePulseCardContainer
-            provider="Cloudflare"
-            name={cloudflare.name}
-            indicator={cloudflare.indicator}
-            status={cloudflare.status}
-            incidents={cloudflare.incidents}
+        {/* Service selection splash screen */}
+        {showSplash ? (
+          <ServiceSelectionSplash 
+            onSelect={handleServiceSelect}
+            selected={selectedServices}
           />
-          <ZscalerPulseCardContainer
-            provider="Zscaler"
-            name="Zscaler"
-            indicator={getZscalerIndicator(zscaler.status)}
-            status={zscaler.status}
-            updates={zscaler.updates}
-          />
-          <ZscalerPulseCardContainer
-            provider="SendGrid"
-            name="SendGrid"
-            indicator={sendgrid.indicator}
-            status={sendgrid.status}
-            updates={sendgrid.updates}
-            incidents={sendgrid.updates} // Pass updates as incidents for SendGrid modal
-          />
-          <ZscalerPulseCardContainer
-            provider="Okta"
-            name="Okta"
-            indicator={okta.indicator}
-            status={okta.status}
-            updates={okta.updates}
-          />
-          <ZscalerPulseCardContainer
-            provider="Slack"
-            name="Slack"
-            indicator={slack.updates.length > 0 ? 'major' : 'none'}
-            status={slack.status}
-            updates={slack.updates}
-          />
-          <ZscalerPulseCardContainer
-            provider="Datadog"
-            name="Datadog"
-            indicator={datadog.updates.length > 0 ? 'major' : 'none'}
-            status={datadog.status}
-            updates={datadog.updates}
-          />
-          <ZscalerPulseCardContainer
-            provider="AWS"
-            name="AWS"
-            indicator={aws.updates.length > 0 ? 'major' : 'none'}
-            status={aws.status}
-            updates={aws.updates}
-          />
-        </div>
+        ) : (
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {isServiceSelected('cloudflare') && (
+              <LivePulseCardContainer
+                provider="Cloudflare"
+                name={cloudflare.name}
+                indicator={cloudflare.indicator}
+                status={cloudflare.status}
+                incidents={cloudflare.incidents}
+              />
+            )}
+            {isServiceSelected('zscaler') && (
+              <ZscalerPulseCardContainer
+                provider="Zscaler"
+                name="Zscaler"
+                indicator={getZscalerIndicator(zscaler.status)}
+                status={zscaler.status}
+                updates={zscaler.updates}
+              />
+            )}
+            {isServiceSelected('sendgrid') && (
+              <ZscalerPulseCardContainer
+                provider="SendGrid"
+                name="SendGrid"
+                indicator={sendgrid.indicator}
+                status={sendgrid.status}
+                updates={sendgrid.updates}
+                incidents={sendgrid.updates} // Pass updates as incidents for SendGrid modal
+              />
+            )}
+            {isServiceSelected('okta') && (
+              <ZscalerPulseCardContainer
+                provider="Okta"
+                name="Okta"
+                indicator={okta.indicator}
+                status={okta.status}
+                updates={okta.updates}
+              />
+            )}
+            {isServiceSelected('slack') && (
+              <ZscalerPulseCardContainer
+                provider="Slack"
+                name="Slack"
+                indicator={slack.updates.length > 0 ? 'major' : 'none'}
+                status={slack.status}
+                updates={slack.updates}
+              />
+            )}
+            {isServiceSelected('datadog') && (
+              <ZscalerPulseCardContainer
+                provider="Datadog"
+                name="Datadog"
+                indicator={datadog.updates.length > 0 ? 'major' : 'none'}
+                status={datadog.status}
+                updates={datadog.updates}
+              />
+            )}
+            {isServiceSelected('aws') && (
+              <ZscalerPulseCardContainer
+                provider="AWS"
+                name="AWS"
+                indicator={aws.updates.length > 0 ? 'major' : 'none'}
+                status={aws.status}
+                updates={aws.updates}
+              />
+            )}
+          </div>
+        )}
         {/* Mini Heatbar Grid at the bottom of the page */}
         <MiniHeatbarGrid />
         <SpeedInsights />
