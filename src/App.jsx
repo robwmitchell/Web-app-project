@@ -8,6 +8,7 @@ import './App.css';
 import './MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
+import NotificationChatbot from './NotificationChatbot';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -601,6 +602,13 @@ function App() {
         <MiniHeatbarGrid />
         <SpeedInsights />
         <Analytics />
+        {/* Notification Chatbot Floating Button */}
+        <NotificationChatbot
+          cloudflareIncidents={cloudflare.incidents}
+          zscalerUpdates={zscaler.updates}
+          oktaUpdates={okta.updates}
+          sendgridUpdates={sendgrid.updates}
+        />
       </div>
     </>
   );
