@@ -100,6 +100,16 @@ export default function NotificationChatbot({
 
   // Calculate modal position when using portal
   const getModalPosition = () => {
+    const isMobile = window.innerWidth <= 600;
+    if (isMobile) {
+      // On mobile, center the modal and position it from the top
+      return {
+        top: 80,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        right: 'auto'
+      };
+    }
     if (!buttonRef.current) return { top: 70, right: 16 };
     const rect = buttonRef.current.getBoundingClientRect();
     return {
@@ -111,17 +121,21 @@ export default function NotificationChatbot({
   // Responsive modal width and padding
   const getModalStyle = () => {
     const isMobile = window.innerWidth <= 600;
+    const position = getModalPosition();
+    
     return {
-      position: usePortal || headerMode || aboveHeader ? 'fixed' : 'absolute',
-      top: usePortal ? (getModalPosition().top || 70) : (headerMode || aboveHeader ? 54 : undefined),
-      right: usePortal ? (getModalPosition().right || 8) : 0,
-      bottom: !usePortal && !headerMode && !aboveHeader ? 90 : undefined,
-      width: isMobile ? '98vw' : 400,
-      maxWidth: 400,
+      position: 'fixed',
+      top: position.top,
+      left: position.left,
+      right: position.right,
+      transform: position.transform,
+      bottom: !usePortal && !headerMode && !aboveHeader && !isMobile ? 90 : undefined,
+      width: isMobile ? '90vw' : 400,
+      maxWidth: isMobile ? '90vw' : 400,
       minWidth: isMobile ? 'unset' : 320,
-      maxHeight: isMobile ? '80vh' : 540,
+      maxHeight: isMobile ? '70vh' : 540,
       background: 'rgba(255,255,255,0.98)',
-      borderRadius: isMobile ? 14 : 22,
+      borderRadius: isMobile ? 16 : 22,
       boxShadow: '0 16px 48px 0 rgba(80,80,180,0.18), 0 2px 8px rgba(99,102,241,0.10)',
       zIndex: modalZIndex,
       overflow: 'hidden',
@@ -130,7 +144,7 @@ export default function NotificationChatbot({
       border: '1.5px solid #e0e7ef',
       animation: 'slideDown 0.22s cubic-bezier(0.4,0,0.2,1)',
       backdropFilter: 'blur(16px)',
-      padding: isMobile ? '8px 0 0 0' : undefined
+      margin: isMobile ? '0 auto' : undefined
     };
   };
 
@@ -215,6 +229,23 @@ export default function NotificationChatbot({
 
   return (
     <>
+      {/* Mobile backdrop overlay */}
+      {open && window.innerWidth <= 600 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.4)',
+            zIndex: modalZIndex - 1,
+            animation: 'fadeIn 0.2s ease-out'
+          }}
+          onClick={() => setOpen(false)}
+        />
+      )}
+      
       {/* Chatbot Button */}
       <div style={aboveHeader ? { width: '100%', display: 'flex', justifyContent: 'flex-end', position: 'relative', zIndex: 200 } : {}}>
         <button
