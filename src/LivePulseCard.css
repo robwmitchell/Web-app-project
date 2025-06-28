@@ -449,7 +449,7 @@
   margin-top: 18px;
   margin-bottom: 0;
 }
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .card-action-row {
     flex-direction: column;
     align-items: stretch;
@@ -487,45 +487,70 @@
 }
 @media (max-width: 480px) {
   .live-pulse-card {
-    width: calc(100vw - 16px);
-    min-width: 0;
-    max-width: calc(100vw - 16px);
-    min-height: 320px;
-    padding: 16px 10px 70px 10px;
-    margin: 8px auto;
-    font-size: 0.94em;
-    border-radius: 10px;
+    width: calc(100vw - 32px);
+    min-width: 320px;
+    max-width: calc(100vw - 32px);
+    min-height: 400px;
+    padding: 24px 20px 80px 20px;
+    margin: 16px auto;
+    font-size: 0.96em;
+    border-radius: 16px;
   }
   .card-header {
-    margin-bottom: 12px;
-    padding-bottom: 6px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
   }
   .card-title {
-    font-size: 1em;
+    font-size: 1.1em;
   }
   .card-icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 6px;
+    width: 28px;
+    height: 28px;
+    margin-right: 10px;
   }
   .card-bottom-row {
     bottom: 16px;
     gap: 8px;
-    padding: 0 10px;
+    padding: 0 20px;
   }
   .live-pulse-headline {
-    font-size: 0.88em;
-    padding: 8px 10px;
+    font-size: 0.9em;
+    padding: 10px 12px;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
+  .live-pulse-card {
+    width: 380px;
+    min-width: 380px;
+    max-width: 380px;
+    min-height: 420px;
+    padding: 28px 24px 80px 24px;
+    margin: 20px auto;
+  }
+  .card-bottom-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 0 24px;
+    bottom: 20px;
+  }
+  .card-bottom-row .view-7days-btn,
+  .card-bottom-row .bug-btn {
+    width: 100%;
+    margin: 0;
+    font-size: 1em;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
   .live-pulse-card {
     width: calc(100vw - 32px);
-    min-width: 0;
+    min-width: 320px;
     max-width: calc(100vw - 32px);
-    min-height: 380px;
-    padding: 24px 16px 80px 16px;
+    min-height: 400px;
+    padding: 24px 20px 80px 20px;
     margin: 16px auto;
     font-size: 0.98em;
     border-radius: 16px;
@@ -546,7 +571,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    padding: 0 16px;
+    padding: 0 20px;
     bottom: 20px;
   }
   .card-bottom-row .view-7days-btn,
@@ -556,47 +581,8 @@
     font-size: 1em;
     justify-content: center;
   }
-}
-
-@media (max-width: 600px) {
-  .live-pulse-card {
-    width: calc(100vw - 24px);
-    min-width: 0;
-    max-width: calc(100vw - 24px);
-    min-height: 340px;
-    padding: 20px 12px 75px 12px;
-    margin: 12px auto;
-    font-size: 0.96em;
-    border-radius: 12px;
-  }
-  .card-header {
-    margin-bottom: 14px;
-    padding-bottom: 8px;
-  }
-  .card-title {
-    font-size: 1.05em;
-  }
-  .card-icon {
-    width: 24px;
-    height: 24px;
-    margin-right: 8px;
-  }
-  .card-bottom-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-    padding: 0 12px;
-    bottom: 18px;
-  }
-  .card-bottom-row .view-7days-btn,
-  .card-bottom-row .bug-btn {
-    width: 100%;
-    margin: 0;
-    font-size: 1em;
-    justify-content: center;
-  }
   .live-pulse-headline {
-    font-size: 0.92em;
-    padding: 10px 12px;
+    font-size: 0.94em;
+    padding: 12px 16px;
   }
 }
