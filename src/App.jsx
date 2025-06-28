@@ -237,9 +237,11 @@ function App() {
                 merged.push(storedInc);
               }
             });
-            setStoredCloudflareIncidents(merged);
-            const { status, indicator } = getCloudflareStatusFromIncidents(merged);
-            setCloudflare({ status, indicator, incidents: merged, name });
+            // Filter out resolved incidents (should not have resolved_at)
+            const unresolved = merged.filter(inc => !inc.resolved_at);
+            setStoredCloudflareIncidents(unresolved);
+            const { status, indicator } = getCloudflareStatusFromIncidents(unresolved);
+            setCloudflare({ status, indicator, incidents: unresolved, name });
           })
           .catch(() => setCloudflare({ status: 'Error loading status', indicator: '', incidents: [], name: 'Cloudflare' }));
       })
