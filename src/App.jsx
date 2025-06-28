@@ -561,6 +561,9 @@ function App() {
               zscalerUpdates={zscaler.updates}
               oktaUpdates={okta.updates}
               sendgridUpdates={sendgrid.updates}
+              slackUpdates={isServiceSelected('slack') ? slack.updates : []}
+              datadogUpdates={isServiceSelected('datadog') ? datadog.updates : []}
+              awsUpdates={isServiceSelected('aws') ? aws.updates : []}
               headerMode={true}
               usePortal={true} // Ensure modal is rendered in a portal
               modalZIndex={20000} // Pass a very high z-index to modal if supported
@@ -806,7 +809,7 @@ function App() {
           </div>
         )}
         {/* Mini Heatbar Grid at the bottom of the page */}
-        <MiniHeatbarGrid />
+        <MiniHeatbarGrid selectedServices={selectedServices} />
         <SpeedInsights />
         <Analytics />
       </div>

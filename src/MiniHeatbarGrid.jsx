@@ -106,7 +106,7 @@ function AreaSpark({ data = [], color = '#d32f2f', fill = '#ffd6d6' }) {
   );
 }
 
-export default function MiniHeatbarGrid() {
+export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   const [data, setData] = React.useState([]);
 
   React.useEffect(() => {
@@ -147,7 +147,7 @@ export default function MiniHeatbarGrid() {
         todayMap[row.service_name] = Number(row.count);
       });
       const trendMap = trendRes.trend || {};
-      const rows = SERVICES.map(service => {
+      const rows = selectedServices.map(service => {
         const trend = sanitizeTrend(trendMap[service]);
         const count = todayMap[service] || 0;
         const trendUp = trend.length > 1 ? trend[trend.length-1] >= trend[trend.length-2] : false;

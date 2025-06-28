@@ -8,6 +8,9 @@ export default function NotificationChatbot({
   zscalerUpdates = [],
   oktaUpdates = [],
   sendgridUpdates = [],
+  slackUpdates = [],
+  datadogUpdates = [],
+  awsUpdates = [],
   headerMode = false,
   aboveHeader = false,
   usePortal = false,
@@ -40,6 +43,9 @@ export default function NotificationChatbot({
     ...zscalerUpdates.map(item => ({ ...item, service: 'Zscaler', date: item.date, id: `zscaler-${item.title || item.link}` })),
     ...oktaUpdates.map(item => ({ ...item, service: 'Okta', date: item.date, id: `okta-${item.title || item.link}` })),
     ...sendgridUpdates.map(item => ({ ...item, service: 'SendGrid', date: item.date, id: `sendgrid-${item.title || item.link}` })),
+    ...slackUpdates.map(item => ({ ...item, service: 'Slack', date: item.reported_at || item.date, id: `slack-${item.title || item.id}` })),
+    ...datadogUpdates.map(item => ({ ...item, service: 'Datadog', date: item.reported_at || item.date, id: `datadog-${item.title || item.id}` })),
+    ...awsUpdates.map(item => ({ ...item, service: 'AWS', date: item.reported_at || item.date, id: `aws-${item.title || item.id}` })),
   ].filter(alert => isToday(alert.date) && !clearedAlerts.has(alert.id));
 
   // Clear individual notification
@@ -64,15 +70,24 @@ export default function NotificationChatbot({
       ...zscalerUpdates.map(item => `zscaler-${item.title || item.link}`),
       ...oktaUpdates.map(item => `okta-${item.title || item.link}`),
       ...sendgridUpdates.map(item => `sendgrid-${item.title || item.link}`),
+      ...slackUpdates.map(item => `slack-${item.title || item.id}`),
+      ...datadogUpdates.map(item => `datadog-${item.title || item.id}`),
+      ...awsUpdates.map(item => `aws-${item.title || item.id}`),
     ].filter(id => {
       const alert = [
         ...cloudflareIncidents.map(item => ({ ...item, date: item.updated_at || item.created_at })),
-        ...zscalerUpdates, ...oktaUpdates, ...sendgridUpdates
+        ...zscalerUpdates, ...oktaUpdates, ...sendgridUpdates,
+        ...slackUpdates.map(item => ({ ...item, date: item.reported_at || item.date })),
+        ...datadogUpdates.map(item => ({ ...item, date: item.reported_at || item.date })),
+        ...awsUpdates.map(item => ({ ...item, date: item.reported_at || item.date })),
       ].find(a => 
         id === `cloudflare-${a.id || a.name}` || 
         id === `zscaler-${a.title || a.link}` || 
         id === `okta-${a.title || a.link}` || 
-        id === `sendgrid-${a.title || a.link}`
+        id === `sendgrid-${a.title || a.link}` ||
+        id === `slack-${a.title || a.id}` ||
+        id === `datadog-${a.title || a.id}` ||
+        id === `aws-${a.title || a.id}`
       );
       return alert && isToday(alert.date);
     });
