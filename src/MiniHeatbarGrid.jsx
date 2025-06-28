@@ -26,6 +26,42 @@ function getTrendArrow(up) {
   return up ? '▲' : '▼';
 }
 
+function ServiceLogo({ service }) {
+  const [logoError, setLogoError] = React.useState(false);
+  
+  if (logoError || !serviceLogos[service]) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '28px',
+        height: '28px',
+        background: '#f0f0f0',
+        borderRadius: '4px',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        color: '#666',
+        minWidth: '28px'
+      }}>
+        {service[0]}
+      </div>
+    );
+  }
+  
+  return (
+    <img 
+      src={serviceLogos[service]} 
+      alt={service + ' logo'} 
+      style={{ height: 'clamp(20px, 4vw, 28px)', maxWidth: '100%', objectFit: 'contain' }} 
+      onError={() => {
+        console.log(`Failed to load logo for ${service}:`, serviceLogos[service]);
+        setLogoError(true);
+      }}
+    />
+  );
+}
+
 function sanitizeTrend(trend) {
   // Ensure trend is an array of 7 numbers for the last 7 days
   if (!Array.isArray(trend) || trend.length !== 7) return Array(7).fill(0);
@@ -191,20 +227,7 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
       {data.map((row) => (
         <div className="mini-heatbar-row" key={row.service}>
           <span style={{ minWidth: 80, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-            <img 
-              src={serviceLogos[row.service]} 
-              alt={row.service + ' logo'} 
-              style={{ height: 'clamp(20px, 4vw, 28px)', maxWidth: '100%', objectFit: 'contain' }} 
-              onError={(e) => {
-                console.log(`Failed to load logo for ${row.service}:`, serviceLogos[row.service]);
-                // Replace with service initial as fallback
-                e.target.style.display = 'none';
-                const fallback = document.createElement('div');
-                fallback.style.cssText = 'display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #f0f0f0; border-radius: 4px; font-size: 12px; font-weight: bold; color: #666; min-width: 28px;';
-                fallback.textContent = row.service[0];
-                e.target.parentNode.appendChild(fallback);
-              }}
-            />
+            <ServiceLogo service={row.service} />
             {/* Service name hidden for minimalist look */}
           </span>
           <span className="mini-heatbar-trend">
