@@ -12,14 +12,16 @@ async function fetchCloudflareIncidents(last24hDate = null) {
   try {
     const res = await fetchImpl('https://www.cloudflarestatus.com/api/v2/incidents/unresolved.json');
     const json = await res.json();
-    let incidents = (json.incidents || []).map(inc => ({
-      provider: 'Cloudflare',
-      title: inc.name,
-      description: inc.incident_updates?.[0]?.body || '',
-      reported_at: inc.created_at,
-      url: inc.shortlink || inc.url || '',
-      id: `cloudflare-${inc.id}`,
-    }));
+    let incidents = (json.incidents || [])
+      .filter(inc => !inc.resolved_at) // Only include unresolved incidents
+      .map(inc => ({
+        provider: 'Cloudflare',
+        title: inc.name,
+        description: inc.incident_updates?.[0]?.body || '',
+        reported_at: inc.created_at,
+        url: inc.shortlink || inc.url || '',
+        id: `cloudflare-${inc.id}`,
+      }));
     
     // For now, don't filter by date to see all unresolved incidents
     // if (last24hDate) {
