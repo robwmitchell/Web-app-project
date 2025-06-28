@@ -237,7 +237,7 @@ function App() {
                 merged.push(storedInc);
               }
             });
-            // Filter out resolved incidents (should not have resolved_at)
+            // Remove any resolved incidents from localStorage and merged list
             const unresolved = merged.filter(inc => !inc.resolved_at);
             setStoredCloudflareIncidents(unresolved);
             const { status, indicator } = getCloudflareStatusFromIncidents(unresolved);
