@@ -95,16 +95,22 @@ export default async function handler(req, res) {
     console.log(`Cloudflare incidents found: ${cloudflareIncidents.length}`);
 
     // 2. RSS feeds (last 7 days) - Using working URLs only
-    const [zscaler] = await Promise.all([
+    const [zscaler, slack, datadog, aws] = await Promise.all([
       fetchRSSFeed('https://trust.zscaler.com/blog-feed', 'Zscaler', 7),
+      fetchRSSFeed('https://status.slack.com/feed/rss', 'Slack', 7),
+      fetchRSSFeed('https://status.datadoghq.com/history.rss', 'Datadog', 7),
+      fetchRSSFeed('https://status.aws.amazon.com/rss/all.rss', 'AWS', 7),
     ]);
 
-    console.log(`RSS results - Zscaler: ${zscaler.length}`);
+    console.log(`RSS results - Zscaler: ${zscaler.length}, Slack: ${slack.length}, Datadog: ${datadog.length}, AWS: ${aws.length}`);
 
-    // Merge all (only RSS feeds and Cloudflare API)
+    // Merge all (Cloudflare API and all RSS feeds)
     const all = [
       ...cloudflareIncidents,
       ...zscaler,
+      ...slack,
+      ...datadog,
+      ...aws,
     ];
     console.log(`Total notifications: ${all.length}`);
     
