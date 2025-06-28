@@ -8,6 +8,9 @@ export default function ReportImpactForm({ serviceName, onClose }) {
     'Okta',
     'SendGrid',
     'Zscaler',
+    'Slack',
+    'Datadog',
+    'AWS',
   ];
   const [selectedService, setSelectedService] = React.useState(
     ALLOWED_SERVICES.includes(serviceName) ? serviceName : ALLOWED_SERVICES[0]
