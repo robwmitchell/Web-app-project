@@ -142,8 +142,8 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
             ))}
           </div>
         </div>
-        {/* Action buttons just below the content */}
-        <div className="card-action-row" style={{ display: 'flex', flexDirection: 'row', gap: 10, marginTop: 18, justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        {/* Action buttons positioned at bottom of card */}
+        <div className="card-bottom-row">
           <button
             className="bug-btn"
             aria-label="Report an issue with this service"
@@ -155,7 +155,6 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
           <button
             className="view-7days-btn"
             onClick={() => setModalOpen(true)}
-            style={{ marginLeft: 'auto' }}
           >
             View last 7 days
           </button>

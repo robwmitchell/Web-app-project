@@ -51,10 +51,11 @@
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
   border: 1px solid rgba(148, 163, 184, 0.1);
   border-radius: 20px;
-  padding: 32px 28px 120px 28px;
+  padding: 40px 32px 140px 32px;
   margin: 24px;
-  width: 410px;
-  min-height: 600px;
+  width: 480px;
+  min-height: 1200px;
+  height: auto;
   text-align: left;
   box-shadow: 
     0 4px 20px rgba(15, 23, 42, 0.08),
@@ -167,7 +168,7 @@
 .live-pulse-card > div,
 .live-pulse-card .live-pulse-headline,
 .live-pulse-card .card-bottom-center {
-  margin-bottom: 18px;
+  margin-bottom: 24px;
 }
 
 /* Reduce spacing between day indicator and history bar */
@@ -179,15 +180,15 @@
 .live-pulse-headline {
   font-size: 0.95em;
   color: #475569;
-  margin: 16px 0 0 0;
+  margin: 20px 0 24px 0;
   font-weight: 500;
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
-  line-height: 1.4;
-  padding: 12px 16px;
+  line-height: 1.5;
+  padding: 16px 20px;
   background: rgba(248, 250, 252, 0.6);
-  border-radius: 8px;
+  border-radius: 10px;
   border-left: 3px solid #e2e8f0;
 }
 
@@ -400,45 +401,51 @@
   margin: 0;
 }
 
-.card-bottom-center {
-  position: absolute;
-  bottom: 8px;
-  left: 0;
+/* Move card action buttons into normal flow below day indicators */
+.card-bottom-row,
+.card-bottom-center,
+.card-bottom-stack,
+.report-issue-container,
+.report-issue-above {
+  position: static !important;
+  left: unset !important;
+  right: unset !important;
+  bottom: unset !important;
   width: 100%;
+  margin-top: 24px;
   display: flex;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
-  z-index: 2;
+  gap: 16px;
   padding: 0;
+  z-index: 1;
+}
+
+.card-bottom-row .view-7days-btn,
+.card-bottom-row .bug-btn,
+.card-bottom-center .view-7days-btn,
+.card-bottom-center .bug-btn {
   margin: 0;
 }
 
-/* Remove any margin between the two stacked buttons */
-.report-issue-above + .card-bottom-center {
-  margin-top: 0 !important;
-}
-.bug-btn {
-  margin-bottom: 0;
+/* Remove extra margin for stacked layout */
+.card-bottom-stack {
+  flex-direction: column;
+  gap: 8px;
 }
 
-.bug-modal-overlay {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.32);
-  z-index: 2000; /* Increased to ensure above cards */
-  display: flex;
+/* Remove absolute positioning for left/right variants */
+.card-bottom-left,
+.card-bottom-right {
+  position: static !important;
+  left: unset !important;
+  right: unset !important;
+  bottom: unset !important;
+  width: auto;
+  padding: 0;
+  justify-content: flex-start;
   align-items: center;
-  justify-content: center;
-}
-.bug-modal {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-  padding: 32px 28px 22px 28px;
-  min-width: 320px;
-  max-width: 94vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
 }
 
 .card-action-row {
@@ -487,12 +494,12 @@
 }
 @media (max-width: 480px) {
   .live-pulse-card {
-    width: calc(100vw - 32px);
+    width: calc(100vw - 24px);
     min-width: 320px;
-    max-width: calc(100vw - 32px);
-    min-height: 520px;
-    padding: 24px 20px 120px 20px;
-    margin: 16px auto;
+    max-width: calc(100vw - 24px);
+    min-height: 800px;
+    padding: 24px 18px 130px 18px;
+    margin: 12px auto;
     font-size: 0.96em;
     border-radius: 16px;
   }
@@ -509,31 +516,31 @@
     margin-right: 10px;
   }
   .card-bottom-row {
-    bottom: 16px;
-    gap: 8px;
-    padding: 0 20px;
+    bottom: 20px;
+    gap: 10px;
+    padding: 0 18px;
   }
   .live-pulse-headline {
-    font-size: 0.9em;
-    padding: 10px 12px;
+    font-size: 0.92em;
+    padding: 12px 14px;
   }
 }
 
 @media (max-width: 768px) {
   .live-pulse-card {
-    width: 380px;
-    min-width: 380px;
-    max-width: 380px;
-    min-height: 580px;
-    padding: 28px 24px 120px 24px;
+    width: 440px;
+    min-width: 440px;
+    max-width: 440px;
+    min-height: 1100px;
+    padding: 32px 28px 140px 28px;
     margin: 20px auto;
   }
   .card-bottom-row {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
-    padding: 0 24px;
-    bottom: 20px;
+    padding: 0 28px;
+    bottom: 30px;
   }
   .card-bottom-row .view-7days-btn,
   .card-bottom-row .bug-btn {
@@ -546,26 +553,26 @@
 
 @media (max-width: 600px) {
   .live-pulse-card {
-    width: calc(100vw - 32px);
-    min-width: 320px;
-    max-width: calc(100vw - 32px);
-    min-height: 550px;
-    padding: 24px 20px 120px 20px;
-    margin: 16px auto;
+    width: calc(100vw - 40px);
+    min-width: 350px;
+    max-width: calc(100vw - 40px);
+    min-height: 900px;
+    padding: 28px 24px 140px 24px;
+    margin: 20px auto;
     font-size: 0.98em;
-    border-radius: 16px;
+    border-radius: 18px;
   }
   .card-header {
-    margin-bottom: 16px;
-    padding-bottom: 10px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
   }
   .card-title {
-    font-size: 1.1em;
+    font-size: 1.15em;
   }
   .card-icon {
-    width: 28px;
-    height: 28px;
-    margin-right: 10px;
+    width: 30px;
+    height: 30px;
+    margin-right: 12px;
   }
   .card-bottom-row {
     flex-direction: column;
