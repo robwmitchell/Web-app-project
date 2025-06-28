@@ -308,28 +308,31 @@ function App() {
       });
     }
     // Zscaler
-    if (zscaler && getZscalerIndicator(zscaler.status) === 'major' && zscaler.updates && zscaler.updates.length > 0) {
+    if (zscaler && zscaler.status === 'Issues Detected' && getZscalerIndicator(zscaler.status) === 'major' && zscaler.updates && zscaler.updates.length > 0) {
       zscaler.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
-        if (text.includes('outage') || text.includes('critical')) {
+        const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
+        if ((text.includes('outage') || text.includes('critical')) && !isResolved) {
           criticals.push({ provider: 'Zscaler', name: upd.title, status: zscaler.status, updated: upd.date, url: upd.link });
         }
       });
     }
     // Okta
-    if (okta && okta.indicator === 'major' && okta.updates && okta.updates.length > 0) {
+    if (okta && okta.status === 'Issues Detected' && okta.indicator === 'major' && okta.updates && okta.updates.length > 0) {
       okta.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
-        if (text.includes('outage') || text.includes('critical')) {
+        const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
+        if ((text.includes('outage') || text.includes('critical')) && !isResolved) {
           criticals.push({ provider: 'Okta', name: upd.title, status: okta.status, updated: upd.date, url: upd.link });
         }
       });
     }
     // SendGrid
-    if (sendgrid && sendgrid.indicator === 'major' && sendgrid.updates && sendgrid.updates.length > 0) {
+    if (sendgrid && sendgrid.status === 'Issues Detected' && sendgrid.indicator === 'major' && sendgrid.updates && sendgrid.updates.length > 0) {
       sendgrid.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
-        if (text.includes('outage') || text.includes('critical')) {
+        const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
+        if ((text.includes('outage') || text.includes('critical')) && !isResolved) {
           criticals.push({ provider: 'SendGrid', name: upd.title, status: sendgrid.status, updated: upd.date, url: upd.link });
         }
       });
