@@ -481,9 +481,15 @@ const SPLASH_CONFIG = {
   }, [criticalMode.active, criticalMode.details.length]);
 
   // Handle service selection
-  function handleServiceSelect(services) {
+  function handleServiceSelect(services, alertTypes = null) {
     setSelectedServices(services);
     localStorage.setItem('selectedServices', JSON.stringify(services));
+    
+    // Save alert type preferences if provided
+    if (alertTypes) {
+      localStorage.setItem('serviceAlertTypes', JSON.stringify(alertTypes));
+    }
+    
     setShowSplash(false);
     
     // Optionally refresh the page for a clean state

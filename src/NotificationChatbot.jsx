@@ -28,6 +28,15 @@ export default function NotificationChatbot({
       return new Set();
     }
   });
+  const [alertTypePreferences, setAlertTypePreferences] = useState(() => {
+    // Load alert type preferences from localStorage
+    try {
+      const stored = localStorage.getItem('serviceAlertTypes');
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
 
@@ -37,7 +46,98 @@ export default function NotificationChatbot({
     return selectedServices.includes(service.toLowerCase());
   };
 
-  // Aggregate today's issues, filtered by selected services
+  // Helper to check if an alert type should be shown
+  const shouldShowAlert = (serviceId, alertData) => {
+    const serviceAlertTypes = alertTypePreferences[serviceId];
+    if (!serviceAlertTypes || serviceAlertTypes.length === 0) {
+      // If no preferences set, show all alerts
+      return true;
+    }
+
+    // Filter based on alert type preferences for each service
+    switch (serviceId) {
+      case 'cloudflare':
+        // Check if it's an incident, maintenance, or degradation
+        if (alertData.impact === 'critical' || alertData.impact === 'major') {
+          return serviceAlertTypes.includes('incidents');
+        }
+        if (alertData.name?.toLowerCase().includes('maintenance')) {
+          return serviceAlertTypes.includes('maintenance');
+        }
+        if (alertData.impact === 'minor') {
+          return serviceAlertTypes.includes('degradation');
+        }
+        return serviceAlertTypes.includes('incidents'); // Default to incidents
+        
+      case 'zscaler':
+        const text = `${alertData.title || ''} ${alertData.description || ''}`.toLowerCase();
+        if (text.includes('disruption') || text.includes('outage') || text.includes('incident')) {
+          return serviceAlertTypes.includes('disruptions');
+        }
+        if (text.includes('degraded') || text.includes('performance')) {
+          return serviceAlertTypes.includes('degradation');
+        }
+        return serviceAlertTypes.includes('updates'); // Default to updates
+        
+      case 'okta':
+        const oktaText = `${alertData.title || alertData.name || ''} ${alertData.description || ''}`.toLowerCase();
+        if (oktaText.includes('maintenance')) {
+          return serviceAlertTypes.includes('maintenance');
+        }
+        if (oktaText.includes('security') || oktaText.includes('breach')) {
+          return serviceAlertTypes.includes('security');
+        }
+        return serviceAlertTypes.includes('incidents'); // Default to incidents
+        
+      case 'sendgrid':
+        const sendgridText = `${alertData.title || alertData.name || ''}`.toLowerCase();
+        if (sendgridText.includes('api')) {
+          return serviceAlertTypes.includes('api');
+        }
+        if (sendgridText.includes('maintenance')) {
+          return serviceAlertTypes.includes('maintenance');
+        }
+        return serviceAlertTypes.includes('delivery'); // Default to delivery
+        
+      case 'slack':
+        const slackText = `${alertData.title || alertData.name || ''}`.toLowerCase();
+        if (slackText.includes('call') || slackText.includes('video') || slackText.includes('voice')) {
+          return serviceAlertTypes.includes('calls');
+        }
+        if (slackText.includes('file') || slackText.includes('upload') || slackText.includes('attachment')) {
+          return serviceAlertTypes.includes('files');
+        }
+        return serviceAlertTypes.includes('messaging'); // Default to messaging
+        
+      case 'datadog':
+        const datadogText = `${alertData.title || alertData.name || ''}`.toLowerCase();
+        if (datadogText.includes('dashboard') || datadogText.includes('ui') || datadogText.includes('visualization')) {
+          return serviceAlertTypes.includes('dashboard');
+        }
+        if (datadogText.includes('api')) {
+          return serviceAlertTypes.includes('api');
+        }
+        return serviceAlertTypes.includes('monitoring'); // Default to monitoring
+        
+      case 'aws':
+        const awsText = `${alertData.title || alertData.name || ''}`.toLowerCase();
+        if (awsText.includes('s3') || awsText.includes('ebs') || awsText.includes('storage')) {
+          return serviceAlertTypes.includes('storage');
+        }
+        if (awsText.includes('vpc') || awsText.includes('cloudfront') || awsText.includes('network')) {
+          return serviceAlertTypes.includes('network');
+        }
+        if (awsText.includes('rds') || awsText.includes('dynamodb') || awsText.includes('database')) {
+          return serviceAlertTypes.includes('database');
+        }
+        return serviceAlertTypes.includes('compute'); // Default to compute
+        
+      default:
+        return true;
+    }
+  };
+
+  // Aggregate today's issues, filtered by selected services and alert type preferences
   const today = new Date();
   const isToday = (date) => {
     const d = new Date(date);
@@ -45,14 +145,29 @@ export default function NotificationChatbot({
       d.getMonth() === today.getMonth() &&
       d.getFullYear() === today.getFullYear();
   };
+  
   const allAlerts = [
-    ...isServiceSelected('cloudflare') ? cloudflareIncidents.map(item => ({ ...item, service: 'Cloudflare', date: item.updated_at || item.created_at, id: `cloudflare-${item.id || item.name}` })) : [],
-    ...isServiceSelected('zscaler') ? zscalerUpdates.map(item => ({ ...item, service: 'Zscaler', date: item.date, id: `zscaler-${item.title || item.link}` })) : [],
-    ...isServiceSelected('okta') ? oktaUpdates.map(item => ({ ...item, service: 'Okta', date: item.date, id: `okta-${item.title || item.link}` })) : [],
-    ...isServiceSelected('sendgrid') ? sendgridUpdates.map(item => ({ ...item, service: 'SendGrid', date: item.date, id: `sendgrid-${item.title || item.link}` })) : [],
-    ...isServiceSelected('slack') ? slackUpdates.map(item => ({ ...item, service: 'Slack', date: item.reported_at || item.date, id: `slack-${item.title || item.id}` })) : [],
-    ...isServiceSelected('datadog') ? datadogUpdates.map(item => ({ ...item, service: 'Datadog', date: item.reported_at || item.date, id: `datadog-${item.title || item.id}` })) : [],
-    ...isServiceSelected('aws') ? awsUpdates.map(item => ({ ...item, service: 'AWS', date: item.reported_at || item.date, id: `aws-${item.title || item.id}` })) : [],
+    ...isServiceSelected('cloudflare') ? cloudflareIncidents
+      .map(item => ({ ...item, service: 'Cloudflare', date: item.updated_at || item.created_at, id: `cloudflare-${item.id || item.name}` }))
+      .filter(alert => shouldShowAlert('cloudflare', alert)) : [],
+    ...isServiceSelected('zscaler') ? zscalerUpdates
+      .map(item => ({ ...item, service: 'Zscaler', date: item.date, id: `zscaler-${item.title || item.link}` }))
+      .filter(alert => shouldShowAlert('zscaler', alert)) : [],
+    ...isServiceSelected('okta') ? oktaUpdates
+      .map(item => ({ ...item, service: 'Okta', date: item.date, id: `okta-${item.title || item.link}` }))
+      .filter(alert => shouldShowAlert('okta', alert)) : [],
+    ...isServiceSelected('sendgrid') ? sendgridUpdates
+      .map(item => ({ ...item, service: 'SendGrid', date: item.date, id: `sendgrid-${item.title || item.link}` }))
+      .filter(alert => shouldShowAlert('sendgrid', alert)) : [],
+    ...isServiceSelected('slack') ? slackUpdates
+      .map(item => ({ ...item, service: 'Slack', date: item.reported_at || item.date, id: `slack-${item.title || item.id}` }))
+      .filter(alert => shouldShowAlert('slack', alert)) : [],
+    ...isServiceSelected('datadog') ? datadogUpdates
+      .map(item => ({ ...item, service: 'Datadog', date: item.reported_at || item.date, id: `datadog-${item.title || item.id}` }))
+      .filter(alert => shouldShowAlert('datadog', alert)) : [],
+    ...isServiceSelected('aws') ? awsUpdates
+      .map(item => ({ ...item, service: 'AWS', date: item.reported_at || item.date, id: `aws-${item.title || item.id}` }))
+      .filter(alert => shouldShowAlert('aws', alert)) : [],
   ].flat().filter(alert => isToday(alert.date) && !clearedAlerts.has(alert.id));
 
   // Clear individual notification
