@@ -547,118 +547,75 @@ const SPLASH_CONFIG = {
           background: #fafbff;
         }
       `}</style>
-      {/* Centered, reduced-width header */}
-      <div className="header-gradient" style={{
-        width: '100%',
-        color: '#fff',
-        padding: '0',
-        marginBottom: 18,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: 64,
-        boxShadow: '0 8px 32px rgba(102, 126, 234, 0.15), 0 4px 16px rgba(0,0,0,0.1)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100,
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.1)',
-      }}>
-        <div style={{
-          maxWidth: 1200,
-          width: '100%',
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingLeft: 'clamp(12px, 4vw, 28px)',
-          paddingRight: 'clamp(12px, 4vw, 28px)',
-        }}>
-          <div className="header-title" style={{ 
-            fontWeight: 800, 
-            fontSize: '1.4em', 
-            letterSpacing: 0.5,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12
-          }}>
+      {/* Modern Enhanced Header */}
+      <header className="site-header">
+        <div className="header-container">
+          <div className="header-brand">
+            <div className="logo-container">
             <img 
               src={logoImage} 
               alt="Stack Status IO Logo" 
-              style={{
-                height: 128,
-                width: 128,
-                borderRadius: 24,
-                objectFit: 'cover'
-              }}
+              className="header-logo"
             />
-            <div className="header-status-dot" style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: '#4ade80',
-            }}></div>
-            <div className="header-live-badge" style={{
-              background: 'rgba(255,255,255,0.15)',
-              padding: '2px 8px',
-              borderRadius: 12,
-              fontSize: '0.6em',
-              fontWeight: 500,
-              letterSpacing: 0.5,
-              marginLeft: 8
-            }}>
-              LIVE
+            </div>
+            <div className="brand-info">
+              <h1 className="brand-title">
+                Stack Status
+                <span className="brand-subtitle">IO</span>
+              </h1>
+              <div className="status-indicators">
+                <div className="status-dot operational"></div>
+                <span className="status-text">All Systems Operational</span>
+                <div className="live-indicator">
+                  <span className="live-pulse"></span>
+                  <span className="live-text">LIVE</span>
+                </div>
+              </div>
             </div>
           </div>
-          {/* Notification bell and settings inline with header/banner */}
-          <div style={{ position: 'relative', top: 0, right: 0, marginLeft: 24, zIndex: 9999, display: 'flex', alignItems: 'center', gap: 12 }}>
-            {/* Settings button */}
-            <button
-              onClick={() => setShowSplash(true)}
-              style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                borderRadius: '50%',
-                width: 44,
-                height: 44,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                backdropFilter: 'blur(10px)',
-                color: '#fff',
-                fontSize: 20
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.25)';
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(255, 255, 255, 0.15)';
-                e.target.style.transform = 'translateY(0)';
-              }}
-              title="Change service selection"
-            >
-              ⚙️
-            </button>
-            
-            <NotificationChatbot
-              selectedServices={selectedServices}
-              cloudflareIncidents={cloudflare.incidents}
-              zscalerUpdates={zscaler.updates}
-              oktaUpdates={okta.updates}
-              sendgridUpdates={sendgrid.updates}
-              slackUpdates={slack.updates}
-              datadogUpdates={datadog.updates}
-              awsUpdates={aws.updates}
-              headerMode={true}
-              usePortal={true} // Ensure modal is rendered in a portal
-              modalZIndex={20000} // Pass a very high z-index to modal if supported
-            />
+          
+          <div className="header-actions">
+            <div className="action-group">
+              <button
+                className="action-btn settings-btn"
+                onClick={() => setShowSplash(true)}
+                title="Configure Services"
+                aria-label="Configure service monitoring"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span className="btn-tooltip">Settings</span>
+              </button>
+              
+              <div className="notification-wrapper">
+                <NotificationChatbot
+                  selectedServices={selectedServices}
+                  cloudflareIncidents={cloudflare.incidents}
+                  zscalerUpdates={zscaler.updates}
+                  oktaUpdates={okta.updates}
+                  sendgridUpdates={sendgrid.updates}
+                  slackUpdates={slack.updates}
+                  datadogUpdates={datadog.updates}
+                  awsUpdates={aws.updates}
+                  headerMode={true}
+                  usePortal={true}
+                  modalZIndex={20000}
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        
+        {/* Subtle animated background elements */}
+        <div className="header-bg-effects">
+          <div className="bg-gradient-1"></div>
+          <div className="bg-gradient-2"></div>
+          <div className="floating-orb orb-1"></div>
+          <div className="floating-orb orb-2"></div>
+        </div>
+      </header>
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
