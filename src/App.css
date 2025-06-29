@@ -305,9 +305,10 @@
   margin-top: 0 !important;
 }
 
-/* Ensure header has proper stacking context */
+/* Ensure header has proper stacking context and stays sticky */
 .header-gradient {
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 100;
 }
 
