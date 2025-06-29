@@ -270,12 +270,18 @@ export default function NotificationChatbot({
             position: 'relative',
             right: 0,
             top: 0,
-            marginLeft: 8,
-            marginRight: 32,
+            marginLeft: 0,
+            marginRight: 0,
             background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
             color: '#fff',
             boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
-            zIndex: 2000
+            zIndex: 2000,
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            width: 44,
+            height: 44,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           } : {
             position: 'fixed',
             bottom: 32,

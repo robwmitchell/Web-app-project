@@ -16,6 +16,9 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(10px);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .notification-bell-button:hover {
