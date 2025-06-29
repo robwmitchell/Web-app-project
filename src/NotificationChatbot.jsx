@@ -4,6 +4,7 @@ import './NotificationBell.css'; // Reuse notification styles for consistency
 import { htmlToText } from './ServiceStatusCard';
 
 export default function NotificationChatbot({
+  selectedServices = null,
   cloudflareIncidents = [],
   zscalerUpdates = [],
   oktaUpdates = [],
@@ -30,7 +31,13 @@ export default function NotificationChatbot({
   const panelRef = useRef(null);
   const buttonRef = useRef(null);
 
-  // Aggregate today's issues
+  // Helper to check if a service is selected
+  const isServiceSelected = (service) => {
+    if (!selectedServices) return true;
+    return selectedServices.includes(service.toLowerCase());
+  };
+
+  // Aggregate today's issues, filtered by selected services
   const today = new Date();
   const isToday = (date) => {
     const d = new Date(date);
@@ -39,14 +46,14 @@ export default function NotificationChatbot({
       d.getFullYear() === today.getFullYear();
   };
   const allAlerts = [
-    ...cloudflareIncidents.map(item => ({ ...item, service: 'Cloudflare', date: item.updated_at || item.created_at, id: `cloudflare-${item.id || item.name}` })),
-    ...zscalerUpdates.map(item => ({ ...item, service: 'Zscaler', date: item.date, id: `zscaler-${item.title || item.link}` })),
-    ...oktaUpdates.map(item => ({ ...item, service: 'Okta', date: item.date, id: `okta-${item.title || item.link}` })),
-    ...sendgridUpdates.map(item => ({ ...item, service: 'SendGrid', date: item.date, id: `sendgrid-${item.title || item.link}` })),
-    ...slackUpdates.map(item => ({ ...item, service: 'Slack', date: item.reported_at || item.date, id: `slack-${item.title || item.id}` })),
-    ...datadogUpdates.map(item => ({ ...item, service: 'Datadog', date: item.reported_at || item.date, id: `datadog-${item.title || item.id}` })),
-    ...awsUpdates.map(item => ({ ...item, service: 'AWS', date: item.reported_at || item.date, id: `aws-${item.title || item.id}` })),
-  ].filter(alert => isToday(alert.date) && !clearedAlerts.has(alert.id));
+    ...isServiceSelected('cloudflare') ? cloudflareIncidents.map(item => ({ ...item, service: 'Cloudflare', date: item.updated_at || item.created_at, id: `cloudflare-${item.id || item.name}` })) : [],
+    ...isServiceSelected('zscaler') ? zscalerUpdates.map(item => ({ ...item, service: 'Zscaler', date: item.date, id: `zscaler-${item.title || item.link}` })) : [],
+    ...isServiceSelected('okta') ? oktaUpdates.map(item => ({ ...item, service: 'Okta', date: item.date, id: `okta-${item.title || item.link}` })) : [],
+    ...isServiceSelected('sendgrid') ? sendgridUpdates.map(item => ({ ...item, service: 'SendGrid', date: item.date, id: `sendgrid-${item.title || item.link}` })) : [],
+    ...isServiceSelected('slack') ? slackUpdates.map(item => ({ ...item, service: 'Slack', date: item.reported_at || item.date, id: `slack-${item.title || item.id}` })) : [],
+    ...isServiceSelected('datadog') ? datadogUpdates.map(item => ({ ...item, service: 'Datadog', date: item.reported_at || item.date, id: `datadog-${item.title || item.id}` })) : [],
+    ...isServiceSelected('aws') ? awsUpdates.map(item => ({ ...item, service: 'AWS', date: item.reported_at || item.date, id: `aws-${item.title || item.id}` })) : [],
+  ].flat().filter(alert => isToday(alert.date) && !clearedAlerts.has(alert.id));
 
   // Clear individual notification
   const clearNotification = (alertId) => {

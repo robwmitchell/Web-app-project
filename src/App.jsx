@@ -598,13 +598,14 @@ function App() {
             </button>
             
             <NotificationChatbot
+              selectedServices={selectedServices}
               cloudflareIncidents={cloudflare.incidents}
               zscalerUpdates={zscaler.updates}
               oktaUpdates={okta.updates}
               sendgridUpdates={sendgrid.updates}
-              slackUpdates={isServiceSelected('slack') ? slack.updates : []}
-              datadogUpdates={isServiceSelected('datadog') ? datadog.updates : []}
-              awsUpdates={isServiceSelected('aws') ? aws.updates : []}
+              slackUpdates={slack.updates}
+              datadogUpdates={datadog.updates}
+              awsUpdates={aws.updates}
               headerMode={true}
               usePortal={true} // Ensure modal is rendered in a portal
               modalZIndex={20000} // Pass a very high z-index to modal if supported
