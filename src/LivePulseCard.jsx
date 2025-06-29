@@ -105,7 +105,6 @@ export default function LivePulseCard({
               <span style={{ fontWeight: 800, fontSize: '1.35em', color: '#1e293b', letterSpacing: '-0.01em' }}>{name || provider}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span className={`status-indicator ${indicator}`} title={indicator} style={{ boxShadow: '0 0 0 4px #f3f4f6, 0 2px 8px rgba(15,23,42,0.08)' }}></span>
-                <span className="status-text" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>{status}</span>
               </span>
             </div>
             {/* Plus/Minus Icon Button - right aligned */}
