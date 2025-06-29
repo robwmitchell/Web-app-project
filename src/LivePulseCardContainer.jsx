@@ -306,7 +306,20 @@ export default function LivePulseCardContainer({
                         <img src={serviceLogos[provider]} alt="time" style={{ width: 12, height: 12 }} />
                         {formatDate(incident.updated_at || incident.updatedAt)}
                       </span>
-                      {incident.shortlink && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                      {incident.shortlink && (
+                        <a 
+                          href={incident.shortlink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
                     </div>
                     {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
                       <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid #f0f0f0' }}>
@@ -377,7 +390,20 @@ export default function LivePulseCardContainer({
                         {formatDate(issue.date)}
                       </span>
                       {issue.eventType && <span style={{ color: '#f57c00' }}>⚠️ {issue.eventType}</span>}
-                      {issue.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                      {issue.link && (
+                        <a 
+                          href={issue.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -434,7 +460,20 @@ export default function LivePulseCardContainer({
                         <img src={serviceLogos[provider]} alt="time" style={{ width: 12, height: 12 }} />
                         {formatDate(incident.updated_at || incident.updatedAt)}
                       </span>
-                      {incident.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                      {incident.link && (
+                        <a 
+                          href={incident.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
                     </div>
                     {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
                       <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid #f0f0f0' }}>
@@ -500,7 +539,20 @@ export default function LivePulseCardContainer({
                         <img src={serviceLogos[provider]} alt="time" style={{ width: 12, height: 12 }} />
                         {formatDate(incident.updated_at || incident.updatedAt)}
                       </span>
-                      {incident.shortlink && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                      {incident.shortlink && (
+                        <a 
+                          href={incident.shortlink} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
                     </div>
                     {Array.isArray(incident.incident_updates) && incident.incident_updates.length > 0 && (
                       <div style={{ marginTop: 8, paddingLeft: 12, borderLeft: '2px solid #f0f0f0' }}>

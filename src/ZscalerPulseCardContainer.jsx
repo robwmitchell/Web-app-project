@@ -230,7 +230,20 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
                         {formatDate(issue.date)}
                       </span>
                       {issue.eventType && <span style={{ color: '#f57c00' }}>⚠️ {issue.eventType}</span>}
-                      {issue.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                      {issue.link && (
+                        <a 
+                          href={issue.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -288,7 +301,20 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
                       gap: 8
                     }}>
                       <span>🕒 {formatDate(issue.date)}</span>
-                      {issue.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                      {issue.link && (
+                        <a 
+                          href={issue.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -346,7 +372,20 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
                       gap: 8
                     }}>
                       <span>🕒 {formatDate(issue.date)}</span>
-                      {issue.link && <span style={{ color: '#1976d2' }}>🔗 View details</span>}
+                      {issue.link && (
+                        <a 
+                          href={issue.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
