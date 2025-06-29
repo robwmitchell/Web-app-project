@@ -45,22 +45,31 @@ export default function LivePulseCardContainer({
 
   // Headline: latest incident/update or fallback
   let headline = 'All systems operational.';
+  let lastUpdated = null;
   let headlineStyle = { marginBottom: 4, minHeight: 22, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%' };
   if (provider === 'Cloudflare') {
     headline = todayIssueCount === 0
       ? 'No issues reported today.'
       : `${todayIssueCount} issue${todayIssueCount > 1 ? 's' : ''} reported today.`;
+    // Get most recent incident date for last updated
+    if (incidents.length > 0) {
+      const latest = incidents[0];
+      lastUpdated = formatDate(latest.updated_at || latest.updatedAt);
+    }
     // Move left and reduce margin below
     headlineStyle = { marginBottom: 4, minHeight: 22, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', width: '100%' };
   } else if (provider === 'Zscaler' && updates.length > 0) {
     const latest = updates[0];
-    headline = `${latest.title} (${formatDate(latest.date)})`;
+    headline = latest.title;
+    lastUpdated = formatDate(latest.date);
   } else if (provider === 'SendGrid' && incidents.length > 0) {
     const latest = incidents[0];
-    headline = `${latest.name} ${latest.status.replace('_', ' ')} (${formatDate(latest.updated_at || latest.updatedAt)})`;
+    headline = `${latest.name} ${latest.status.replace('_', ' ')}`;
+    lastUpdated = formatDate(latest.updated_at || latest.updatedAt);
   } else if (provider === 'Okta' && incidents.length > 0) {
     const latest = incidents[0];
-    headline = `${latest.name} ${latest.status.replace('_', ' ')} (${formatDate(latest.updated_at || latest.updatedAt)})`;
+    headline = `${latest.name} ${latest.status.replace('_', ' ')}`;
+    lastUpdated = formatDate(latest.updated_at || latest.updatedAt);
   }
 
   // Company info for each provider
@@ -185,6 +194,7 @@ export default function LivePulseCardContainer({
         status={status}
         headline={<div style={headlineStyle}>{headline}</div>}
         companyInfo={companyInfoMap[provider]}
+        lastUpdated={lastUpdated}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Service history bar now beneath the button */}

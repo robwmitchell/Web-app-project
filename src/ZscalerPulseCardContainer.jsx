@@ -85,6 +85,19 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
     ? `${todayIssueCount} issue${todayIssueCount > 1 ? 's' : ''} logged today`
     : 'No issues logged today.';
 
+  // Get last updated date from most recent update
+  let lastUpdated = null;
+  if (updates.length > 0) {
+    const latest = updates[0];
+    if (latest.startTime) {
+      lastUpdated = formatDate(latest.startTime);
+    } else if (latest.date) {
+      lastUpdated = formatDate(latest.date);
+    } else if (latest.reported_at) {
+      lastUpdated = formatDate(latest.reported_at);
+    }
+  }
+
   const companyInfo = (
     <>
       <div style={{ marginBottom: 6 }}>
@@ -107,6 +120,7 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
         onExpand={() => setModalOpen(true)}
         companyInfo={companyInfo}
         onBugClick={() => setBugModalOpen(true)}
+        lastUpdated={lastUpdated}
       >
         <div style={{ marginTop: 18, width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
