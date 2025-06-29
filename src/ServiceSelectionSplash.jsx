@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ServiceSelectionSplash.css';
 import logoImage from './assets/stackstatus1.png';
 import { serviceLogos } from './serviceLogos';
@@ -98,7 +98,7 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Initialize default alert types for all services
-  React.useEffect(() => {
+  useEffect(() => {
     const defaultAlertTypes = new Map();
     AVAILABLE_SERVICES.forEach(service => {
       const defaults = new Set(
@@ -172,17 +172,23 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
     
     setIsSubmitting(true);
     
+    // Convert Sets to Arrays for localStorage storage
+    const alertTypesAsArrays = {};
+    selectedAlertTypes.forEach((alertSet, serviceId) => {
+      alertTypesAsArrays[serviceId] = Array.from(alertSet);
+    });
+    
     // Save selection to localStorage
     const serviceConfig = {
       services: [...selectedServices],
-      alertTypes: Object.fromEntries(selectedAlertTypes)
+      alertTypes: alertTypesAsArrays
     };
     localStorage.setItem('selectedServices', JSON.stringify([...selectedServices]));
-    localStorage.setItem('serviceAlertTypes', JSON.stringify(serviceConfig.alertTypes));
+    localStorage.setItem('serviceAlertTypes', JSON.stringify(alertTypesAsArrays));
     
     // Simulate a brief loading state
     setTimeout(() => {
-      onServicesSelected([...selectedServices], serviceConfig.alertTypes);
+      onServicesSelected([...selectedServices], alertTypesAsArrays);
     }, 500);
   };
 

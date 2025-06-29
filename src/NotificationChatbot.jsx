@@ -54,83 +54,86 @@ export default function NotificationChatbot({
       return true;
     }
 
+    // Convert to array if it's a Set or other format
+    const alertTypesArray = Array.isArray(serviceAlertTypes) ? serviceAlertTypes : Array.from(serviceAlertTypes);
+
     // Filter based on alert type preferences for each service
     switch (serviceId) {
       case 'cloudflare':
         // Check if it's an incident, maintenance, or degradation
         if (alertData.impact === 'critical' || alertData.impact === 'major') {
-          return serviceAlertTypes.includes('incidents');
+          return alertTypesArray.includes('incidents');
         }
         if (alertData.name?.toLowerCase().includes('maintenance')) {
-          return serviceAlertTypes.includes('maintenance');
+          return alertTypesArray.includes('maintenance');
         }
         if (alertData.impact === 'minor') {
-          return serviceAlertTypes.includes('degradation');
+          return alertTypesArray.includes('degradation');
         }
-        return serviceAlertTypes.includes('incidents'); // Default to incidents
+        return alertTypesArray.includes('incidents'); // Default to incidents
         
       case 'zscaler':
         const text = `${alertData.title || ''} ${alertData.description || ''}`.toLowerCase();
         if (text.includes('disruption') || text.includes('outage') || text.includes('incident')) {
-          return serviceAlertTypes.includes('disruptions');
+          return alertTypesArray.includes('disruptions');
         }
         if (text.includes('degraded') || text.includes('performance')) {
-          return serviceAlertTypes.includes('degradation');
+          return alertTypesArray.includes('degradation');
         }
-        return serviceAlertTypes.includes('updates'); // Default to updates
+        return alertTypesArray.includes('updates'); // Default to updates
         
       case 'okta':
         const oktaText = `${alertData.title || alertData.name || ''} ${alertData.description || ''}`.toLowerCase();
         if (oktaText.includes('maintenance')) {
-          return serviceAlertTypes.includes('maintenance');
+          return alertTypesArray.includes('maintenance');
         }
         if (oktaText.includes('security') || oktaText.includes('breach')) {
-          return serviceAlertTypes.includes('security');
+          return alertTypesArray.includes('security');
         }
-        return serviceAlertTypes.includes('incidents'); // Default to incidents
+        return alertTypesArray.includes('incidents'); // Default to incidents
         
       case 'sendgrid':
         const sendgridText = `${alertData.title || alertData.name || ''}`.toLowerCase();
         if (sendgridText.includes('api')) {
-          return serviceAlertTypes.includes('api');
+          return alertTypesArray.includes('api');
         }
         if (sendgridText.includes('maintenance')) {
-          return serviceAlertTypes.includes('maintenance');
+          return alertTypesArray.includes('maintenance');
         }
-        return serviceAlertTypes.includes('delivery'); // Default to delivery
+        return alertTypesArray.includes('delivery'); // Default to delivery
         
       case 'slack':
         const slackText = `${alertData.title || alertData.name || ''}`.toLowerCase();
         if (slackText.includes('call') || slackText.includes('video') || slackText.includes('voice')) {
-          return serviceAlertTypes.includes('calls');
+          return alertTypesArray.includes('calls');
         }
         if (slackText.includes('file') || slackText.includes('upload') || slackText.includes('attachment')) {
-          return serviceAlertTypes.includes('files');
+          return alertTypesArray.includes('files');
         }
-        return serviceAlertTypes.includes('messaging'); // Default to messaging
+        return alertTypesArray.includes('messaging'); // Default to messaging
         
       case 'datadog':
         const datadogText = `${alertData.title || alertData.name || ''}`.toLowerCase();
         if (datadogText.includes('dashboard') || datadogText.includes('ui') || datadogText.includes('visualization')) {
-          return serviceAlertTypes.includes('dashboard');
+          return alertTypesArray.includes('dashboard');
         }
         if (datadogText.includes('api')) {
-          return serviceAlertTypes.includes('api');
+          return alertTypesArray.includes('api');
         }
-        return serviceAlertTypes.includes('monitoring'); // Default to monitoring
+        return alertTypesArray.includes('monitoring'); // Default to monitoring
         
       case 'aws':
         const awsText = `${alertData.title || alertData.name || ''}`.toLowerCase();
         if (awsText.includes('s3') || awsText.includes('ebs') || awsText.includes('storage')) {
-          return serviceAlertTypes.includes('storage');
+          return alertTypesArray.includes('storage');
         }
         if (awsText.includes('vpc') || awsText.includes('cloudfront') || awsText.includes('network')) {
-          return serviceAlertTypes.includes('network');
+          return alertTypesArray.includes('network');
         }
         if (awsText.includes('rds') || awsText.includes('dynamodb') || awsText.includes('database')) {
-          return serviceAlertTypes.includes('database');
+          return alertTypesArray.includes('database');
         }
-        return serviceAlertTypes.includes('compute'); // Default to compute
+        return alertTypesArray.includes('compute'); // Default to compute
         
       default:
         return true;
