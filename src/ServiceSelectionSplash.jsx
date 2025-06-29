@@ -169,7 +169,7 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
               {isSubmitting ? (
                 <>
                   <span className="loading-spinner"></span>
-                  Loading Dashboard...
+                  Refreshing Dashboard...
                 </>
               ) : (
                 `Continue with ${selectedServices.size} service${selectedServices.size !== 1 ? 's' : ''}`

@@ -205,7 +205,14 @@ function App() {
     { provider: 'Okta', name: 'Service Disruption', status: 'critical', updated: new Date().toISOString(), url: 'https://status.okta.com/' },
   ];
 
-  // Utility: get and set Cloudflare incidents in localStorage
+  // Configuration for splash screen behavior
+const SPLASH_CONFIG = {
+  autoRefreshOnSelection: true, // Set to false to disable auto-refresh
+  refreshDelay: 300, // Delay before refresh in ms
+  showRefreshMessage: true // Show loading message during refresh
+};
+
+// Utility: get and set Cloudflare incidents in localStorage
   function getStoredCloudflareIncidents() {
     try {
       const raw = localStorage.getItem('cloudflare_incidents');
@@ -478,6 +485,45 @@ function App() {
     setSelectedServices(services);
     localStorage.setItem('selectedServices', JSON.stringify(services));
     setShowSplash(false);
+    
+    // Optionally refresh the page for a clean state
+    if (SPLASH_CONFIG.autoRefreshOnSelection) {
+      setTimeout(() => {
+        if (SPLASH_CONFIG.showRefreshMessage) {
+          // Add a subtle loading indicator before refresh
+          const refreshMessage = document.createElement('div');
+          refreshMessage.innerHTML = `
+            <div style="
+              position: fixed; 
+              top: 50%; 
+              left: 50%; 
+              transform: translate(-50%, -50%); 
+              background: white; 
+              padding: 20px 40px; 
+              border-radius: 8px; 
+              box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+              z-index: 10000;
+              text-align: center;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            ">
+              <div style="margin-bottom: 10px;">🔄</div>
+              <div>Refreshing dashboard...</div>
+            </div>
+          `;
+          document.body.appendChild(refreshMessage);
+          
+          // Refresh after showing the message
+          setTimeout(() => {
+            window.location.reload();
+          }, 800);
+        } else {
+          window.location.reload();
+        }
+      }, SPLASH_CONFIG.refreshDelay);
+    } else {
+      // Just trigger a data refresh without page reload
+      fetchAllStatuses();
+    }
   }
 
   // Helper function to check if service is selected
