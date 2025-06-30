@@ -1,9 +1,58 @@
+// Database cleanup utility for local testing and manual execution
+
+const isProduction = process.env.NODE_ENV === 'production' || process.env.VERCEL;
+
+if (!isProduction) {
+  // For local development, use the API endpoint instead of direct database access
+  console.log('🔧 Local development detected - using API endpoint for cleanup');
+  console.log('💡 For direct database access, run this on Vercel or set DATABASE_URL locally');
+  
+  const daysToKeep = process.argv[2] ? parseInt(process.argv[2]) : 8;
+  const apiUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}/api/cleanup-old-records?days=${daysToKeep}`
+    : `http://localhost:5173/api/cleanup-old-records?days=${daysToKeep}`;
+    
+  console.log(`📡 Making cleanup request to: ${apiUrl}`);
+  
+  try {
+    const response = await fetch(apiUrl);
+    const result = await response.json();
+    
+    if (response.ok) {
+      console.log('✅ Cleanup completed successfully!');
+      console.log('📊 Results:', JSON.stringify(result, null, 2));
+    } else {
+      console.error('❌ Cleanup failed:', result.error);
+    }
+  } catch (error) {
+    console.error('❌ Failed to call cleanup API:', error.message);
+    console.log('💡 Make sure your dev server is running: npm run dev');
+  }
+  
+  process.exit(0);
+}
+
+// Production code - direct database access
 import { neon } from '@neondatabase/serverless';
 
 // Load environment variables for local testing
-if (process.env.NODE_ENV !== 'production') {
-  const dotenv = await import('dotenv');
-  dotenv.config();
+if (!isProduction) {
+  try {
+    const dotenv = await import('dotenv');
+    // Try to load from .env.local first (Vercel environment variables)
+    dotenv.config({ path: '.env.local' });
+    // Fallback to .env
+    dotenv.config();
+  } catch (error) {
+    console.log('⚠️  dotenv not found, using system environment variables');
+  }
+}
+
+// Validate DATABASE_URL
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL environment variable is required');
+  console.error('💡 Run "vercel env pull .env.local" to get environment variables from Vercel');
+  process.exit(1);
 }
 
 const sql = neon(process.env.DATABASE_URL);
