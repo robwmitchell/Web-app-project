@@ -11,6 +11,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import NotificationChatbot from './NotificationChatbot';
 import logoImage from './assets/stackstatus1.png';
+import { SEOHead, generateSEOContent } from './utils/seo';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -206,13 +207,13 @@ function App() {
   ];
 
   // Configuration for splash screen behavior
-const SPLASH_CONFIG = {
-  autoRefreshOnSelection: true, // Set to false to disable auto-refresh
-  refreshDelay: 300, // Delay before refresh in ms
-  showRefreshMessage: true // Show loading message during refresh
-};
+  const SPLASH_CONFIG = {
+    autoRefreshOnSelection: true, // Set to false to disable auto-refresh
+    refreshDelay: 300, // Delay before refresh in ms
+    showRefreshMessage: true // Show loading message during refresh
+  };
 
-// Utility: get and set Cloudflare incidents in localStorage
+  // Utility: get and set Cloudflare incidents in localStorage
   function getStoredCloudflareIncidents() {
     try {
       const raw = localStorage.getItem('cloudflare_incidents');
@@ -545,6 +546,29 @@ const SPLASH_CONFIG = {
 
   return (
     <>
+      {/* SEO Component for dynamic meta tag management */}
+      <SEOHead 
+        selectedServices={selectedServices}
+        serviceStatuses={{
+          cloudflare: cloudflare,
+          zscaler: zscaler,
+          okta: okta,
+          sendgrid: sendgrid,
+          slack: slack,
+          datadog: datadog,
+          aws: aws
+        }}
+        {...generateSEOContent(selectedServices, {
+          cloudflare: cloudflare,
+          zscaler: zscaler,
+          okta: okta,
+          sendgrid: sendgrid,
+          slack: slack,
+          datadog: datadog,
+          aws: aws
+        })}
+      />
+      
       {/* Remove white space at top by setting margin and padding to 0 on body and root container */}
       <style>{`
         body, #root {

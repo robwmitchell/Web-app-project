@@ -1,0 +1,105 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://stack-status-io.vercel.app/#webapp",
+      "name": "Stack Status IO",
+      "alternateName": "StackStatus",
+      "description": "Real-time service status monitoring dashboard for critical cloud services including AWS, Cloudflare, Okta, Zscaler, SendGrid, Slack, and Datadog",
+      "url": "https://stack-status-io.vercel.app",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Web Browser",
+      "browserRequirements": "Requires JavaScript. Chrome 90+, Firefox 88+, Safari 14+, Edge 90+",
+      "softwareVersion": "1.0.0",
+      "dateCreated": "2024-12-21",
+      "dateModified": "2024-12-21",
+      "inLanguage": "en-US",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Stack Status IO",
+        "url": "https://stack-status-io.vercel.app"
+      },
+      "featureList": [
+        "Real-time status monitoring",
+        "Service disruption alerts",
+        "Multi-service dashboard",
+        "Incident tracking",
+        "Customizable notifications",
+        "Mobile responsive design",
+        "Instant notification system",
+        "Service configuration"
+      ],
+      "screenshot": {
+        "@type": "ImageObject",
+        "url": "https://stack-status-io.vercel.app/logo.png",
+        "caption": "Stack Status IO Dashboard Screenshot"
+      },
+      "applicationSubCategory": "Monitoring Tool",
+      "serviceType": "Cloud Service Monitoring",
+      "audience": {
+        "@type": "Audience",
+        "audienceType": "Developers, DevOps Engineers, System Administrators, IT Professionals"
+      }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://stack-status-io.vercel.app/#organization",
+      "name": "Stack Status IO",
+      "url": "https://stack-status-io.vercel.app",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://stack-status-io.vercel.app/logo.png",
+        "width": 512,
+        "height": 512
+      },
+      "sameAs": [
+        "https://stack-status-io.vercel.app"
+      ],
+      "description": "Provider of real-time cloud service status monitoring solutions"
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://stack-status-io.vercel.app/#website",
+      "url": "https://stack-status-io.vercel.app",
+      "name": "Stack Status IO",
+      "description": "Monitor the real-time status of critical cloud services",
+      "publisher": {
+        "@id": "https://stack-status-io.vercel.app/#organization"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://stack-status-io.vercel.app/?service={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://stack-status-io.vercel.app"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Service Status",
+          "item": "https://stack-status-io.vercel.app/#services"
+        }
+      ]
+    }
+  ]
+}

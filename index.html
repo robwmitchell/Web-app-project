@@ -2,9 +2,83 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stack Status IO</title>
+    
+    <!-- Favicons and Icons -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Viewport and Theme -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="theme-color" content="#667eea" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Stack Status IO - Real-Time Service Status Monitoring Dashboard</title>
+    <meta name="description" content="Monitor the real-time status of critical cloud services including AWS, Cloudflare, Okta, Zscaler, SendGrid, Slack, and Datadog. Get instant notifications about service disruptions, outages, and maintenance windows." />
+    <meta name="keywords" content="service status, monitoring, dashboard, AWS status, Cloudflare status, Okta status, Zscaler status, SendGrid status, Slack status, Datadog status, cloud services, uptime monitoring, service outage, incident tracking" />
+    <meta name="author" content="Stack Status IO" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Stack Status IO - Real-Time Service Status Monitoring" />
+    <meta property="og:description" content="Monitor the real-time status of critical cloud services. Get instant notifications about service disruptions and outages for AWS, Cloudflare, Okta, and more." />
+    <meta property="og:image" content="/logo.png" />
+    <meta property="og:url" content="https://stack-status-io.vercel.app" />
+    <meta property="og:site_name" content="Stack Status IO" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Stack Status IO - Real-Time Service Status Monitoring" />
+    <meta name="twitter:description" content="Monitor the real-time status of critical cloud services. Get instant notifications about service disruptions and outages." />
+    <meta name="twitter:image" content="/logo.png" />
+    
+    <!-- Additional SEO -->
+    <meta name="application-name" content="Stack Status IO" />
+    <meta name="msapplication-TileColor" content="#667eea" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://stack-status-io.vercel.app" />
+    
+    <!-- Preconnect to external resources for performance -->
+    <link rel="preconnect" href="https://www.cloudflarestatus.com" />
+    <link rel="preconnect" href="https://trust.zscaler.com" />
+    <link rel="preconnect" href="https://status.okta.com" />
+    <link rel="preconnect" href="https://status.sendgrid.com" />
+    <link rel="preconnect" href="https://status.slack.com" />
+    <link rel="preconnect" href="https://status.datadoghq.com" />
+    <link rel="preconnect" href="https://status.aws.amazon.com" />
+    <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
+    
+    <!-- Structured Data for Search Engines -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Stack Status IO",
+      "description": "Real-time service status monitoring dashboard for critical cloud services",
+      "url": "https://stack-status-io.vercel.app",
+      "applicationCategory": "UtilityApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "Stack Status IO"
+      },
+      "featureList": [
+        "Real-time status monitoring",
+        "Service disruption alerts",
+        "Multi-service dashboard",
+        "Incident tracking",
+        "Customizable notifications"
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

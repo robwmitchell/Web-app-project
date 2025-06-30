@@ -1,21 +1,36 @@
 {
-  "name": "Stack Status IO",
+  "name": "Stack Status IO - Real-Time Service Status Monitoring",
   "short_name": "StackStatus",
-  "description": "Real-time service status monitoring dashboard",
+  "description": "Monitor the real-time status of critical cloud services including AWS, Cloudflare, Okta, Zscaler, SendGrid, Slack, and Datadog. Get instant notifications about service disruptions and outages.",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#fafbff",
   "theme_color": "#667eea",
+  "categories": ["utilities", "productivity", "business"],
+  "lang": "en",
+  "scope": "/",
   "icons": [
     {
       "src": "/logo.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/logo.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/logo.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Stack Status IO Dashboard"
     }
   ]
 }
