@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ServiceSelectionSplash.css';
 import logoImage from './assets/stackstatus1.png';
 import { serviceLogos } from './serviceLogos';
@@ -96,6 +96,24 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
   const [selectedAlertTypes, setSelectedAlertTypes] = useState(new Map());
   const [expandedServices, setExpandedServices] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const containerRef = useRef(null);
+
+  // Handle scroll indicator
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop > 10) {
+        container.classList.add('scrolling');
+      } else {
+        container.classList.remove('scrolling');
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Initialize default alert types for all services
   useEffect(() => {
@@ -198,7 +216,7 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
         <div className="splash-particles"></div>
       </div>
       
-      <div className="splash-container">
+      <div className="splash-container" ref={containerRef}>
         <div className="splash-header">
           <div className="splash-logo">
             <img 
