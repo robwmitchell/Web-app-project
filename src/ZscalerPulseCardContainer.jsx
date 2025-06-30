@@ -385,10 +385,223 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
                       alignItems: 'center',
                       gap: 8
                     }}>
-                      <span>🕒 {formatDate(issue.date)}</span>
+                      <span>🕒 {formatDate(issue.date || issue.reported_at)}</span>
                       {issue.link && (
                         <a 
                           href={issue.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : provider === 'Datadog' && filteredUpdates.length > 0 ? (
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            {filteredUpdates.map((issue, idx) => (
+              <div key={idx} style={{ 
+                borderBottom: idx < filteredUpdates.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                padding: '16px 20px',
+                transition: 'background-color 0.2s ease',
+                cursor: issue.url ? 'pointer' : 'default'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={() => issue.url && window.open(issue.url, '_blank')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#632c41',
+                    marginTop: 6,
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      marginBottom: 4,
+                      fontSize: 14,
+                      color: '#2c3e50'
+                    }}>
+                      {issue.title}
+                    </div>
+                    <div style={{ 
+                      fontSize: 13, 
+                      color: '#666', 
+                      marginBottom: 6,
+                      lineHeight: 1.4,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {htmlToText(issue.description) || 'No description available'}
+                    </div>
+                    <div style={{ 
+                      fontSize: 11, 
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}>
+                      <span>🕒 {formatDate(issue.reported_at)}</span>
+                      {issue.url && (
+                        <a 
+                          href={issue.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : provider === 'Slack' && filteredUpdates.length > 0 ? (
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            {filteredUpdates.map((issue, idx) => (
+              <div key={idx} style={{ 
+                borderBottom: idx < filteredUpdates.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                padding: '16px 20px',
+                transition: 'background-color 0.2s ease',
+                cursor: issue.url ? 'pointer' : 'default'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={() => issue.url && window.open(issue.url, '_blank')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#4a154b',
+                    marginTop: 6,
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      marginBottom: 4,
+                      fontSize: 14,
+                      color: '#2c3e50'
+                    }}>
+                      {issue.title}
+                    </div>
+                    <div style={{ 
+                      fontSize: 13, 
+                      color: '#666', 
+                      marginBottom: 6,
+                      lineHeight: 1.4,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {htmlToText(issue.description) || 'No description available'}
+                    </div>
+                    <div style={{ 
+                      fontSize: 11, 
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}>
+                      <span>🕒 {formatDate(issue.reported_at)}</span>
+                      {issue.url && (
+                        <a 
+                          href={issue.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ 
+                            color: '#1976d2', 
+                            textDecoration: 'none',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🔗 View details
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : provider === 'AWS' && filteredUpdates.length > 0 ? (
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            {filteredUpdates.map((issue, idx) => (
+              <div key={idx} style={{ 
+                borderBottom: idx < filteredUpdates.length - 1 ? '1px solid #f5f5f5' : 'none', 
+                padding: '16px 20px',
+                transition: 'background-color 0.2s ease',
+                cursor: issue.url ? 'pointer' : 'default'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              onClick={() => issue.url && window.open(issue.url, '_blank')}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#ff9900',
+                    marginTop: 6,
+                    flexShrink: 0
+                  }}></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ 
+                      fontWeight: 600, 
+                      marginBottom: 4,
+                      fontSize: 14,
+                      color: '#2c3e50'
+                    }}>
+                      {issue.title}
+                    </div>
+                    <div style={{ 
+                      fontSize: 13, 
+                      color: '#666', 
+                      marginBottom: 6,
+                      lineHeight: 1.4,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}>
+                      {htmlToText(issue.description) || 'No description available'}
+                    </div>
+                    <div style={{ 
+                      fontSize: 11, 
+                      color: '#999',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8
+                    }}>
+                      <span>🕒 {formatDate(issue.reported_at)}</span>
+                      {issue.url && (
+                        <a 
+                          href={issue.url} 
                           target="_blank" 
                           rel="noopener noreferrer"
                           style={{ 
