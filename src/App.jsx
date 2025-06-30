@@ -381,25 +381,40 @@ const SPLASH_CONFIG = {
         .then(res => res.json())
         .then(({ data }) => {
           if (isServiceSelected('slack')) {
-            setSlack({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Slack'), name: 'Slack' });
+            const slackUpdates = data.filter(i => i.provider === 'Slack');
+            setSlack({ 
+              status: slackUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
+              updates: slackUpdates, 
+              name: 'Slack' 
+            });
           }
           if (isServiceSelected('datadog')) {
-            setDatadog({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Datadog'), name: 'Datadog' });
+            const datadogUpdates = data.filter(i => i.provider === 'Datadog');
+            setDatadog({ 
+              status: datadogUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
+              updates: datadogUpdates, 
+              name: 'Datadog' 
+            });
           }
           if (isServiceSelected('aws')) {
-            setAws({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'AWS'), name: 'AWS' });
+            const awsUpdates = data.filter(i => i.provider === 'AWS');
+            setAws({ 
+              status: awsUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
+              updates: awsUpdates, 
+              name: 'AWS' 
+            });
           }
         })
         .catch((error) => {
           if (error.name !== 'AbortError') {
             if (isServiceSelected('slack')) {
-              setSlack({ status: 'Error loading feed', updates: [] });
+              setSlack({ status: 'Error loading feed', updates: [], name: 'Slack' });
             }
             if (isServiceSelected('datadog')) {
-              setDatadog({ status: 'Error loading feed', updates: [] });
+              setDatadog({ status: 'Error loading feed', updates: [], name: 'Datadog' });
             }
             if (isServiceSelected('aws')) {
-              setAws({ status: 'Error loading feed', updates: [] });
+              setAws({ status: 'Error loading feed', updates: [], name: 'AWS' });
             }
           }
         });

@@ -132,6 +132,14 @@ export default async function handler(req, res) {
 
     console.log(`RSS results - Zscaler: ${zscaler.length}, Slack: ${slack.length}, Datadog: ${datadog.length}, AWS: ${aws.length}`);
 
+    // Debug: Log what we're actually getting for Datadog and Slack
+    if (datadog.length > 0) {
+      console.log('Datadog items:', datadog.map(item => ({ title: item.title, date: item.reported_at, provider: item.provider })));
+    }
+    if (slack.length > 0) {
+      console.log('Slack items:', slack.map(item => ({ title: item.title, date: item.reported_at, provider: item.provider })));
+    }
+
     // Merge all (Cloudflare API and all RSS feeds)
     const all = [
       ...cloudflareIncidents,
