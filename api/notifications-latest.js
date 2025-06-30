@@ -54,9 +54,9 @@ async function fetchRSSFeed(url, provider, days = 1) {
   try {
     const res = await fetchImpl(url);
     const text = await res.text();
-    const parser = require('xml2js');
+    const { parseStringPromise } = await import('xml2js');
     let items = [];
-    await parser.parseStringPromise(text).then(result => {
+    await parseStringPromise(text).then(result => {
       items = result.rss.channel[0].item || [];
     });
     
@@ -87,7 +87,15 @@ async function fetchRSSFeed(url, provider, days = 1) {
     // Filter by date only for now to see all recent items
     const filtered = mappedItems.filter(item => {
       const date = new Date(item.reported_at);
-      return !isNaN(date) && date >= since;
+      const isValidDate = !isNaN(date);
+      const isWithinRange = isValidDate && date >= since;
+      
+      // Debug logging for Datadog specifically
+      if (provider === 'Datadog') {
+        console.log(`${provider} item: "${item.title}" - Date: ${item.reported_at} -> Parsed: ${date} -> Valid: ${isValidDate} -> Within ${days}d: ${isWithinRange}`);
+      }
+      
+      return isWithinRange;
     });
     
     console.log(`${provider} RSS: Found ${items.length} total items, ${filtered.length} within ${days} days`);
@@ -118,7 +126,7 @@ export default async function handler(req, res) {
     const [zscaler, slack, datadog, aws] = await Promise.all([
       fetchRSSFeed('https://trust.zscaler.com/blog-feed', 'Zscaler', 14),
       fetchRSSFeed('https://status.slack.com/feed/rss', 'Slack', 14),
-      fetchRSSFeed('https://status.datadoghq.eu/history.rss', 'Datadog', 14),
+      fetchRSSFeed('https://datadogintegrations.statuspage.io/history.rss', 'Datadog', 14),
       fetchRSSFeed('https://status.aws.amazon.com/rss/all.rss', 'AWS', 14),
     ]);
 
