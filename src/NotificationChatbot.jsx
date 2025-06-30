@@ -140,13 +140,12 @@ export default function NotificationChatbot({
     }
   };
 
-  // Aggregate today's issues, filtered by selected services and alert type preferences
+  // Aggregate recent issues (last 7 days), filtered by selected services and alert type preferences
   const today = new Date();
-  const isToday = (date) => {
+  const isRecent = (date) => {
     const d = new Date(date);
-    return d.getDate() === today.getDate() &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear();
+    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    return !isNaN(d) && d >= sevenDaysAgo;
   };
   
   const allAlerts = [
@@ -171,7 +170,7 @@ export default function NotificationChatbot({
     ...isServiceSelected('aws') ? awsUpdates
       .map(item => ({ ...item, service: 'AWS', date: item.reported_at || item.date, id: `aws-${item.title || item.id}` }))
       .filter(alert => shouldShowAlert('aws', alert)) : [],
-  ].flat().filter(alert => isToday(alert.date) && !clearedAlerts.has(alert.id));
+  ].flat().filter(alert => isRecent(alert.date) && !clearedAlerts.has(alert.id));
 
   // Clear individual notification
   const clearNotification = (alertId) => {
@@ -214,7 +213,7 @@ export default function NotificationChatbot({
         id === `datadog-${a.title || a.id}` ||
         id === `aws-${a.title || a.id}`
       );
-      return alert && isToday(alert.date);
+      return alert && isRecent(alert.date);
     });
     setClearedAlerts(new Set(alertIds));
     // Save to localStorage for today
@@ -295,7 +294,7 @@ export default function NotificationChatbot({
       style={getModalStyle()}
     >
       <div style={{ padding: window.innerWidth <= 600 ? '14px 10px 10px 14px' : '22px 28px 16px 28px', borderBottom: '1px solid #f1f5f9', background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(99,102,241,0.04)' }}>
-        <span style={{ fontWeight: 800, fontSize: window.innerWidth <= 600 ? '1em' : '1.18em', color: '#3730a3', letterSpacing: 0.2 }}>Today's Issues</span>
+        <span style={{ fontWeight: 800, fontSize: window.innerWidth <= 600 ? '1em' : '1.18em', color: '#3730a3', letterSpacing: 0.2 }}>Recent Issues</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {allAlerts.length > 0 && (
             <button 
@@ -327,10 +326,10 @@ export default function NotificationChatbot({
           <div style={{ padding: window.innerWidth <= 600 ? 24 : 48, textAlign: 'center', color: '#64748b', fontSize: window.innerWidth <= 600 ? 14 : 16 }}>
             <span style={{ fontSize: window.innerWidth <= 600 ? 24 : 36, display: 'block', marginBottom: 14 }}>✅</span>
             <div style={{ fontWeight: 700, color: '#3730a3', fontSize: window.innerWidth <= 600 ? 15 : 18 }}>
-              {clearedAlerts.size > 0 ? 'All notifications cleared' : 'No issues today'}
+              {clearedAlerts.size > 0 ? 'All notifications cleared' : 'No recent issues'}
             </div>
             <small style={{ color: '#9ca3af', fontSize: window.innerWidth <= 600 ? 11 : 14 }}>
-              {clearedAlerts.size > 0 ? 'You\'ve cleared all today\'s notifications' : 'All systems operational'}
+              {clearedAlerts.size > 0 ? 'You\'ve cleared all recent notifications' : 'All systems operational'}
             </small>
           </div>
         ) : (
@@ -417,7 +416,7 @@ export default function NotificationChatbot({
             color: '#fff',
           }}
           onClick={() => setOpen(o => !o)}
-          aria-label="Show today's issues"
+          aria-label="Show recent issues"
         >
           <span className="bell-icon" style={{ fontSize: 28 }}>🔔</span>
           {allAlerts.length > 0 && (

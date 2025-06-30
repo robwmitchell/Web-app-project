@@ -65,20 +65,33 @@ async function fetchRSSFeed(url, provider, days = 1) {
     const since = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
     
     // Map all items first, then filter by date only (no keyword filtering for now)
-    const mappedItems = items.map(item => ({
-      provider,
-      title: item.title?.[0] || provider,
-      description: item.description?.[0] || '',
-      reported_at: item.pubDate?.[0] || '',
-      url: item.link?.[0] || '',
-      id: `${provider.toLowerCase()}-${item.guid?.[0]?._ || item.title?.[0]}`,
-    }));
+    const mappedItems = items.map(item => {
+      // Handle different RSS structures
+      const title = Array.isArray(item.title) ? item.title[0] : item.title || '';
+      const description = Array.isArray(item.description) ? item.description[0] : item.description || '';
+      const pubDate = Array.isArray(item.pubDate) ? item.pubDate[0] : item.pubDate || '';
+      const link = Array.isArray(item.link) ? item.link[0] : item.link || '';
+      const guid = item.guid && typeof item.guid === 'object' ? (item.guid._ || item.guid['#text']) : 
+                   Array.isArray(item.guid) ? item.guid[0] : item.guid || '';
+      
+      return {
+        provider,
+        title: title || provider,
+        description: description,
+        reported_at: pubDate,
+        url: link,
+        id: `${provider.toLowerCase()}-${guid || title}`,
+      };
+    });
     
     // Filter by date only for now to see all recent items
-    return mappedItems.filter(item => {
+    const filtered = mappedItems.filter(item => {
       const date = new Date(item.reported_at);
       return !isNaN(date) && date >= since;
     });
+    
+    console.log(`${provider} RSS: Found ${items.length} total items, ${filtered.length} within ${days} days`);
+    return filtered;
   } catch (err) {
     console.error(`${provider} RSS fetch error:`, err);
     return [];
@@ -97,16 +110,16 @@ export default async function handler(req, res) {
     const now = new Date();
     const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-    // 1. Cloudflare incidents (all in last 7 days)
-    const cloudflareIncidents = await fetchCloudflareIncidents(7);
+    // 1. Cloudflare incidents (all in last 14 days)
+    const cloudflareIncidents = await fetchCloudflareIncidents(14);
     console.log(`Cloudflare incidents found: ${cloudflareIncidents.length}`);
 
-    // 2. RSS feeds (last 7 days)
+    // 2. RSS feeds (last 14 days to catch more incidents)
     const [zscaler, slack, datadog, aws] = await Promise.all([
-      fetchRSSFeed('https://trust.zscaler.com/blog-feed', 'Zscaler', 7),
-      fetchRSSFeed('https://status.slack.com/feed/rss', 'Slack', 7),
-      fetchRSSFeed('https://status.datadoghq.com/history.rss', 'Datadog', 7),
-      fetchRSSFeed('https://status.aws.amazon.com/rss/all.rss', 'AWS', 7),
+      fetchRSSFeed('https://trust.zscaler.com/blog-feed', 'Zscaler', 14),
+      fetchRSSFeed('https://status.slack.com/feed/rss', 'Slack', 14),
+      fetchRSSFeed('https://status.datadoghq.com/history.rss', 'Datadog', 14),
+      fetchRSSFeed('https://status.aws.amazon.com/rss/all.rss', 'AWS', 14),
     ]);
 
     console.log(`RSS results - Zscaler: ${zscaler.length}, Slack: ${slack.length}, Datadog: ${datadog.length}, AWS: ${aws.length}`);

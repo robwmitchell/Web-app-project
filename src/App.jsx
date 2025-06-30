@@ -369,14 +369,33 @@ function App() {
       fetch('/api/notifications-latest', { signal })
         .then(res => res.json())
         .then(({ data }) => {
+          console.log('RSS data received:', data);
           if (isServiceSelected('slack')) {
-            setSlack({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Slack'), name: 'Slack' });
+            const slackUpdates = data.filter(i => i.provider === 'Slack');
+            console.log('Slack updates:', slackUpdates);
+            setSlack({ 
+              status: slackUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
+              updates: slackUpdates, 
+              name: 'Slack' 
+            });
           }
           if (isServiceSelected('datadog')) {
-            setDatadog({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Datadog'), name: 'Datadog' });
+            const datadogUpdates = data.filter(i => i.provider === 'Datadog');
+            console.log('Datadog updates:', datadogUpdates);
+            setDatadog({ 
+              status: datadogUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
+              updates: datadogUpdates, 
+              name: 'Datadog' 
+            });
           }
           if (isServiceSelected('aws')) {
-            setAws({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'AWS'), name: 'AWS' });
+            const awsUpdates = data.filter(i => i.provider === 'AWS');
+            console.log('AWS updates:', awsUpdates);
+            setAws({ 
+              status: awsUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
+              updates: awsUpdates, 
+              name: 'AWS' 
+            });
           }
         })
         .catch((error) => {
