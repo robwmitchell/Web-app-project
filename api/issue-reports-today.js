@@ -9,10 +9,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Get counts of issues for each service for the last 24 hours
-    const now = new Date();
-    const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const last24hStr = last24h.toISOString();
+    // Get counts of issues for each service for today (calendar day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString().slice(0, 10);
     
     // Define all services to ensure consistent response
     const allServices = ['Cloudflare', 'Okta', 'SendGrid', 'Zscaler', 'Slack', 'Datadog', 'AWS'];
@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     const result = await sql`
       SELECT service_name, COUNT(*) as count
       FROM issue_reports
-      WHERE reported_at >= ${last24hStr}
+      WHERE reported_at >= ${todayStr} AND reported_at < ${todayStr}::date + interval '1 day'
       GROUP BY service_name
     `;
     
