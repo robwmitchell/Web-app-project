@@ -4,12 +4,17 @@
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh; /* Use dynamic viewport height for modern browsers */
+  /* Fallback for browsers that don't support dvh */
+  min-height: -webkit-fill-available;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
   overflow-y: auto;
+  /* Account for iOS Safari bottom safe area */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .splash-background {
@@ -434,6 +439,8 @@
     width: 95vw;
     overscroll-behavior: contain;
     scroll-snap-type: y proximity;
+    /* Add extra bottom padding for mobile browsers */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 20px));
   }
   
   .splash-logo h1 {
@@ -458,10 +465,25 @@
     flex-direction: column;
     gap: 12px;
   }
+
+  .continue-section {
+    /* Make the continue section stick to bottom with safe spacing */
+    position: sticky;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    margin: 24px -24px 0;
+    padding: 20px 24px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 16px));
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px 16px 0 0;
+  }
   
   .continue-btn {
     padding: 14px 32px;
     font-size: 1em;
+    width: 100%;
+    min-height: 52px;
   }
   
   /* Thicker scrollbar for mobile */
@@ -478,6 +500,8 @@
 @media (max-width: 480px) {
   .splash-container {
     padding: 24px 16px;
+    /* Increase bottom padding for smaller screens */
+    padding-bottom: calc(90px + env(safe-area-inset-bottom, 24px));
   }
   
   .splash-logo {
@@ -532,6 +556,19 @@
   
   .alert-type-desc {
     font-size: 10px;
+  }
+
+  .continue-section {
+    /* Adjust spacing for smaller screens */
+    margin: 20px -16px 0;
+    padding: 18px 16px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 20px));
+  }
+
+  .continue-btn {
+    padding: 12px 24px;
+    font-size: 0.95em;
+    min-height: 48px;
   }
 }
 
