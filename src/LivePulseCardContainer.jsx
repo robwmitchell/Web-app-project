@@ -3,8 +3,20 @@ import LivePulseCard from './LivePulseCard';
 import Modal from './Modal';
 import ReportImpactForm from './ReportImpactForm';
 import { formatDate, htmlToText } from './ServiceStatusCard';
-import { getLast7Days } from './utils/dateHelpers';
+import { getLast7Days, getUTCMidnight } from './utils/dateHelpers';
 import { serviceLogos } from './serviceLogos';
+
+// Use the same date logic as other services for consistency
+function getLast7DaysUTC() {
+  const days = [];
+  const now = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    d.setUTCDate(d.getUTCDate() - i);
+    days.push(d);
+  }
+  return days;
+}
 
 export default function LivePulseCardContainer({
   provider,
@@ -171,7 +183,7 @@ export default function LivePulseCardContainer({
   }
   // Day labels
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const last7 = getLast7Days();
+  const last7 = getLast7DaysUTC();
 
   // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)
   let filteredUpdates = updates;
