@@ -161,24 +161,23 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
           ? 'https://www.stack-status.io'  // Use production domain in development
           : '';  // Use relative path in production
         
-        [todayRes, trendRes] = await Promise.all([
-          fetch(`${baseUrl}/api/issue-reports-today`, { signal }).then(r => r.json()),
-          fetch(`${baseUrl}/api/issue-reports-trend`, { signal }).then(r => r.json()),
-        ]);
+        // Prioritize trend API as it's more reliable
+        trendRes = await fetch(`${baseUrl}/api/issue-reports-trend`, { signal }).then(r => r.json());
+        
+        // Try to fetch today data, but don't fail if it's not available
+        try {
+          todayRes = await fetch(`${baseUrl}/api/issue-reports-today`, { signal }).then(r => r.json());
+        } catch (todayError) {
+          console.log('Today API failed, using trend data for today counts');
+          todayRes = { data: [] }; // Empty data, will use trend fallback
+        }
+        
         if (signal.aborted) return;
       } catch (error) {
         if (error.name === 'AbortError') return;
         // Handle other errors - fallback to dummy data
         console.error('Failed to fetch data:', error);
-        todayRes = { data: [
-          { service_name: 'Cloudflare', count: 0 },
-          { service_name: 'Okta', count: 0 },
-          { service_name: 'SendGrid', count: 0 },
-          { service_name: 'Zscaler', count: 0 },
-          { service_name: 'Slack', count: 0 },
-          { service_name: 'Datadog', count: 0 },
-          { service_name: 'AWS', count: 0 },
-        ] };
+        todayRes = { data: [] };
         trendRes = { trend: {
           Cloudflare: Array(7).fill(0),
           Okta: Array(7).fill(0),
@@ -196,7 +195,7 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
       const trendMap = trendRes.trend || {};
       const rows = selectedServices.map(service => {
         const trend = sanitizeTrend(trendMap[service]);
-        // Use today's count from the trend data (last value) for consistency
+        // Always use trend data for today's count if today API is not available
         const todayFromTrend = trend[trend.length - 1] || 0;
         const count = todayMap[service] !== undefined ? todayMap[service] : todayFromTrend;
         const trendUp = trend.length > 1 ? trend[trend.length-1] >= trend[trend.length-2] : false;
