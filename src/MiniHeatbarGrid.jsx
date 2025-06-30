@@ -170,7 +170,6 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
         if (error.name === 'AbortError') return;
         // Handle other errors - fallback to dummy data
         console.error('Failed to fetch data:', error);
-        console.log('Using fallback data due to API error');
         todayRes = { data: [
           { service_name: 'Cloudflare', count: 0 },
           { service_name: 'Okta', count: 0 },
@@ -190,23 +189,14 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
           AWS: Array(7).fill(0),
         } };
       }
-      console.log('API Response - todayRes:', todayRes);
-      console.log('API Response - trendRes:', trendRes);
-      
       const todayMap = {};
       (todayRes.data || []).forEach(row => {
-        console.log('Processing row:', row);
         todayMap[row.service_name] = Number(row.count);
       });
-      console.log('Today map:', todayMap);
-      
       const trendMap = trendRes.trend || {};
-      console.log('Trend map:', trendMap);
-      
       const rows = selectedServices.map(service => {
         const trend = sanitizeTrend(trendMap[service]);
         const count = todayMap[service] || 0;
-        console.log(`Service: ${service}, Count: ${count}, Trend: ${trend}`);
         const trendUp = trend.length > 1 ? trend[trend.length-1] >= trend[trend.length-2] : false;
         return {
           service,
@@ -216,7 +206,6 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
           trendUp,
         };
       });
-      console.log('Final rows:', rows);
       setData(rows);
       setLoading(false);
     }
@@ -231,12 +220,10 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   // Listen for issue report events to refresh data
   React.useEffect(() => {
     const handleIssueReported = (event) => {
-      console.log('Issue reported event received:', event.detail);
       // Add a small delay to ensure the database has been updated
       setTimeout(() => {
-        console.log('Triggering data refresh...');
         setRefreshTrigger(prev => prev + 1);
-      }, 500);
+      }, 1000); // Increased delay to 1 second for better reliability
     };
 
     window.addEventListener('issueReported', handleIssueReported);
@@ -250,10 +237,7 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
       <div className="mini-heatbar-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span>User Reported Issues</span>
         <button
-          onClick={() => {
-            console.log('Manual refresh button clicked');
-            setRefreshTrigger(prev => prev + 1);
-          }}
+          onClick={() => setRefreshTrigger(prev => prev + 1)}
           disabled={loading}
           style={{
             background: 'none',
