@@ -98,6 +98,20 @@
   }
 }
 
+/* Mobile-specific slideDown animation that preserves centering transform */
+@media (max-width: 768px) {
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateX(50%) translateY(-8px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(50%) translateY(0) scale(1);
+    }
+  }
+}
+
 .notification-header {
   padding: 20px 20px 16px 20px;
   border-bottom: 1px solid #f1f5f9;
@@ -297,7 +311,9 @@
 @media (max-width: 768px) {
   .notification-dropdown {
     width: 320px;
-    right: -20px;
+    /* Use transform to center the dropdown instead of negative right positioning */
+    right: 50%;
+    transform: translateX(50%);
   }
   
   .notification-header {
@@ -315,8 +331,11 @@
 
 @media (max-width: 480px) {
   .notification-dropdown {
-    width: 300px;
-    right: -40px;
+    width: min(300px, calc(100vw - 40px));
+    /* Center the dropdown on small screens */
+    right: 50%;
+    transform: translateX(50%);
+    left: auto;
   }
   
   .notification-bell-button {
@@ -326,6 +345,17 @@
   
   .bell-icon {
     font-size: 18px;
+  }
+}
+
+/* Extra small screens - full width with margins */
+@media (max-width: 360px) {
+  .notification-dropdown {
+    width: calc(100vw - 20px);
+    /* On very small screens, position from the right edge of the viewport */
+    right: 10px;
+    transform: none;
+    left: auto;
   }
 }
 
