@@ -683,7 +683,7 @@ const SPLASH_CONFIG = {
               fontSize: 16,
               padding: '16px 20px',
               display: 'flex',
-              alignItems: 'center',
+              flexDirection: 'column',
               overflow: 'hidden',
               position: 'relative',
               zIndex: 10,
@@ -693,24 +693,23 @@ const SPLASH_CONFIG = {
               animation: 'alertPulse 3s ease-in-out infinite',
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}>
-            {/* Alert Icon */}
-            <div style={{
-              marginRight: 12,
-              fontSize: 20,
-              animation: 'alertIcon 2s ease-in-out infinite',
-              filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))'
-            }}>
-              ⚠️
-            </div>
-            
-            {/* Content Container */}
-            <div style={{
-              flex: 1,
+            {/* Main Content Row */}
+            <div className="alert-main-content" style={{
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 16
+              gap: 12,
+              marginBottom: 12
             }}>
+              {/* Alert Icon */}
+              <div style={{
+                fontSize: 20,
+                animation: 'alertIcon 2s ease-in-out infinite',
+                filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))',
+                flexShrink: 0
+              }}>
+                ⚠️
+              </div>
+              
               {/* Alert Content */}
               <div style={{
                 flex: 1,
@@ -771,13 +770,21 @@ const SPLASH_CONFIG = {
                   );
                 })()}
               </div>
-              
-              {/* Action Button */}
-              <div style={{
+            </div>
+            
+            {/* Bottom Action Row - Mobile Friendly */}
+            <div className="alert-bottom-actions alert-action-row" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              paddingTop: 8,
+              borderTop: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              {/* View Details Button */}
+              <div className="alert-view-details" style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                flexShrink: 0
+                alignItems: 'center'
               }}>
                 {(() => {
                   const issues = criticalMode.active ? criticalMode.details : demoIssues;
@@ -792,13 +799,13 @@ const SPLASH_CONFIG = {
                         background: 'rgba(255, 255, 255, 0.2)',
                         color: '#fff',
                         textDecoration: 'none',
-                        padding: '8px 16px',
-                        borderRadius: 20,
-                        fontSize: 13,
+                        padding: '6px 12px',
+                        borderRadius: 16,
+                        fontSize: 12,
                         fontWeight: 600,
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 6,
+                        gap: 4,
                         transition: 'all 0.2s ease',
                         border: '1px solid rgba(255, 255, 255, 0.3)',
                         backdropFilter: 'blur(10px)'
@@ -815,7 +822,7 @@ const SPLASH_CONFIG = {
                       }}
                     >
                       View Details
-                      <span style={{ fontSize: 11 }}>↗</span>
+                      <span style={{ fontSize: 10 }}>↗</span>
                     </a>
                   );
                 })()}
@@ -825,11 +832,10 @@ const SPLASH_CONFIG = {
               {(() => {
                 const issues = criticalMode.active ? criticalMode.details : demoIssues;
                 return issues.length > 1 && (
-                  <div style={{
+                  <div className="alert-navigation" style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
-                    marginLeft: 12
+                    gap: 8
                   }}>
                     <button
                       onClick={prevAlert}
@@ -837,14 +843,14 @@ const SPLASH_CONFIG = {
                         background: 'rgba(255, 255, 255, 0.2)',
                         border: '1px solid rgba(255, 255, 255, 0.3)',
                         color: '#fff',
-                        width: 32,
-                        height: 32,
+                        width: 28,
+                        height: 28,
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        fontSize: 14,
+                        fontSize: 12,
                         transition: 'all 0.2s ease',
                         backdropFilter: 'blur(10px)'
                       }}
@@ -867,14 +873,14 @@ const SPLASH_CONFIG = {
                         background: 'rgba(255, 255, 255, 0.2)',
                         border: '1px solid rgba(255, 255, 255, 0.3)',
                         color: '#fff',
-                        width: 32,
-                        height: 32,
+                        width: 28,
+                        height: 28,
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        fontSize: 14,
+                        fontSize: 12,
                         transition: 'all 0.2s ease',
                         backdropFilter: 'blur(10px)'
                       }}
@@ -892,7 +898,7 @@ const SPLASH_CONFIG = {
                       ›
                     </button>
                     <div style={{
-                      fontSize: 11,
+                      fontSize: 10,
                       color: 'rgba(255, 255, 255, 0.8)',
                       marginLeft: 4,
                       fontWeight: 500

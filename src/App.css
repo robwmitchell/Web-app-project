@@ -763,6 +763,20 @@
     align-self: stretch !important;
     text-align: center !important;
   }
+  
+  /* Enhanced mobile styles for new layout */
+  .alert-banner-content {
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+  
+  /* Make action row stack on very small screens */
+  @media (max-width: 480px) {
+    .alert-banner-content {
+      padding: 10px 12px !important;
+      font-size: 13px !important;
+    }
+  }
 }
 
 /* Centered Alert Banner Container */
@@ -790,4 +804,56 @@
     width: 98%;
     margin: 0 8px;
   }
+}
+
+/* Mobile-specific alert banner enhancements */
+@media (max-width: 480px) {
+  /* Stack action buttons vertically on very small screens */
+  .alert-banner-content .alert-action-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+  
+  /* Center navigation controls */
+  .alert-banner-content .alert-navigation {
+    justify-content: center !important;
+    align-self: center !important;
+  }
+  
+  /* Adjust button sizes for touch */
+  .alert-banner-content button {
+    min-height: 32px !important;
+    min-width: 32px !important;
+  }
+  
+  /* Make view details button full width on very small screens */
+  .alert-banner-content .alert-view-details {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-bottom: 8px !important;
+  }
+}
+
+/* Ensure proper spacing and layout for alert banner components */
+.alert-banner-content {
+  /* Ensure flexbox layout works properly */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.alert-banner-content .alert-main-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-bottom: 12px !important;
+}
+
+.alert-banner-content .alert-bottom-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding-top: 8px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
