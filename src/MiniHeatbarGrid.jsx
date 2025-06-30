@@ -28,22 +28,89 @@ function getTrendArrow(up) {
 
 function ServiceLogo({ service }) {
   const [logoError, setLogoError] = React.useState(false);
-  if (logoError || !serviceLogos[service]) {
+  const [logoLoaded, setLogoLoaded] = React.useState(false);
+  
+  // Use service logos mapping
+  const logoSrc = serviceLogos[service];
+  
+  // Debug: log logo information
+  React.useEffect(() => {
+    console.log(`ServiceLogo for "${service}":`, { 
+      service, 
+      logoSrc, 
+      logoError, 
+      logoLoaded
+    });
+  }, [service, logoSrc, logoError, logoLoaded]);
+  
+  if (!logoSrc) {
+    console.warn(`No logo source found for service: ${service}`);
+    // If no logo mapping exists, show a generic service icon
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: '28px', height: '28px', background: '#f0f0f0', borderRadius: '4px',
-        fontSize: '12px', fontWeight: 'bold', color: '#666', minWidth: '28px'
-      }}>{service[0]}</div>
+        width: '28px', height: '28px', background: '#f5f5f5', borderRadius: '6px',
+        fontSize: '16px', color: '#666', minWidth: '28px',
+        border: '1px solid #e0e0e0'
+      }}>
+        🏢
+      </div>
     );
   }
+  
+  // Show error state if logo failed to load
+  if (logoError) {
+    console.warn(`Logo failed to load for service: ${service}, src: ${logoSrc}`);
+    // Show a service-specific emoji or icon instead of letter
+    const serviceIcons = {
+      'Cloudflare': '☁️',
+      'Okta': '🔐',
+      'SendGrid': '📧',
+      'Zscaler': '🛡️',
+      'Slack': '💬',
+      'Datadog': '📊',
+      'AWS': '☁️'
+    };
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: '28px', height: '28px', background: '#fff3cd', borderRadius: '6px',
+        fontSize: '14px', minWidth: '28px',
+        border: '1px solid #ffeaa7'
+      }}>
+        {serviceIcons[service] || '🏢'}
+      </div>
+    );
+  }
+  
+  // Show the loaded logo
   return (
-    <img 
-      src={serviceLogos[service]} 
-      alt={service + ' logo'} 
-      style={{ height: 'clamp(20px, 4vw, 28px)', maxWidth: '100%', objectFit: 'contain' }} 
-      onError={() => setLogoError(true)}
-    />
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      width: '28px', height: '28px', minWidth: '28px',
+      background: 'white',
+      borderRadius: '6px',
+      border: '1px solid #e9ecef',
+      padding: '2px'
+    }}>
+      <img 
+        src={logoSrc} 
+        alt={`${service} logo`} 
+        style={{ 
+          width: '24px', 
+          height: '24px', 
+          objectFit: 'contain'
+        }} 
+        onLoad={() => {
+          console.log(`✅ Logo loaded successfully for ${service} from ${logoSrc}`);
+          setLogoLoaded(true);
+        }}
+        onError={(e) => {
+          console.error(`❌ Failed to load logo for ${service} from ${logoSrc}:`, e);
+          setLogoError(true);
+        }}
+      />
+    </div>
   );
 }
 
@@ -104,6 +171,24 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+
+  // Debug: log service logos on component mount and preload them
+  React.useEffect(() => {
+    console.log('Available service logos:', serviceLogos);
+    console.log('Selected services:', selectedServices);
+    
+    // Preload all logos to help with loading
+    selectedServices.forEach(service => {
+      const logoSrc = serviceLogos[service];
+      if (logoSrc) {
+        console.log(`Attempting to preload logo for ${service}: ${logoSrc}`);
+        const img = new Image();
+        img.onload = () => console.log(`✅ Preloaded logo for ${service}`);
+        img.onerror = (e) => console.error(`❌ Failed to preload logo for ${service}:`, e);
+        img.src = logoSrc;
+      }
+    });
+  }, [selectedServices]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -186,21 +271,29 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
         </button>
       </div>
       <div className="mini-heatbar-header" style={{ fontWeight: 700, fontSize: '1.08em' }}>
+        <span>Logo</span>
         <span>Service</span>
         <span>Trend (7 days)</span>
         <span>Today</span>
       </div>
-      {rows.map(row => (
-        <div className="mini-heatbar-row" key={row.service}>
-          <span style={{ minWidth: 80, display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-            <ServiceLogo service={row.service} />
-          </span>
-          <span className="mini-heatbar-trend">
-            <AreaSpark data={row.trend} color="#d32f2f" fill="#ffd6d6" />
-          </span>
-          <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
-        </div>
-      ))}
+      {rows.map(row => {
+        // Debug log for each row
+        console.log(`Rendering row for service: "${row.service}"`);
+        return (
+          <div className="mini-heatbar-row" key={row.service}>
+            <span style={{ minWidth: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ServiceLogo service={row.service} />
+            </span>
+            <span style={{ minWidth: 80, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px' }}>
+              {row.service}
+            </span>
+            <span className="mini-heatbar-trend">
+              <AreaSpark data={row.trend} color="#d32f2f" fill="#ffd6d6" />
+            </span>
+            <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
+          </div>
+        );
+      })}
     </div>
   );
 }
