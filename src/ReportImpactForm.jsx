@@ -55,6 +55,7 @@ export default function ReportImpactForm({ serviceName, onClose }) {
       setDescription('');
       
       // Dispatch custom event to notify other components of new issue report
+      console.log('Dispatching issueReported event for service:', selectedService);
       const event = new CustomEvent('issueReported', {
         detail: {
           service: selectedService,
@@ -62,6 +63,7 @@ export default function ReportImpactForm({ serviceName, onClose }) {
         }
       });
       window.dispatchEvent(event);
+      console.log('Event dispatched successfully');
     } catch (err) {
       setError(err.message);
     } finally {

@@ -13,13 +13,30 @@ export default async function handler(req, res) {
     const now = new Date();
     const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const last24hStr = last24h.toISOString();
+    
+    // Define all services to ensure consistent response
+    const allServices = ['Cloudflare', 'Okta', 'SendGrid', 'Zscaler', 'Slack', 'Datadog', 'AWS'];
+    
     const result = await sql`
       SELECT service_name, COUNT(*) as count
       FROM issue_reports
       WHERE reported_at >= ${last24hStr}
       GROUP BY service_name
     `;
-    res.status(200).json({ data: result });
+    
+    // Create a map of actual counts
+    const countMap = {};
+    result.forEach(row => {
+      countMap[row.service_name] = Number(row.count);
+    });
+    
+    // Ensure all services are present in the response
+    const data = allServices.map(service => ({
+      service_name: service,
+      count: countMap[service] || 0
+    }));
+    
+    res.status(200).json({ data });
   } catch (error) {
     res.status(500).json({ error: 'Database error', details: error.message });
   }
