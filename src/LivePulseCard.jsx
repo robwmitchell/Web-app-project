@@ -22,6 +22,7 @@ export default function LivePulseCard({
   children,
   companyInfo = null,
   onBugClick, // new prop
+  onClose, // new prop for close functionality
 }) {
   const [pop, setPop] = useState(false);
   const [flipped, setFlipped] = useState(false); // flip state
@@ -40,6 +41,13 @@ export default function LivePulseCard({
     const timer = setTimeout(() => setBgVisible(false), 4000);
     return () => clearTimeout(timer);
   }, [provider]);
+
+  const handleClose = (e) => {
+    e.stopPropagation(); // Prevent any card interactions
+    if (onClose) {
+      onClose(provider);
+    }
+  };
 
   return (
     <div
@@ -108,15 +116,18 @@ export default function LivePulseCard({
                 <span className="status-text" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>{status}</span>
               </span>
             </div>
-            {/* Plus/Minus Icon Button - right aligned */}
-            <button
-              className="card-plus-btn"
-              onClick={() => setFlipped(f => !f)}
-              aria-label={flipped ? "Hide info" : "Show more info"}
-              style={{ marginLeft: 12, width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >
-              <span style={{ fontSize: 22, fontWeight: 700, color: '#888' }}>{flipped ? '−' : '+'}</span>
-            </button>
+            {/* Card action buttons - right aligned */}
+            <div style={{ display: 'flex', gap: 4, marginLeft: 12 }}>
+              {/* Plus/Minus Icon Button */}
+              <button
+                className="card-plus-btn"
+                onClick={() => setFlipped(f => !f)}
+                aria-label={flipped ? "Hide info" : "Show more info"}
+                style={{ width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <span style={{ fontSize: 22, fontWeight: 700, color: '#888' }}>{flipped ? '−' : '+'}</span>
+              </button>
+            </div>
           </div>
           <div className="live-pulse-headline">{headline}</div>
           {children}
@@ -152,8 +163,48 @@ export default function LivePulseCard({
           </button>
         </div>
       </div>
-      {/* Place both buttons in a single row at the bottom of the card */}
-      {/* Removed card-bottom-row and buttons; now handled by parent via children */}
+      {/* Close button - top right corner */}
+      {onClose && (
+        <button
+          className="card-close-btn"
+          onClick={handleClose}
+          aria-label="Close card"
+          title="Close this service card"
+          style={{
+            position: 'absolute',
+            top: 12,
+            right: 12,
+            width: 20,
+            height: 20,
+            minWidth: 20,
+            minHeight: 20,
+            maxWidth: 20,
+            maxHeight: 20,
+            background: '#ff5f57',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            zIndex: 4,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+            flexShrink: 0,
+            padding: 0,
+          }}
+          onMouseEnter={e => {
+            e.target.style.background = '#ff3b30';
+            e.target.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={e => {
+            e.target.style.background = '#ff5f57';
+            e.target.style.transform = 'scale(1)';
+          }}
+        >
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'white', lineHeight: 1 }}>×</span>
+        </button>
+      )}
     </div>
   );
 }

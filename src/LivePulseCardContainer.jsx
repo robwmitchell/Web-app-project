@@ -25,6 +25,7 @@ export default function LivePulseCardContainer({
   status,
   incidents = [],
   updates = [],
+  onClose, // new prop
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [bugModalOpen, setBugModalOpen] = useState(false);
@@ -212,6 +213,7 @@ export default function LivePulseCardContainer({
         headline={memoizedHeadline}
         companyInfo={companyInfoMap[provider]}
         lastUpdated={lastUpdated}
+        onClose={onClose}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Service history bar now beneath the button */}

@@ -25,7 +25,7 @@
   padding-right: 32px;
   width: 100%;
   display: grid;
-  grid-template-columns: 60px 1fr 2fr 1fr;
+  grid-template-columns: 60px 1fr 2fr 1fr 40px;
   align-items: center;
   justify-items: center;
 }
@@ -46,7 +46,7 @@
   background: #e0e0e0;
 }
 .mini-heatbar-row {
-  grid-template-columns: 60px 1fr 2fr 1fr;
+  grid-template-columns: 60px 1fr 2fr 1fr 40px;
   align-items: center;
   padding: 6px 0;
   border-bottom: 1px solid #f0f0f0;
@@ -102,12 +102,12 @@
     right: 12px;
   }
   .mini-heatbar-row {
-    grid-template-columns: 50px 1fr 1.5fr 1fr;
+    grid-template-columns: 50px 1fr 1.5fr 1fr 32px;
     gap: 8px;
     padding: 8px 0;
   }
   .mini-heatbar-header {
-    grid-template-columns: 50px 1fr 1.5fr 1fr;
+    grid-template-columns: 50px 1fr 1.5fr 1fr 32px;
     display: grid;
   }
 }
@@ -127,12 +127,12 @@
     right: 8px;
   }
   .mini-heatbar-row {
-    grid-template-columns: 40px 1fr 2fr 1fr;
+    grid-template-columns: 40px 1fr 2fr 1fr 28px;
     gap: 6px;
     padding: 6px 0;
   }
   .mini-heatbar-header {
-    grid-template-columns: 40px 1fr 2fr 1fr;
+    grid-template-columns: 40px 1fr 2fr 1fr 28px;
     display: grid;
     font-size: 1em;
   }
@@ -160,12 +160,12 @@
     right: 6px;
   }
   .mini-heatbar-row {
-    grid-template-columns: 36px 1fr 2fr 1fr;
+    grid-template-columns: 36px 1fr 2fr 1fr 24px;
     gap: 4px;
     padding: 5px 0;
   }
   .mini-heatbar-header {
-    grid-template-columns: 36px 1fr 2fr 1fr;
+    grid-template-columns: 36px 1fr 2fr 1fr 24px;
     display: grid;
     font-size: 0.95em;
     font-weight: 600;

@@ -199,6 +199,14 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [criticalMode, setCriticalMode] = useState({ active: false, details: [] });
   const [tickerIndex, setTickerIndex] = useState(0);
+  const [closedCards, setClosedCards] = useState(() => {
+    try {
+      const saved = localStorage.getItem('closedServiceCards');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -210,6 +218,29 @@ function App() {
     const issues = criticalMode.active ? criticalMode.details : demoIssues;
     setTickerIndex(i => (i - 1 + issues.length) % issues.length);
   };
+
+  // Card close/restore functions
+  const closeCard = (provider) => {
+    const newClosedCards = [...closedCards, provider.toLowerCase()];
+    setClosedCards(newClosedCards);
+    localStorage.setItem('closedServiceCards', JSON.stringify(newClosedCards));
+  };
+
+  const restoreCard = (provider) => {
+    const newClosedCards = closedCards.filter(card => card !== provider.toLowerCase());
+    setClosedCards(newClosedCards);
+    localStorage.setItem('closedServiceCards', JSON.stringify(newClosedCards));
+  };
+
+  const restoreAllCards = () => {
+    setClosedCards([]);
+    localStorage.removeItem('closedServiceCards');
+  };
+
+  const isCardClosed = (provider) => {
+    return closedCards.includes(provider.toLowerCase());
+  };
+
   const demoIssues = [
     { provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' },
     { provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' },
@@ -928,25 +959,57 @@ const SPLASH_CONFIG = {
             gap: '16px',
             padding: '0 8px'
           }}>
-            {isServiceSelected('cloudflare') && (
+            {/* Show restore button if any cards are closed */}
+            {closedCards.length > 0 && (
+              <div style={{ 
+                width: '100%', 
+                display: 'flex', 
+                justifyContent: 'center', 
+                marginBottom: '16px',
+                gap: '8px'
+              }}>
+                <button
+                  onClick={restoreAllCards}
+                  style={{
+                    background: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={e => e.target.style.background = '#059669'}
+                  onMouseLeave={e => e.target.style.background = '#10b981'}
+                >
+                  Restore All Cards ({closedCards.length})
+                </button>
+              </div>
+            )}
+            
+            {isServiceSelected('cloudflare') && !isCardClosed('cloudflare') && (
               <LivePulseCardContainer
                 provider="Cloudflare"
                 name={cloudflare.name}
                 indicator={cloudflare.indicator}
                 status={cloudflare.status}
                 incidents={cloudflare.incidents}
+                onClose={closeCard}
               />
             )}
-            {isServiceSelected('zscaler') && (
+            {isServiceSelected('zscaler') && !isCardClosed('zscaler') && (
               <ZscalerPulseCardContainer
                 provider="Zscaler"
                 name="Zscaler"
                 indicator={getZscalerIndicator(zscaler.status)}
                 status={zscaler.status}
                 updates={zscaler.updates}
+                onClose={closeCard}
               />
             )}
-            {isServiceSelected('sendgrid') && (
+            {isServiceSelected('sendgrid') && !isCardClosed('sendgrid') && (
               <ZscalerPulseCardContainer
                 provider="SendGrid"
                 name="SendGrid"
@@ -954,42 +1017,47 @@ const SPLASH_CONFIG = {
                 status={sendgrid.status}
                 updates={sendgrid.updates}
                 incidents={sendgrid.updates} // Pass updates as incidents for SendGrid modal
+                onClose={closeCard}
               />
             )}
-            {isServiceSelected('okta') && (
+            {isServiceSelected('okta') && !isCardClosed('okta') && (
               <ZscalerPulseCardContainer
                 provider="Okta"
                 name="Okta"
                 indicator={okta.indicator}
                 status={okta.status}
                 updates={okta.updates}
+                onClose={closeCard}
               />
             )}
-            {isServiceSelected('slack') && (
+            {isServiceSelected('slack') && !isCardClosed('slack') && (
               <ZscalerPulseCardContainer
                 provider="Slack"
                 name="Slack"
                 indicator={slack.updates.length > 0 ? 'major' : 'none'}
                 status={slack.status}
                 updates={slack.updates}
+                onClose={closeCard}
               />
             )}
-            {isServiceSelected('datadog') && (
+            {isServiceSelected('datadog') && !isCardClosed('datadog') && (
               <ZscalerPulseCardContainer
                 provider="Datadog"
                 name="Datadog"
                 indicator={datadog.updates.length > 0 ? 'major' : 'none'}
                 status={datadog.status}
                 updates={datadog.updates}
+                onClose={closeCard}
               />
             )}
-            {isServiceSelected('aws') && (
+            {isServiceSelected('aws') && !isCardClosed('aws') && (
               <ZscalerPulseCardContainer
                 provider="AWS"
                 name="AWS"
                 indicator={aws.updates.length > 0 ? 'major' : 'none'}
                 status={aws.status}
                 updates={aws.updates}
+                onClose={closeCard}
               />
             )}
           </div>

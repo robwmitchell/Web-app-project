@@ -178,6 +178,24 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+  const [closedServices, setClosedServices] = React.useState(new Set());
+
+  // Functions to handle closing and restoring services
+  const closeService = (serviceName) => {
+    setClosedServices(prev => new Set([...prev, serviceName]));
+  };
+
+  const restoreService = (serviceName) => {
+    setClosedServices(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(serviceName);
+      return newSet;
+    });
+  };
+
+  const restoreAllServices = () => {
+    setClosedServices(new Set());
+  };
 
   // Debug: log service logos on component mount and preload them
   React.useEffect(() => {
@@ -265,37 +283,67 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   // Debug: log the final rows array
   console.log('MiniHeatbarGrid rows:', rows);
 
+  // Filter out closed services
+  const visibleRows = rows.filter(row => !closedServices.has(row.service));
+  const hasClosedServices = closedServices.size > 0;
+
   return (
     <div className="mini-heatbar-grid">
       <div className="mini-heatbar-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <span>User Reported Issues</span>
-        <button
-          onClick={() => setRefreshTrigger(prev => prev + 1)}
-          disabled={loading}
-          style={{
-            background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-            fontSize: '14px', color: '#666', padding: '2px 6px', borderRadius: '4px',
-            transition: 'all 0.2s', opacity: loading ? 0.5 : 1
-          }}
-          onMouseEnter={e => !loading && (e.target.style.backgroundColor = '#f0f0f0')}
-          onMouseLeave={e => (e.target.style.backgroundColor = 'transparent')}
-          title="Refresh data"
-          aria-label="Refresh issue reports data"
-        >
-          {loading ? '⟳' : '↻'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {hasClosedServices && (
+            <button
+              onClick={restoreAllServices}
+              style={{
+                background: 'none', border: '1px solid #ddd', cursor: 'pointer',
+                fontSize: '12px', color: '#666', padding: '4px 8px', borderRadius: '4px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => {
+                e.target.style.backgroundColor = '#f8f9fa';
+                e.target.style.borderColor = '#007bff';
+                e.target.style.color = '#007bff';
+              }}
+              onMouseLeave={e => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.borderColor = '#ddd';
+                e.target.style.color = '#666';
+              }}
+              title={`Restore ${closedServices.size} hidden service${closedServices.size > 1 ? 's' : ''}`}
+            >
+              Restore ({closedServices.size})
+            </button>
+          )}
+          <button
+            onClick={() => setRefreshTrigger(prev => prev + 1)}
+            disabled={loading}
+            style={{
+              background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
+              fontSize: '14px', color: '#666', padding: '2px 6px', borderRadius: '4px',
+              transition: 'all 0.2s', opacity: loading ? 0.5 : 1
+            }}
+            onMouseEnter={e => !loading && (e.target.style.backgroundColor = '#f0f0f0')}
+            onMouseLeave={e => (e.target.style.backgroundColor = 'transparent')}
+            title="Refresh data"
+            aria-label="Refresh issue reports data"
+          >
+            {loading ? '⟳' : '↻'}
+          </button>
+        </div>
       </div>
       <div className="mini-heatbar-header" style={{ fontWeight: 700, fontSize: '1.08em' }}>
         <span>Logo</span>
         <span>Service</span>
         <span>Trend (7 days)</span>
         <span>Today</span>
+        <span style={{ width: '32px' }}></span> {/* Space for close button */}
       </div>
-      {rows.map(row => {
+      {visibleRows.map(row => {
         // Debug log for each row
         console.log(`Rendering row for service: "${row.service}"`);
         return (
-          <div className="mini-heatbar-row" key={row.service}>
+          <div className="mini-heatbar-row" key={row.service} style={{ position: 'relative' }}>
             <span style={{ minWidth: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ServiceLogo service={row.service} />
             </span>
@@ -306,6 +354,32 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
               <AreaSpark data={row.trend} color="#d32f2f" fill="#ffd6d6" />
             </span>
             <span className="mini-heatbar-reports">{row.count} <span className={row.trendUp ? 'up' : 'down'}>{getTrendArrow(row.trendUp)}</span></span>
+            <span style={{ width: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button
+                onClick={() => closeService(row.service)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '14px', color: '#999', padding: '2px 4px', borderRadius: '2px',
+                  transition: 'all 0.2s', opacity: 0.6,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: '20px', height: '20px'
+                }}
+                onMouseEnter={e => {
+                  e.target.style.backgroundColor = '#ffebee';
+                  e.target.style.color = '#d32f2f';
+                  e.target.style.opacity = '1';
+                }}
+                onMouseLeave={e => {
+                  e.target.style.backgroundColor = 'transparent';
+                  e.target.style.color = '#999';
+                  e.target.style.opacity = '0.6';
+                }}
+                title={`Hide ${row.service} from dashboard`}
+                aria-label={`Close ${row.service} card`}
+              >
+                ×
+              </button>
+            </span>
           </div>
         );
       })}

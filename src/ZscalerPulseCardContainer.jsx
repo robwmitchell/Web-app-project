@@ -18,7 +18,7 @@ function getLast7DaysUTC() {
   return days;
 }
 
-export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, indicator, status, updates = [] }) {
+export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, indicator, status, updates = [], onClose }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [bugModalOpen, setBugModalOpen] = useState(false);
 
@@ -121,6 +121,7 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
         companyInfo={companyInfo}
         onBugClick={() => setBugModalOpen(true)}
         lastUpdated={lastUpdated}
+        onClose={onClose}
       >
         <div style={{ marginTop: 18, width: '100%' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
