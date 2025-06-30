@@ -6,6 +6,19 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
+      // Cloudflare API proxy - specific route must come first
+      '^/api/cloudflare': {
+        target: 'https://www.cloudflarestatus.com/api/v2',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => {
+          // Parse the endpoint parameter from the URL
+          const url = new URL(`http://localhost${path}`);
+          const endpoint = url.searchParams.get('endpoint') || 'status';
+          return `/${endpoint}.json`;
+        }
+      },
+      // All other API requests go to external server
       '/api': {
         target: 'https://www.stack-status.io',
         changeOrigin: true,

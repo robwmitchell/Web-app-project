@@ -22,7 +22,6 @@ export default function LivePulseCard({
   children,
   companyInfo = null,
   onBugClick, // new prop
-  lastUpdated = null, // new prop for last updated date
 }) {
   const [pop, setPop] = useState(false);
   const [flipped, setFlipped] = useState(false); // flip state
@@ -102,19 +101,12 @@ export default function LivePulseCard({
               </div>
             )}
             {/* Name and status row */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 4 }}>
-                <span style={{ fontWeight: 800, fontSize: '1.35em', color: '#1e293b', letterSpacing: '-0.01em' }}>{name || provider}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span className={`status-indicator ${indicator}`} title={indicator} style={{ boxShadow: '0 0 0 4px #f3f4f6, 0 2px 8px rgba(15,23,42,0.08)' }}></span>
-                </span>
-              </div>
-              {/* Date and last updated info */}
-              {lastUpdated && (
-                <div style={{ fontSize: '0.85em', color: '#64748b', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>Last updated: {lastUpdated}</span>
-                </div>
-              )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
+              <span style={{ fontWeight: 800, fontSize: '1.35em', color: '#1e293b', letterSpacing: '-0.01em' }}>{name || provider}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span className={`status-indicator ${indicator}`} title={indicator} style={{ boxShadow: '0 0 0 4px #f3f4f6, 0 2px 8px rgba(15,23,42,0.08)' }}></span>
+                <span className="status-text" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>{status}</span>
+              </span>
             </div>
             {/* Plus/Minus Icon Button - right aligned */}
             <button

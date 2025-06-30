@@ -11,7 +11,6 @@ import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import NotificationChatbot from './NotificationChatbot';
 import logoImage from './assets/stackstatus1.png';
-import { SEOHead, generateSEOContent } from './utils/seo';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -207,26 +206,38 @@ function App() {
   ];
 
   // Configuration for splash screen behavior
-  const SPLASH_CONFIG = {
-    autoRefreshOnSelection: true, // Set to false to disable auto-refresh
-    refreshDelay: 300, // Delay before refresh in ms
-    showRefreshMessage: true // Show loading message during refresh
-  };
+const SPLASH_CONFIG = {
+  autoRefreshOnSelection: true, // Set to false to disable auto-refresh
+  refreshDelay: 300, // Delay before refresh in ms
+  showRefreshMessage: true // Show loading message during refresh
+};
 
-  // Utility: get and set Cloudflare incidents in localStorage
+// Utility: get and set Cloudflare incidents in localStorage
   function getStoredCloudflareIncidents() {
     try {
+      // Check if localStorage is available (may be disabled in private browsing)
+      if (typeof Storage === 'undefined' || !window.localStorage) {
+        return [];
+      }
       const raw = localStorage.getItem('cloudflare_incidents');
       if (!raw) return [];
       return JSON.parse(raw);
-    } catch {
+    } catch (error) {
+      console.warn('Unable to access localStorage for Cloudflare incidents:', error);
       return [];
     }
   }
   function setStoredCloudflareIncidents(incidents) {
     try {
+      // Check if localStorage is available (may be disabled in private browsing)
+      if (typeof Storage === 'undefined' || !window.localStorage) {
+        console.warn('localStorage not available, skipping incident storage');
+        return;
+      }
       localStorage.setItem('cloudflare_incidents', JSON.stringify(incidents));
-    } catch {}
+    } catch (error) {
+      console.warn('Unable to store Cloudflare incidents in localStorage:', error);
+    }
   }
 
   // Fetch all statuses (extracted for reuse)
@@ -241,11 +252,11 @@ function App() {
     
     // Cloudflare status (based on open incidents)
     if (isServiceSelected('cloudflare')) {
-      fetch('https://www.cloudflarestatus.com/api/v2/status.json', { signal })
+      fetch('/api/cloudflare?endpoint=status', { signal })
         .then(res => res.json())
         .then(statusData => {
           if (signal.aborted) return;
-          fetch('https://www.cloudflarestatus.com/api/v2/summary.json', { signal })
+          fetch('/api/cloudflare?endpoint=summary', { signal })
             .then(res => res.json())
             .then(summaryData => {
               if (signal.aborted) return;
@@ -369,33 +380,14 @@ function App() {
       fetch('/api/notifications-latest', { signal })
         .then(res => res.json())
         .then(({ data }) => {
-          console.log('RSS data received:', data);
           if (isServiceSelected('slack')) {
-            const slackUpdates = data.filter(i => i.provider === 'Slack');
-            console.log('Slack updates:', slackUpdates);
-            setSlack({ 
-              status: slackUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
-              updates: slackUpdates, 
-              name: 'Slack' 
-            });
+            setSlack({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Slack'), name: 'Slack' });
           }
           if (isServiceSelected('datadog')) {
-            const datadogUpdates = data.filter(i => i.provider === 'Datadog');
-            console.log('Datadog updates:', datadogUpdates);
-            setDatadog({ 
-              status: datadogUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
-              updates: datadogUpdates, 
-              name: 'Datadog' 
-            });
+            setDatadog({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'Datadog'), name: 'Datadog' });
           }
           if (isServiceSelected('aws')) {
-            const awsUpdates = data.filter(i => i.provider === 'AWS');
-            console.log('AWS updates:', awsUpdates);
-            setAws({ 
-              status: awsUpdates.length > 0 ? 'Issues Detected' : 'Operational', 
-              updates: awsUpdates, 
-              name: 'AWS' 
-            });
+            setAws({ status: 'Issues Detected', updates: data.filter(i => i.provider === 'AWS'), name: 'AWS' });
           }
         })
         .catch((error) => {
@@ -501,15 +493,9 @@ function App() {
   }, [criticalMode.active, criticalMode.details.length]);
 
   // Handle service selection
-  function handleServiceSelect(services, alertTypes = null) {
+  function handleServiceSelect(services) {
     setSelectedServices(services);
     localStorage.setItem('selectedServices', JSON.stringify(services));
-    
-    // Save alert type preferences if provided
-    if (alertTypes) {
-      localStorage.setItem('serviceAlertTypes', JSON.stringify(alertTypes));
-    }
-    
     setShowSplash(false);
     
     // Optionally refresh the page for a clean state
@@ -565,29 +551,6 @@ function App() {
 
   return (
     <>
-      {/* SEO Component for dynamic meta tag management */}
-      <SEOHead 
-        selectedServices={selectedServices}
-        serviceStatuses={{
-          cloudflare: cloudflare,
-          zscaler: zscaler,
-          okta: okta,
-          sendgrid: sendgrid,
-          slack: slack,
-          datadog: datadog,
-          aws: aws
-        }}
-        {...generateSEOContent(selectedServices, {
-          cloudflare: cloudflare,
-          zscaler: zscaler,
-          okta: okta,
-          sendgrid: sendgrid,
-          slack: slack,
-          datadog: datadog,
-          aws: aws
-        })}
-      />
-      
       {/* Remove white space at top by setting margin and padding to 0 on body and root container */}
       <style>{`
         body, #root {
@@ -631,7 +594,10 @@ function App() {
                 title="Configure Services"
                 aria-label="Configure service monitoring"
               >
-                <span className="settings-icon">⚙️</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
                 <span className="btn-tooltip">Settings</span>
               </button>
               
