@@ -144,50 +144,50 @@ function AreaSpark({ data = [], color = '#d32f2f', fill = '#ffd6d6' }) {
 
 export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   const [data, setData] = React.useState([]);
+  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
+  const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
     const abortController = new AbortController();
     const signal = abortController.signal;
     
     async function fetchData() {
+      setLoading(true);
       let todayRes, trendRes;
-      let isLocal = false;
+      
       try {
-        isLocal = ["localhost", "127.0.0.1"].some(h => window.location.hostname.includes(h));
-      } catch {}
-      if (isLocal) {
-        // Dummy data for local development
+        // Use production API for both development and production
+        const baseUrl = window.location.hostname === 'localhost' 
+          ? 'https://www.stack-status.io'  // Use production domain in development
+          : '';  // Use relative path in production
+        
+        [todayRes, trendRes] = await Promise.all([
+          fetch(`${baseUrl}/api/issue-reports-today`, { signal }).then(r => r.json()),
+          fetch(`${baseUrl}/api/issue-reports-trend`, { signal }).then(r => r.json()),
+        ]);
+        if (signal.aborted) return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        // Handle other errors - fallback to dummy data
+        console.error('Failed to fetch data:', error);
         todayRes = { data: [
-          { service_name: 'Cloudflare', count: 2 },
+          { service_name: 'Cloudflare', count: 0 },
           { service_name: 'Okta', count: 0 },
-          { service_name: 'SendGrid', count: 1 },
-          { service_name: 'Zscaler', count: 3 },
-          { service_name: 'Slack', count: 1 },
+          { service_name: 'SendGrid', count: 0 },
+          { service_name: 'Zscaler', count: 0 },
+          { service_name: 'Slack', count: 0 },
           { service_name: 'Datadog', count: 0 },
-          { service_name: 'AWS', count: 2 },
+          { service_name: 'AWS', count: 0 },
         ] };
         trendRes = { trend: {
-          Cloudflare: Array(24).fill({ count: 0, timestamps: [] }),
-          Okta: Array(24).fill({ count: 0, timestamps: [] }),
-          SendGrid: Array(24).fill({ count: 0, timestamps: [] }),
-          Zscaler: Array(24).fill({ count: 0, timestamps: [] }),
-          Slack: Array(24).fill({ count: 0, timestamps: [] }),
-          Datadog: Array(24).fill({ count: 0, timestamps: [] }),
-          AWS: Array(24).fill({ count: 0, timestamps: [] }),
+          Cloudflare: Array(7).fill(0),
+          Okta: Array(7).fill(0),
+          SendGrid: Array(7).fill(0),
+          Zscaler: Array(7).fill(0),
+          Slack: Array(7).fill(0),
+          Datadog: Array(7).fill(0),
+          AWS: Array(7).fill(0),
         } };
-      } else {
-        try {
-          [todayRes, trendRes] = await Promise.all([
-            fetch('/api/issue-reports-today', { signal }).then(r => r.json()),
-            fetch('/api/issue-reports-trend', { signal }).then(r => r.json()),
-          ]);
-          if (signal.aborted) return;
-        } catch (error) {
-          if (error.name === 'AbortError') return;
-          // Handle other errors
-          console.error('Failed to fetch data:', error);
-          return;
-        }
       }
       const todayMap = {};
       (todayRes.data || []).forEach(row => {
@@ -207,6 +207,7 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
         };
       });
       setData(rows);
+      setLoading(false);
     }
     fetchData();
     
@@ -214,11 +215,49 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
     return () => {
       abortController.abort();
     };
-  }, [selectedServices]);
+  }, [selectedServices, refreshTrigger]);
+
+  // Listen for issue report events to refresh data
+  React.useEffect(() => {
+    const handleIssueReported = (event) => {
+      // Add a small delay to ensure the database has been updated
+      setTimeout(() => {
+        setRefreshTrigger(prev => prev + 1);
+      }, 500);
+    };
+
+    window.addEventListener('issueReported', handleIssueReported);
+    return () => {
+      window.removeEventListener('issueReported', handleIssueReported);
+    };
+  }, []);
 
   return (
     <div className="mini-heatbar-grid">
-      <div className="mini-heatbar-title">User Reported Issues</div>
+      <div className="mini-heatbar-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span>User Reported Issues</span>
+        <button
+          onClick={() => setRefreshTrigger(prev => prev + 1)}
+          disabled={loading}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            color: '#666',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            transition: 'all 0.2s',
+            opacity: loading ? 0.5 : 1
+          }}
+          onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = '#f0f0f0')}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = 'transparent')}
+          title="Refresh data"
+          aria-label="Refresh issue reports data"
+        >
+          {loading ? '⟳' : '↻'}
+        </button>
+      </div>
       <div className="mini-heatbar-header" style={{ fontWeight: 700, fontSize: '1.08em' }}>
         <span>Service</span>
         <span>Trend (7 days)</span>

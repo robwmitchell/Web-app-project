@@ -28,7 +28,12 @@ export default function ReportImpactForm({ serviceName, onClose }) {
     setError('');
     setSuccess(false);
     try {
-      const res = await fetch('/api/report-issue', {
+      // Use production API for both development and production
+      const baseUrl = window.location.hostname === 'localhost' 
+        ? 'https://www.stack-status.io'  // Use production domain in development
+        : '';  // Use relative path in production
+        
+      const res = await fetch(`${baseUrl}/api/report-issue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -48,6 +53,15 @@ export default function ReportImpactForm({ serviceName, onClose }) {
       setName('');
       setEmail('');
       setDescription('');
+      
+      // Dispatch custom event to notify other components of new issue report
+      const event = new CustomEvent('issueReported', {
+        detail: {
+          service: selectedService,
+          timestamp: new Date().toISOString()
+        }
+      });
+      window.dispatchEvent(event);
     } catch (err) {
       setError(err.message);
     } finally {
