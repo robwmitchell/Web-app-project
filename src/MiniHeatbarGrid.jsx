@@ -142,12 +142,18 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   if (!trendData || !trendData.trend) return <div className="mini-heatbar-grid">No data</div>;
 
   const { trend } = trendData;
+  // Debug: log the raw trend object
+  console.log('Raw trend object:', trend);
   const rows = selectedServices.map(service => {
-    const trendArr = sanitizeTrend(trend[service]);
+    // Find the trend key case-insensitively
+    const trendKey = Object.keys(trend).find(
+      k => k.toLowerCase() === service.toLowerCase()
+    );
+    const trendArr = sanitizeTrend(trend[trendKey]);
     const todayCount = trendArr[trendArr.length - 1] || 0;
     const trendUp = trendArr.length > 1 ? trendArr[trendArr.length-1] >= trendArr[trendArr.length-2] : false;
     // Debug: log mapping for each service
-    console.log(`Service: ${service}, trendArr:`, trendArr, 'todayCount:', todayCount);
+    console.log('service:', service, 'trendKey:', trendKey, 'trendArr:', trendArr, 'raw:', trend[trendKey]);
     return {
       service,
       status: STATUS_MAP[service],
