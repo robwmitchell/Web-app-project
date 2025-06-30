@@ -1,40 +1,147 @@
 # Service Status Dashboard (Vite + React)
 
-This project is a modern, glassmorphic dashboard for monitoring the status of key SaaS providers: Cloudflare, Zscaler, SendGrid, and Okta. It is built with Vite and React, featuring live polling, animated status cards, and a beautiful, responsive UI.
+This project is a modern, glassmorphic dashboard for monitoring the status of key SaaS providers including Cloudflare, Zscaler, SendGrid, Okta, Slack, Datadog, and AWS. It features real-time polling, animated status cards, customizable service selection, and a beautiful responsive UI built with Vite and React.
 
-## Features
+## ✨ Key Features
 
-- **Live Service Status**: Real-time polling of Cloudflare, Zscaler, SendGrid, and Okta public status APIs every 60 seconds.
-- **Glassmorphism UI**: Modern, animated cards with floating provider logos and pop effect on updates.
-- **Provider Logos**: Official SVG logos for each provider.
-- **Theme Switching**: Automatic card theming (light/dark) based on service status, with a user override toggle (auto, light, dark).
-- **Service History**: 7-day service history bar at the bottom of each card, with day-of-week labels and colored indicators (green/yellow/red) for each day.
-- **Company Info**: Flip each card to view provider website and a short description of their services.
-- **Incident Details**: Click "View last 7 days" to see a modal with recent incidents/updates for each provider.
-- **Responsive Design**: Works well on desktop and mobile.
+### 🎯 Service Monitoring & Selection
+- **Multi-Service Support**: Monitor 7+ major SaaS providers (Cloudflare, Zscaler, SendGrid, Okta, Slack, Datadog, AWS)
+- **Custom Service Selection**: Interactive splash screen to choose which services to monitor
+- **Granular Alert Configuration**: Configure specific alert types for each service (incidents, maintenance, API issues, etc.)
+- **Live Status Polling**: Real-time updates every 60 seconds with intelligent caching
 
-## Usage
+### 🎨 Modern UI & UX
+- **Glassmorphism Design**: Beautiful frosted glass effects with backdrop blur
+- **Enhanced Service Selector**: Smooth scrolling modal with gradient scroll bars and visual indicators
+- **Animated Status Cards**: Floating provider logos with pop effects on status changes
+- **Responsive Layout**: Optimized for desktop, tablet, and mobile devices
+- **Theme Switching**: Auto/light/dark theme support with service-specific color schemes
+
+### 📊 Status Visualization
+- **Real-time Indicators**: Live pulse animations and color-coded status indicators
+- **7-Day History**: Visual timeline showing service reliability over the past week
+- **Incident Timeline**: Detailed incident history with timestamps and descriptions
+- **Service Impact Reporting**: Report service impacts directly from the dashboard
+
+### 🔧 Technical Features
+- **Private Browsing Support**: Graceful localStorage handling for incognito/private modes
+- **API Proxying**: Serverless functions for CORS-free API access in production
+- **Local Development**: Vite proxy configuration for seamless local development
+- **Error Resilience**: Robust error handling and fallback mechanisms
+- **Performance Optimized**: Efficient data fetching and caching strategies
+
+## 🚀 Recent Enhancements
+
+### Enhanced Service Selector (Latest)
+- **Single Scroll Experience**: Optimized modal with unified scroll behavior
+- **Gradient Scroll Bars**: Beautiful custom-styled scroll indicators
+- **Scroll State Tracking**: Visual feedback for scrolling with smooth animations
+- **Mobile Optimized**: Touch-friendly scrolling with momentum support
+
+### Cloudflare Integration Improvements
+- **Private Browsing Compatibility**: Fixed localStorage restrictions in incognito mode
+- **Production API Proxying**: Serverless function for reliable Cloudflare API access
+- **Local Development Proxy**: Vite configuration for seamless local testing
+- **Error Handling**: Comprehensive error states and fallback messaging
+
+### Service Customization
+- **Alert Type Configuration**: Granular control over notification preferences
+- **Service-Specific Settings**: Individual configuration for each monitored service
+- **Persistent Preferences**: Settings saved across browser sessions
+
+## 🛠 Technical Stack
+
+- **Frontend**: React 18 + Vite
+- **Styling**: CSS3 with Glassmorphism effects
+- **APIs**: RESTful service status APIs with serverless proxying
+- **Deployment**: Vercel with automatic builds
+- **Development**: Hot reload with Vite dev server
+
+## 📦 Installation & Usage
 
 1. **Install dependencies**:
    ```sh
    npm install
    ```
-2. **Start the dev server**:
+
+2. **Development server**:
    ```sh
    npm run dev
    ```
-3. **Open in browser**: Visit the local URL shown in your terminal (usually http://localhost:5173).
 
-## Customization
-- Add or update provider info in `LivePulseCardContainer.jsx`.
-- Adjust glassmorphism and theme styles in `Glassmorphism.css` and `LivePulseCard.css`.
-- To add more providers, follow the pattern in `App.jsx` and `LivePulseCardContainer.jsx`.
+3. **Production build**:
+   ```sh
+   npm run build
+   ```
 
-## Status Indicator Colors
-- **Green**: No issues detected.
-- **Yellow**: Minor/historic issues detected (e.g., Zscaler historic issues).
-- **Red**: Major/critical issues detected.
+4. **Deploy to Vercel**:
+   ```sh
+   vercel --prod
+   ```
+
+## 📱 Service Support
+
+| Service | Status API | Alert Types | Features |
+|---------|------------|-------------|----------|
+| **Cloudflare** | ✅ Native | Incidents, Maintenance, Performance | Full incident history |
+| **Zscaler** | ✅ RSS Feed | Disruptions, Updates, Performance | 7-day timeline |
+| **Okta** | ✅ RSS Feed | Incidents, Maintenance, Security | Authentication focus |
+| **SendGrid** | ✅ RSS Feed | Delivery, API, Maintenance | Email delivery status |
+| **Slack** | ✅ RSS Feed | Messaging, Calls, Files | Communication tools |
+| **Datadog** | ✅ RSS Feed | Monitoring, Dashboard, API | Analytics platform |
+| **AWS** | ✅ RSS Feed | Compute, Storage, Network, Database | Cloud infrastructure |
+
+## 🎨 Customization
+
+### Adding New Services
+```javascript
+// Add to AVAILABLE_SERVICES in ServiceSelectionSplash.jsx
+{
+  id: 'new-service',
+  name: 'New Service',
+  description: 'Service description',
+  logo: serviceLogos.NewService,
+  color: '#color-hex',
+  alertTypes: [
+    { id: 'incidents', name: 'Incidents', description: 'Service disruptions', default: true }
+  ]
+}
+```
+
+### Styling Customization
+- **Theme Colors**: Update CSS custom properties in component styles
+- **Glassmorphism**: Modify backdrop-filter and transparency values
+- **Animations**: Adjust keyframes and transition timings
+- **Responsive**: Update media queries for different screen sizes
+
+## 🔧 Configuration
+
+### Environment Variables
+```env
+# Add any API keys or configuration
+VITE_API_BASE_URL=https://your-api-base.com
+```
+
+### Proxy Configuration
+Development API proxying is configured in `vite.config.js` for seamless local development.
+
+## 📊 Status Indicators
+
+| Color | Status | Description |
+|-------|--------|-------------|
+| 🟢 **Green** | Operational | All systems running normally |
+| 🟡 **Yellow** | Minor Issues | Some degradation or maintenance |
+| 🔴 **Red** | Major Issues | Significant service disruption |
+| ⚫ **Gray** | Unknown | Unable to determine status |
+
+## 🚀 Deployment
+
+The application is automatically deployed to Vercel with:
+- **Serverless Functions**: API proxying for production
+- **Edge Optimization**: Global CDN distribution
+- **Automatic Builds**: Triggered on git push
+- **Preview Deployments**: For pull requests
 
 ---
 
-This project is a demonstration of best practices for modern React development with Vite, focusing on clean UI, real-time data, and user experience.
+Built with ❤️ using modern React best practices, focusing on performance, accessibility, and user experience.
