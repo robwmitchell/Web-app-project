@@ -3,18 +3,31 @@ import { neon } from '@neondatabase/serverless';
 const sql = neon(process.env.DATABASE_URL);
 
 export default async function handler(req, res) {
-  // Only allow GET requests for manual cleanup or POST for automated cleanup
+  // Support both manual cleanup (GET/POST) and automated cron cleanup
   if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed. Use GET or POST.' });
   }
 
+  // Check if this is a cron request (automated cleanup)
+  const isCronRequest = req.headers.authorization === `Bearer ${process.env.CRON_SECRET}`;
+  const isManualRequest = req.method === 'GET' || (req.method === 'POST' && !isCronRequest);
+
+  // For cron requests, verify authentication
+  if (req.headers.authorization && !isCronRequest) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
   try {
-    // Calculate the cutoff date (8 days ago)
+    // Calculate the cutoff date (8 days ago, or custom from query param)
+    const daysToKeep = parseInt(req.query.days) || 8;
     const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - 8);
+    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
     const cutoffDateStr = cutoffDate.toISOString();
 
-    // Start transaction for atomic cleanup
+    const cleanupType = isCronRequest ? 'automated' : 'manual';
+    console.log(`Starting ${cleanupType} cleanup of records older than ${cutoffDateStr}`);
+
+    // Start cleanup operations
     const cleanupResults = {};
 
     // 1. Delete old issue reports
@@ -36,34 +49,38 @@ export default async function handler(req, res) {
       cleanupResults.notifications_deleted = 'table_not_found';
     }
 
-    // 3. Clean up any other tables with timestamp columns
-    // Add more cleanup operations here as needed
+    // 3. Clean up any other tables with timestamp columns as needed
     
     // Get remaining record counts for verification
-    const remainingIssueReports = await sql`
-      SELECT COUNT(*) as count FROM issue_reports
-    `;
+    let remainingCounts = {};
     
-    const oldestRecord = await sql`
-      SELECT MIN(reported_at) as oldest_date FROM issue_reports
-    `;
+    try {
+      const remainingIssueReports = await sql`SELECT COUNT(*) as count FROM issue_reports`;
+      const oldestRecord = await sql`SELECT MIN(reported_at) as oldest_date FROM issue_reports`;
+      
+      remainingCounts = {
+        issue_reports: parseInt(remainingIssueReports[0]?.count || 0),
+        oldest_record_date: oldestRecord[0]?.oldest_date || null
+      };
+    } catch (error) {
+      remainingCounts = { error: 'Could not fetch remaining counts' };
+    }
 
     const cleanupSummary = {
       cleanup_performed_at: new Date().toISOString(),
+      cleanup_type: cleanupType,
       cutoff_date: cutoffDateStr,
+      days_kept: daysToKeep,
       records_deleted: cleanupResults,
-      remaining_records: {
-        issue_reports: parseInt(remainingIssueReports[0]?.count || 0),
-        oldest_record_date: oldestRecord[0]?.oldest_date || null
-      }
+      remaining_records: remainingCounts
     };
 
     // Log cleanup for monitoring
-    console.log('Database cleanup completed:', cleanupSummary);
+    console.log(`${cleanupType} cleanup completed:`, cleanupSummary);
 
     res.status(200).json({
       success: true,
-      message: 'Database cleanup completed successfully',
+      message: `${cleanupType} database cleanup completed successfully`,
       summary: cleanupSummary
     });
 
