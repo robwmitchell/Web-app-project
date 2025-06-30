@@ -30,8 +30,15 @@ function ServiceLogo({ service }) {
   const [logoError, setLogoError] = React.useState(false);
   const [logoLoaded, setLogoLoaded] = React.useState(false);
   
-  // Use service logos mapping
-  const logoSrc = serviceLogos[service];
+  // Use service logos mapping with case-insensitive lookup
+  let logoSrc = serviceLogos[service];
+  if (!logoSrc) {
+    // Try to find a case-insensitive match
+    const serviceKey = Object.keys(serviceLogos).find(
+      key => key.toLowerCase() === service.toLowerCase()
+    );
+    logoSrc = serviceKey ? serviceLogos[serviceKey] : null;
+  }
   
   // Debug: log logo information
   React.useEffect(() => {
@@ -179,7 +186,15 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
     
     // Preload all logos to help with loading
     selectedServices.forEach(service => {
-      const logoSrc = serviceLogos[service];
+      let logoSrc = serviceLogos[service];
+      if (!logoSrc) {
+        // Try to find a case-insensitive match
+        const serviceKey = Object.keys(serviceLogos).find(
+          key => key.toLowerCase() === service.toLowerCase()
+        );
+        logoSrc = serviceKey ? serviceLogos[serviceKey] : null;
+      }
+      
       if (logoSrc) {
         console.log(`Attempting to preload logo for ${service}: ${logoSrc}`);
         const img = new Image();
