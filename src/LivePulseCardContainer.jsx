@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import LivePulseCard from './LivePulseCard';
 import Modal from './Modal';
 import ReportImpactForm from './ReportImpactForm';
@@ -197,6 +197,11 @@ export default function LivePulseCardContainer({
     });
   }
 
+  // Memoize the headline JSX to prevent unnecessary re-renders that cause pulsing
+  const memoizedHeadline = useMemo(() => {
+    return <div style={headlineStyle}>{headline}</div>;
+  }, [headline, JSON.stringify(headlineStyle)]);
+
   return (
     <>
       <LivePulseCard
@@ -204,7 +209,7 @@ export default function LivePulseCardContainer({
         provider={provider}
         indicator={indicator}
         status={status}
-        headline={<div style={headlineStyle}>{headline}</div>}
+        headline={memoizedHeadline}
         companyInfo={companyInfoMap[provider]}
         lastUpdated={lastUpdated}
       >
