@@ -196,7 +196,9 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
       const trendMap = trendRes.trend || {};
       const rows = selectedServices.map(service => {
         const trend = sanitizeTrend(trendMap[service]);
-        const count = todayMap[service] || 0;
+        // Use today's count from the trend data (last value) for consistency
+        const todayFromTrend = trend[trend.length - 1] || 0;
+        const count = todayMap[service] !== undefined ? todayMap[service] : todayFromTrend;
         const trendUp = trend.length > 1 ? trend[trend.length-1] >= trend[trend.length-2] : false;
         return {
           service,
