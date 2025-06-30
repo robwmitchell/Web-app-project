@@ -118,7 +118,7 @@ export default async function handler(req, res) {
     const [zscaler, slack, datadog, aws] = await Promise.all([
       fetchRSSFeed('https://trust.zscaler.com/blog-feed', 'Zscaler', 14),
       fetchRSSFeed('https://status.slack.com/feed/rss', 'Slack', 14),
-      fetchRSSFeed('https://status.datadoghq.com/history.rss', 'Datadog', 14),
+      fetchRSSFeed('https://status.datadoghq.eu/history.rss', 'Datadog', 14),
       fetchRSSFeed('https://status.aws.amazon.com/rss/all.rss', 'AWS', 14),
     ]);
 

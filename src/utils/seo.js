@@ -97,7 +97,7 @@ function updateStructuredData(selectedServices, serviceStatuses) {
         'zscaler': 'https://trust.zscaler.com/',
         'sendgrid': 'https://status.sendgrid.com/',
         'slack': 'https://status.slack.com/',
-        'datadog': 'https://status.datadoghq.com/'
+        'datadog': 'https://status.datadoghq.eu/'
       };
 
       const status = serviceStatuses[serviceId];
