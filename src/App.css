@@ -394,8 +394,8 @@
 
 .action-btn {
   position: relative;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   width: 44px;
   height: 44px;
@@ -407,13 +407,16 @@
   backdrop-filter: blur(10px);
   color: white;
   overflow: hidden;
+  opacity: 1;
 }
 
 .settings-icon {
   font-size: 20px;
-  opacity: 0.9;
+  opacity: 1;
   transition: all 0.3s ease;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  color: white !important;
+  display: inline-block;
 }
 
 .action-btn:hover .settings-icon {
@@ -426,6 +429,11 @@
 .settings-btn {
   min-width: 44px;
   min-height: 44px;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 .action-btn:hover {
