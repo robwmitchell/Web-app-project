@@ -109,7 +109,7 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch('/api/issue-reports-trend')
+    fetch('/api/issue-reports-latest?endpoint=trend')
       .then(r => r.json())
       .then(data => {
         if (!cancelled) {
