@@ -7,9 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:5173',
+        target: 'https://www.stack-status.io',
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '/api'),
+        secure: true,
       },
     },
   },
