@@ -199,6 +199,17 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [criticalMode, setCriticalMode] = useState({ active: false, details: [] });
   const [tickerIndex, setTickerIndex] = useState(0);
+
+  // Manual navigation functions for alert banner
+  const nextAlert = () => {
+    const issues = criticalMode.active ? criticalMode.details : demoIssues;
+    setTickerIndex(i => (i + 1) % issues.length);
+  };
+
+  const prevAlert = () => {
+    const issues = criticalMode.active ? criticalMode.details : demoIssues;
+    setTickerIndex(i => (i - 1 + issues.length) % issues.length);
+  };
   const demoIssues = [
     { provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' },
     { provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' },
@@ -500,7 +511,7 @@ const SPLASH_CONFIG = {
     if (issues.length > 1) {
       const interval = setInterval(() => {
         setTickerIndex(i => (i + 1) % issues.length);
-      }, 5000); // 5 seconds per issue
+      }, 30000); // 30 seconds per issue
       return () => clearInterval(interval);
     } else {
       setTickerIndex(0);
@@ -809,6 +820,88 @@ const SPLASH_CONFIG = {
                   );
                 })()}
               </div>
+              
+              {/* Navigation Controls - only show if more than one issue */}
+              {(() => {
+                const issues = criticalMode.active ? criticalMode.details : demoIssues;
+                return issues.length > 1 && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginLeft: 12
+                  }}>
+                    <button
+                      onClick={prevAlert}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        color: '#fff',
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: 14,
+                        transition: 'all 0.2s ease',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                        e.target.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                        e.target.style.transform = 'scale(1)';
+                      }}
+                      aria-label="Previous alert"
+                      title="Previous alert"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      onClick={nextAlert}
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)',
+                        color: '#fff',
+                        width: 32,
+                        height: 32,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        fontSize: 14,
+                        transition: 'all 0.2s ease',
+                        backdropFilter: 'blur(10px)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                        e.target.style.transform = 'scale(1.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                        e.target.style.transform = 'scale(1)';
+                      }}
+                      aria-label="Next alert"
+                      title="Next alert"
+                    >
+                      ›
+                    </button>
+                    <div style={{
+                      fontSize: 11,
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      marginLeft: 4,
+                      fontWeight: 500
+                    }}>
+                      {tickerIndex + 1}/{issues.length}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
             </div>
           </div>
