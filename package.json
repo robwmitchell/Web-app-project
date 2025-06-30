@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:cleanup": "node utils/database-cleanup.js",
+    "db:cleanup:7days": "node utils/database-cleanup.js 7",
+    "db:cleanup:14days": "node utils/database-cleanup.js 14"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",
