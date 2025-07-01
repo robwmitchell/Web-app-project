@@ -434,7 +434,8 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected, c
               {selectedServices.size > 0 && (
                 <div className="selected-services-preview">
                   {Array.from(selectedServices).slice(0, 3).map(serviceId => {
-                    const service = AVAILABLE_SERVICES.find(s => s.id === serviceId);
+                    const service = allServices.find(s => s.id === serviceId);
+                    if (!service) return null; // Safety check
                     return (
                       <div key={serviceId} className="preview-service" style={{ '--service-color': service.color }}>
                         <img 
