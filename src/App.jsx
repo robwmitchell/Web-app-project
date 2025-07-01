@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import LivePulseCard from './LivePulseCard';
 import LivePulseCardContainer from './LivePulseCardContainer';
 import ZscalerPulseCardContainer from './ZscalerPulseCardContainer';
+import CustomServiceCard from './CustomServiceCard';
 import Modal from './Modal';
 import MiniHeatbarGrid from './MiniHeatbarGrid';
 import ServiceSelectionSplash from './ServiceSelectionSplash';
@@ -194,10 +195,22 @@ function App() {
   const [slack, setSlack] = useState({ status: 'Loading...', updates: [], name: 'Slack' });
   const [datadog, setDatadog] = useState({ status: 'Loading...', updates: [], name: 'Datadog' });
   const [aws, setAws] = useState({ status: 'Loading...', updates: [], name: 'AWS' });
+  
+  // Custom services state
+  const [customServices, setCustomServices] = useState(() => {
+    try {
+      const saved = localStorage.getItem('customServices');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+  
   const [today, setToday] = useState(() => new Date());
   const [lastUpdated, setLastUpdated] = useState(() => new Date());
   const [loading, setLoading] = useState(false);
   const [criticalMode, setCriticalMode] = useState({ active: false, details: [] });
+  const [showMore, setShowMore] = useState({});
   const [tickerIndex, setTickerIndex] = useState(0);
   const [closedCards, setClosedCards] = useState(() => {
     try {
@@ -236,6 +249,18 @@ function App() {
   const restoreAllCards = () => {
     setClosedCards([]);
     localStorage.removeItem('closedServiceCards');
+  };
+
+  const toggleShowMore = (serviceId) => {
+    setShowMore(prev => ({
+      ...prev,
+      [serviceId]: !prev[serviceId]
+    }));
+  };
+
+  const handleReportIssue = (serviceName) => {
+    // Placeholder for issue reporting functionality
+    alert(`Report issue for ${serviceName} - This feature will be implemented to allow users to report issues.`);
   };
 
   const isCardClosed = (provider) => {
@@ -620,9 +645,26 @@ const SPLASH_CONFIG = {
     }
   }
 
+  // Handle adding custom services
+  function handleAddCustomService(customService) {
+    const updatedCustomServices = [...customServices, customService];
+    setCustomServices(updatedCustomServices);
+    localStorage.setItem('customServices', JSON.stringify(updatedCustomServices));
+    
+    // Automatically add the new custom service to selected services
+    const updatedSelectedServices = [...(selectedServices || []), customService.id];
+    setSelectedServices(updatedSelectedServices);
+    localStorage.setItem('selectedServices', JSON.stringify(updatedSelectedServices));
+  }
+
   // Show splash screen if no services selected
   if (showSplash) {
-    return <ServiceSelectionSplash onServicesSelected={handleServiceSelect} selected={selectedServices} />;
+    return <ServiceSelectionSplash 
+      onServicesSelected={handleServiceSelect} 
+      selected={selectedServices} 
+      customServices={customServices}
+      onAddCustomService={handleAddCustomService}
+    />;
   }
 
   return <>
@@ -1248,11 +1290,27 @@ const SPLASH_CONFIG = {
                 onClose={closeCard}
               />
             )}
+            
+            {/* Custom Service Cards */}
+            {customServices.map(customService => (
+              isServiceSelected(customService.id) && !isCardClosed(customService.id) && (
+                <CustomServiceCard
+                  key={customService.id}
+                  service={customService}
+                  onClose={closeCard}
+                  isClosed={isCardClosed(customService.id)}
+                  onToggleShowMore={toggleShowMore}
+                  showMore={showMore[customService.id] || false}
+                  onReportIssue={handleReportIssue}
+                />
+              )
+            ))}
           </div>
         )}
         {/* Mini Heatbar Grid at the bottom of the page */}
         <MiniHeatbarGrid 
           selectedServices={selectedServices} 
+          customServices={customServices}
           closedCards={closedCards}
           onCloseCard={closeCard}
           onRestoreCard={restoreCard}

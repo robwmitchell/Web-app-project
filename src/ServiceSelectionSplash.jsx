@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './ServiceSelectionSplash.css';
 import logoImage from './assets/stackstatus1.png';
 import { serviceLogos } from './serviceLogos';
+import AddCustomService from './AddCustomService';
 
 const AVAILABLE_SERVICES = [
   {
@@ -91,13 +92,17 @@ const AVAILABLE_SERVICES = [
   }
 ];
 
-export default function ServiceSelectionSplash({ onServicesSelected, selected }) {
+export default function ServiceSelectionSplash({ onServicesSelected, selected, customServices = [], onAddCustomService }) {
   // Convert array to Set for selection management
   const initialSelected = Array.isArray(selected) ? new Set(selected) : new Set();
   const [selectedServices, setSelectedServices] = useState(initialSelected);
   const [selectedAlertTypes, setSelectedAlertTypes] = useState(new Map());
   const [expandedServices, setExpandedServices] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showAddCustom, setShowAddCustom] = useState(false);
+  
+  // Combine available services with custom services
+  const allServices = [...AVAILABLE_SERVICES, ...customServices];
   const containerRef = useRef(null);
 
   // Handle scroll indicator
@@ -170,10 +175,10 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected })
   };
 
   const selectAll = () => {
-    setSelectedServices(new Set(AVAILABLE_SERVICES.map(s => s.id)));
+    setSelectedServices(new Set(allServices.map(s => s.id)));
     // Reset to default alert types for all services
     const defaultAlertTypes = new Map();
-    AVAILABLE_SERVICES.forEach(service => {
+    allServices.forEach(service => {
       const defaults = new Set(
         service.alertTypes.filter(type => type.default).map(type => type.id)
       );
@@ -210,6 +215,35 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected })
     setTimeout(() => {
       onServicesSelected([...selectedServices]);
     }, 500);
+  };
+
+  // Handle adding custom service
+  const handleAddCustomService = (customService) => {
+    // Add to custom services if onAddCustomService is provided
+    if (onAddCustomService) {
+      onAddCustomService(customService);
+    }
+    
+    // Auto-select the new custom service
+    const newSelected = new Set(selectedServices);
+    newSelected.add(customService.id);
+    setSelectedServices(newSelected);
+    
+    // Set default alert types for the custom service
+    const newAlertTypes = new Map(selectedAlertTypes);
+    const defaults = new Set(
+      customService.alertTypes.filter(type => type.default).map(type => type.id)
+    );
+    newAlertTypes.set(customService.id, defaults);
+    setSelectedAlertTypes(newAlertTypes);
+    
+    // Close the modal
+    setShowAddCustom(false);
+  };
+
+  // Handle canceling custom service addition
+  const handleCancelCustom = () => {
+    setShowAddCustom(false);
   };
 
   return (
@@ -252,7 +286,7 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected })
 
         {/* Enhanced service grid */}
         <div className="service-selection-grid">
-          {AVAILABLE_SERVICES.map((service) => (
+          {allServices.map((service) => (
             <div
               key={service.id}
               className={`service-card ${selectedServices.has(service.id) ? 'selected' : ''} ${expandedServices.has(service.id) ? 'expanded' : ''}`}
@@ -359,6 +393,23 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected })
               )}
             </div>
           ))}
+          
+          {/* Add Custom Service Card */}
+          <div className="add-custom-service-card">
+            <button 
+              className="add-custom-btn"
+              onClick={() => setShowAddCustom(true)}
+              type="button"
+            >
+              <div className="add-custom-icon">
+                <span className="plus-icon">+</span>
+              </div>
+              <div className="add-custom-content">
+                <h3 className="add-custom-title">Add Custom RSS</h3>
+                <p className="add-custom-desc">Monitor any service with an RSS status feed</p>
+              </div>
+            </button>
+          </div>
         </div>
 
         {/* Enhanced actions section */}
@@ -426,6 +477,15 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected })
             </button>
           </div>
         </div>
+
+        {/* Add Custom Service Modal */}
+        {showAddCustom && (
+          <AddCustomService 
+            onAddService={handleAddCustomService}
+            onCancel={handleCancelCustom}
+            existingServices={allServices}
+          />
+        )}
       </div>
     </div>
   );

@@ -1587,3 +1587,117 @@ html, body {
   background: rgba(148, 163, 184, 0.2);
   transform: translateY(-2px);
 }
+
+/* Add Custom Service Card Styles */
+.add-custom-service-card {
+  grid-column: span 1;
+  height: 100%;
+  min-height: 120px;
+}
+
+.add-custom-btn {
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+  border: 2px dashed rgba(139, 92, 246, 0.3);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 20px;
+  text-align: center;
+}
+
+.add-custom-btn:hover {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.15) 100%);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+}
+
+.add-custom-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  transition: all 0.3s ease;
+}
+
+.add-custom-btn:hover .add-custom-icon {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.plus-icon {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  line-height: 1;
+}
+
+.add-custom-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.add-custom-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #374151;
+  line-height: 1.3;
+}
+
+.add-custom-desc {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Responsive adjustments for add custom service */
+@media (max-width: 768px) {
+  .add-custom-service-card {
+    grid-column: span 2;
+  }
+  
+  .add-custom-btn {
+    min-height: 100px;
+    padding: 16px;
+    gap: 8px;
+  }
+  
+  .add-custom-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .plus-icon {
+    font-size: 20px;
+  }
+  
+  .add-custom-title {
+    font-size: 0.95rem;
+  }
+  
+  .add-custom-desc {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-custom-service-card {
+    grid-column: span 1;
+  }
+}

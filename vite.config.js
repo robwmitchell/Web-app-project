@@ -18,6 +18,7 @@ export default defineConfig({
           return `/${endpoint}.json`;
         }
       },
+
       // All other API requests go to external server
       '/api': {
         target: 'https://www.stack-status.io',
