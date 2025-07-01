@@ -207,6 +207,7 @@ function App() {
       return [];
     }
   });
+  const [alertDismissed, setAlertDismissed] = useState(false);
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -241,10 +242,21 @@ function App() {
     return closedCards.includes(provider.toLowerCase());
   };
 
+  // Helper function to check if service is selected
+  const isServiceSelected = (serviceId) => {
+    if (!selectedServices) return true; // Show all if no selection yet
+    return selectedServices.includes(serviceId);
+  };
+
   const demoIssues = [
-    { provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' },
-    { provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' },
-    { provider: 'Okta', name: 'Service Disruption', status: 'critical', updated: new Date().toISOString(), url: 'https://status.okta.com/' },
+    // Only include demo issues for selected services
+    ...(isServiceSelected('cloudflare') ? [{ provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' }] : []),
+    ...(isServiceSelected('zscaler') ? [{ provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' }] : []),
+    ...(isServiceSelected('okta') ? [{ provider: 'Okta', name: 'Service Disruption', status: 'critical', updated: new Date().toISOString(), url: 'https://status.okta.com/' }] : []),
+    ...(isServiceSelected('sendgrid') ? [{ provider: 'SendGrid', name: 'Email Delivery Issues', status: 'major', updated: new Date().toISOString(), url: 'https://status.sendgrid.com/' }] : []),
+    ...(isServiceSelected('slack') ? [{ provider: 'Slack', name: 'Message Sync Issues', status: 'minor', updated: new Date().toISOString(), url: 'https://status.slack.com/' }] : []),
+    ...(isServiceSelected('datadog') ? [{ provider: 'Datadog', name: 'Monitoring Delays', status: 'major', updated: new Date().toISOString(), url: 'https://status.datadoghq.com/' }] : []),
+    ...(isServiceSelected('aws') ? [{ provider: 'AWS', name: 'EC2 Instance Issues', status: 'critical', updated: new Date().toISOString(), url: 'https://status.aws.amazon.com/' }] : []),
   ];
 
   // Configuration for splash screen behavior
@@ -466,19 +478,20 @@ const SPLASH_CONFIG = {
     setLoading(false);
   }, [selectedServices]);
 
-  // Check for any open/unresolved issue across all providers
+  // Check for any open/unresolved issue across selected providers only
   useEffect(() => {
     const openIssues = [];
-    // Cloudflare: all unresolved incidents
-    if (cloudflare && cloudflare.incidents && cloudflare.incidents.length > 0) {
+    // Only check for issues from selected services
+    // Cloudflare: all unresolved incidents (only if selected)
+    if (isServiceSelected('cloudflare') && cloudflare && cloudflare.incidents && cloudflare.incidents.length > 0) {
       cloudflare.incidents.forEach(inc => {
         if (!inc.resolved_at) {
           openIssues.push({ provider: 'Cloudflare', name: inc.title || inc.name, status: inc.impact || inc.status, updated: inc.updated_at || inc.updatedAt, url: inc.shortlink || inc.url });
         }
       });
     }
-    // Zscaler: all open issues (not resolved/closed/completed and not operational)
-    if (zscaler && zscaler.updates && zscaler.updates.length > 0) {
+    // Zscaler: all open issues (not resolved/closed/completed and not operational) (only if selected)
+    if (isServiceSelected('zscaler') && zscaler && zscaler.updates && zscaler.updates.length > 0) {
       zscaler.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
         const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
@@ -488,8 +501,8 @@ const SPLASH_CONFIG = {
         }
       });
     }
-    // Okta: all open issues (not resolved/closed/completed)
-    if (okta && okta.updates && okta.updates.length > 0) {
+    // Okta: all open issues (not resolved/closed/completed) (only if selected)
+    if (isServiceSelected('okta') && okta && okta.updates && okta.updates.length > 0) {
       okta.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
         const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
@@ -498,8 +511,8 @@ const SPLASH_CONFIG = {
         }
       });
     }
-    // SendGrid: all open issues (not resolved/closed/completed)
-    if (sendgrid && sendgrid.updates && sendgrid.updates.length > 0) {
+    // SendGrid: all open issues (not resolved/closed/completed) (only if selected)
+    if (isServiceSelected('sendgrid') && sendgrid && sendgrid.updates && sendgrid.updates.length > 0) {
       sendgrid.updates.forEach(upd => {
         const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
         const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
@@ -508,26 +521,26 @@ const SPLASH_CONFIG = {
         }
       });
     }
-    // Slack: all open issues
-    if (slack && slack.updates && slack.updates.length > 0) {
+    // Slack: all open issues (only if selected)
+    if (isServiceSelected('slack') && slack && slack.updates && slack.updates.length > 0) {
       slack.updates.forEach(upd => {
         openIssues.push({ provider: 'Slack', name: upd.title, status: slack.status, updated: upd.reported_at, url: upd.url });
       });
     }
-    // Datadog: all open issues
-    if (datadog && datadog.updates && datadog.updates.length > 0) {
+    // Datadog: all open issues (only if selected)
+    if (isServiceSelected('datadog') && datadog && datadog.updates && datadog.updates.length > 0) {
       datadog.updates.forEach(upd => {
         openIssues.push({ provider: 'Datadog', name: upd.title, status: datadog.status, updated: upd.reported_at, url: upd.url });
       });
     }
-    // AWS: all open issues
-    if (aws && aws.updates && aws.updates.length > 0) {
+    // AWS: all open issues (only if selected)
+    if (isServiceSelected('aws') && aws && aws.updates && aws.updates.length > 0) {
       aws.updates.forEach(upd => {
         openIssues.push({ provider: 'AWS', name: upd.title, status: aws.status, updated: upd.reported_at, url: upd.url });
       });
     }
     setCriticalMode({ active: openIssues.length > 0, details: openIssues });
-  }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws]);
+  }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws, selectedServices]);
 
   useEffect(() => {
     setToday(new Date()); // Update on mount (in case of SSR)
@@ -553,6 +566,18 @@ const SPLASH_CONFIG = {
   function handleServiceSelect(services) {
     setSelectedServices(services);
     localStorage.setItem('selectedServices', JSON.stringify(services));
+    
+    // Clean up closed cards for services that are no longer selected
+    const currentClosedCards = JSON.parse(localStorage.getItem('closedServiceCards') || '[]');
+    const serviceNamesLower = services.map(s => s.toLowerCase());
+    const filteredClosedCards = currentClosedCards.filter(card => 
+      serviceNamesLower.includes(card.toLowerCase())
+    );
+    
+    // Update both state and localStorage
+    setClosedCards(filteredClosedCards);
+    localStorage.setItem('closedServiceCards', JSON.stringify(filteredClosedCards));
+    
     setShowSplash(false);
     
     // Optionally refresh the page for a clean state
@@ -595,19 +620,12 @@ const SPLASH_CONFIG = {
     }
   }
 
-  // Helper function to check if service is selected
-  const isServiceSelected = (serviceId) => {
-    if (!selectedServices) return true; // Show all if no selection yet
-    return selectedServices.includes(serviceId);
-  };
-
   // Show splash screen if no services selected
   if (showSplash) {
-    return <ServiceSelectionSplash onServicesSelected={handleServiceSelect} />;
+    return <ServiceSelectionSplash onServicesSelected={handleServiceSelect} selected={selectedServices} />;
   }
 
-  return (
-    <>
+  return <>
       {/* Remove white space at top by setting margin and padding to 0 on body and root container */}
       <style>{`
         body, #root {
@@ -617,69 +635,201 @@ const SPLASH_CONFIG = {
         }
       `}</style>
       {/* Modern Enhanced Header */}
-      <header className="site-header">
-        <div className="header-container">
-          <div className="header-brand">
-            <div className="logo-container">
-            <img 
-              src={logoImage} 
-              alt="Stack Status IO Logo" 
-              className="header-logo"
-            />
+      <header className="site-header-modern" style={{
+        width: '100%',
+        background: 'rgba(255,255,255,0.85)',
+        boxShadow: '0 4px 32px 0 rgba(30,41,59,0.09)',
+        backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid rgba(148, 163, 184, 0.10)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        padding: 0,
+        marginBottom: 18
+      }}>
+        <div className="header-container-modern" style={{
+          maxWidth: 1280,
+          margin: '0 auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 32px',
+          minHeight: 74,
+          position: 'relative',
+        }}>
+          {/* Brand/Logo */}
+          <div className="header-brand-modern" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            <div className="logo-container-modern" style={{
+              background: 'rgba(255,255,255,0.7)',
+              borderRadius: 16,
+              boxShadow: '0 2px 8px rgba(30,41,59,0.10)',
+              padding: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 56,
+              height: 56,
+              minWidth: 56,
+              minHeight: 56,
+            }}>
+              <img 
+                src={logoImage} 
+                alt="Stack Status IO Logo" 
+                className="header-logo-modern"
+                style={{ width: 36, height: 36, borderRadius: 12 }}
+              />
             </div>
-            <div className="brand-info">
-              <h1 className="brand-title">
+            <div className="brand-info-modern" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <h1 className="brand-title-modern" style={{
+                fontWeight: 900,
+                fontSize: '2.1em',
+                color: '#1e293b',
+                letterSpacing: '-0.01em',
+                margin: 0,
+                lineHeight: 1.1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8
+              }}>
                 Stack Status
-                <span className="brand-subtitle">IO</span>
+                <span className="brand-subtitle-modern" style={{
+                  fontWeight: 700,
+                  fontSize: '0.6em',
+                  color: '#60a5fa',
+                  marginLeft: 2,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  background: 'linear-gradient(90deg, #60a5fa 0%, #1976d2 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  display: 'inline-block'
+                }}>IO</span>
               </h1>
-              <div className="status-indicators">
-                <div className="status-dot operational"></div>
-                <span className="status-text">All Systems Operational</span>
-                <div className="live-indicator">
-                  <span className="live-pulse"></span>
-                  <span className="live-text">LIVE</span>
+              <div className="status-indicators-modern" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
+                <div className="status-dot-modern" style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+                  boxShadow: '0 0 8px 2px #10b98144',
+                  marginRight: 4
+                }}></div>
+                <span className="status-text-modern" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>All Systems Operational</span>
+                <div className="live-indicator-modern" style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 10 }}>
+                  <span className="live-pulse-modern" style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: '#ef4444',
+                    boxShadow: '0 0 0 0 #ef4444',
+                    animation: 'pulseLive 1.5s infinite cubic-bezier(0.66,0,0,1)'
+                  }}></span>
+                  <span className="live-text-modern" style={{ fontWeight: 700, color: '#ef4444', fontSize: 12, letterSpacing: 1 }}>LIVE</span>
                 </div>
               </div>
             </div>
           </div>
-          
-          <div className="header-actions">
-            <div className="action-group">
-              <button
-                className="action-btn settings-btn"
-                onClick={() => setShowSplash(true)}
-                title="Configure Services"
-                aria-label="Configure service monitoring"
-              >
-                <span className="settings-icon" style={{ fontSize: '20px', color: 'white' }}>⚙️</span>
-                <span className="btn-tooltip">Settings</span>
-              </button>
-              
-              <div className="notification-wrapper">
-                <NotificationChatbot
-                  selectedServices={selectedServices}
-                  cloudflareIncidents={cloudflare.incidents}
-                  zscalerUpdates={zscaler.updates}
-                  oktaUpdates={okta.updates}
-                  sendgridUpdates={sendgrid.updates}
-                  slackUpdates={slack.updates}
-                  datadogUpdates={datadog.updates}
-                  awsUpdates={aws.updates}
-                  headerMode={true}
-                  usePortal={true}
-                  modalZIndex={20000}
-                />
-              </div>
+          {/* Actions */}
+          <div className="header-actions-modern" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            <button
+              className="action-btn-modern settings-btn-modern"
+              onClick={() => setShowSplash(true)}
+              title="Configure Services"
+              aria-label="Configure service monitoring"
+              style={{
+                background: 'linear-gradient(90deg, #1976d2 0%, #60a5fa 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 16px',
+                fontWeight: 700,
+                fontSize: 15,
+                boxShadow: '0 2px 8px rgba(30,41,59,0.10)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => e.target.style.background = 'linear-gradient(90deg, #60a5fa 0%, #1976d2 100%)'}
+              onMouseLeave={e => e.target.style.background = 'linear-gradient(90deg, #1976d2 0%, #60a5fa 100%)'}
+            >
+              <span className="settings-icon-modern" style={{ fontSize: '20px' }}>⚙️</span>
+              <span>Settings</span>
+            </button>
+            <div className="notification-wrapper-modern">
+              <NotificationChatbot
+                selectedServices={selectedServices}
+                cloudflareIncidents={cloudflare.incidents}
+                zscalerUpdates={zscaler.updates}
+                oktaUpdates={okta.updates}
+                sendgridUpdates={sendgrid.updates}
+                slackUpdates={slack.updates}
+                datadogUpdates={datadog.updates}
+                awsUpdates={aws.updates}
+                headerMode={true}
+                usePortal={true}
+                modalZIndex={20000}
+              />
             </div>
           </div>
         </div>
-        
         {/* Subtle animated background elements */}
-        <div className="header-bg-effects">
-          <div className="bg-gradient-1"></div>
-          <div className="bg-gradient-2"></div>
-          <div className="floating-orb orb-1"></div>
-          <div className="floating-orb orb-2"></div>
+        <div className="header-bg-effects-modern" style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 0,
+          pointerEvents: 'none',
+        }}>
+          <div className="bg-gradient-modern-1" style={{
+            position: 'absolute',
+            top: '-40px',
+            left: '-80px',
+            width: 240,
+            height: 240,
+            background: 'radial-gradient(circle at 30% 30%, #60a5fa55 0%, transparent 80%)',
+            filter: 'blur(24px)',
+            zIndex: 0
+          }}></div>
+          <div className="bg-gradient-modern-2" style={{
+            position: 'absolute',
+            bottom: '-60px',
+            right: '-100px',
+            width: 320,
+            height: 180,
+            background: 'radial-gradient(circle at 70% 70%, #1976d255 0%, transparent 80%)',
+            filter: 'blur(32px)',
+            zIndex: 0
+          }}></div>
+          <div className="floating-orb-modern orb-1" style={{
+            position: 'absolute',
+            top: 18,
+            left: 120,
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #60a5fa 0%, #1976d2 100%)',
+            opacity: 0.18,
+            filter: 'blur(2px)',
+            zIndex: 1,
+            animation: 'floatOrb 6s ease-in-out infinite alternate'
+          }}></div>
+          <div className="floating-orb-modern orb-2" style={{
+            position: 'absolute',
+            bottom: 12,
+            right: 80,
+            width: 24,
+            height: 24,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #1976d2 0%, #60a5fa 100%)',
+            opacity: 0.13,
+            filter: 'blur(1.5px)',
+            zIndex: 1,
+            animation: 'floatOrb 7s ease-in-out infinite alternate-reverse'
+          }}></div>
         </div>
       </header>
       <div style={{ 
@@ -704,7 +854,7 @@ const SPLASH_CONFIG = {
         </div>
         {/* Enhanced Critical Alert Banner */}
         {(
-          criticalMode.active || process.env.NODE_ENV === 'development'
+          !alertDismissed && (criticalMode.active || process.env.NODE_ENV === 'development')
         ) && (
           <div className="alert-banner-container">
             <div className="alert-banner-content" style={{
@@ -724,6 +874,45 @@ const SPLASH_CONFIG = {
               animation: 'alertPulse 3s ease-in-out infinite',
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}>
+            {/* Dismiss button */}
+            <button
+              aria-label="Dismiss alert banner"
+              title="Dismiss alert banner"
+              onClick={() => setAlertDismissed(true)}
+              style={{
+                position: 'absolute',
+                top: 10,
+                right: 10,
+                width: 22,
+                height: 22,
+                minWidth: 22,
+                minHeight: 22,
+                maxWidth: 22,
+                maxHeight: 22,
+                background: '#ff5f57',
+                border: 'none',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                zIndex: 20,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.18)',
+                flexShrink: 0,
+                padding: 0,
+              }}
+              onMouseEnter={e => {
+                e.target.style.background = '#ff3b30';
+                e.target.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={e => {
+                e.target.style.background = '#ff5f57';
+                e.target.style.transform = 'scale(1)';
+              }}
+            >
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1 }}>×</span>
+            </button>
             {/* Main Content Row */}
             <div className="alert-main-content" style={{
               display: 'flex',
@@ -940,10 +1129,10 @@ const SPLASH_CONFIG = {
                 );
               })()}
             </div>
-            </div>
+          </div>
           </div>
         )}
-        {/* Service selection splash screen */}
+        {/* Service selection splash screen and main dashboard */}
         {showSplash ? (
           <ServiceSelectionSplash 
             onSelect={handleServiceSelect}
@@ -1009,17 +1198,6 @@ const SPLASH_CONFIG = {
                 onClose={closeCard}
               />
             )}
-            {isServiceSelected('sendgrid') && !isCardClosed('sendgrid') && (
-              <ZscalerPulseCardContainer
-                provider="SendGrid"
-                name="SendGrid"
-                indicator={sendgrid.indicator}
-                status={sendgrid.status}
-                updates={sendgrid.updates}
-                incidents={sendgrid.updates} // Pass updates as incidents for SendGrid modal
-                onClose={closeCard}
-              />
-            )}
             {isServiceSelected('okta') && !isCardClosed('okta') && (
               <ZscalerPulseCardContainer
                 provider="Okta"
@@ -1027,6 +1205,16 @@ const SPLASH_CONFIG = {
                 indicator={okta.indicator}
                 status={okta.status}
                 updates={okta.updates}
+                onClose={closeCard}
+              />
+            )}
+            {isServiceSelected('sendgrid') && !isCardClosed('sendgrid') && (
+              <ZscalerPulseCardContainer
+                provider="SendGrid"
+                name="SendGrid"
+                indicator={sendgrid.indicator}
+                status={sendgrid.status}
+                updates={sendgrid.updates}
                 onClose={closeCard}
               />
             )}
@@ -1063,12 +1251,17 @@ const SPLASH_CONFIG = {
           </div>
         )}
         {/* Mini Heatbar Grid at the bottom of the page */}
-        <MiniHeatbarGrid selectedServices={selectedServices} />
+        <MiniHeatbarGrid 
+          selectedServices={selectedServices} 
+          closedCards={closedCards}
+          onCloseCard={closeCard}
+          onRestoreCard={restoreCard}
+          onRestoreAllCards={restoreAllCards}
+        />
         <SpeedInsights />
         <Analytics />
       </div>
-    </>
-  );
+    </>;
 }
 
 export default App;

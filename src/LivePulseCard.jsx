@@ -89,45 +89,99 @@ export default function LivePulseCard({
             left: 0,
           }}
         >
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 20, paddingBottom: 12, borderBottom: '1px solid rgba(148, 163, 184, 0.1)' }}>
-            <div className={`card-accent ${provider.toLowerCase()}`}></div>
-            {/* Logo in white rounded box */}
+          <div className="card-header-modern" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 20,
+            padding: '18px 20px 18px 0',
+            borderRadius: '18px 18px 0 0',
+            background: 'rgba(255,255,255,0.55)',
+            boxShadow: '0 4px 24px 0 rgba(30,41,59,0.07)',
+            backdropFilter: 'blur(12px)',
+            position: 'relative',
+            minHeight: 72,
+            borderBottom: '1px solid rgba(148, 163, 184, 0.10)',
+            zIndex: 2,
+          }}>
+            {/* Accent bar */}
+            <div style={{
+              width: 6,
+              height: 48,
+              borderRadius: 6,
+              background: `linear-gradient(135deg, #1976d2 0%, #60a5fa 100%)`,
+              marginRight: 18,
+              boxShadow: '0 2px 8px rgba(30,41,59,0.10)'
+            }} />
+            {/* Logo in glassy circle */}
             {serviceLogos[provider] && (
               <div style={{
-                background: '#fff',
-                borderRadius: 12,
-                boxShadow: '0 2px 8px rgba(15,23,42,0.08)',
-                padding: 4,
+                background: 'rgba(255,255,255,0.7)',
+                borderRadius: '50%',
+                boxShadow: '0 2px 8px rgba(15,23,42,0.10)',
+                padding: 8,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 44,
-                height: 44,
+                width: 56,
+                height: 56,
+                minWidth: 56,
+                minHeight: 56,
                 marginRight: 10,
               }}>
-                <img src={serviceLogos[provider]} alt={provider + ' logo'} style={{ width: 32, height: 32, borderRadius: 8 }} />
+                <img src={serviceLogos[provider]} alt={provider + ' logo'} style={{ width: 36, height: 36, borderRadius: 12 }} />
               </div>
             )}
             {/* Name and status row */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flex: 1 }}>
-              <span style={{ fontWeight: 800, fontSize: '1.35em', color: '#1e293b', letterSpacing: '-0.01em' }}>{name || provider}</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+              <span style={{ fontWeight: 900, fontSize: '1.45em', color: '#1e293b', letterSpacing: '-0.01em', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name || provider}</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
                 <span className={`status-indicator ${indicator}`} title={indicator} style={{ boxShadow: '0 0 0 4px #f3f4f6, 0 2px 8px rgba(15,23,42,0.08)' }}></span>
                 <span className="status-text" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>{status}</span>
               </span>
             </div>
-            {/* Card action buttons - right aligned */}
-            <div style={{ display: 'flex', gap: 4, marginLeft: 12 }}>
-              {/* Plus/Minus Icon Button */}
+            {/* Close button - top right, vertically centered */}
+            {onClose && (
               <button
-                className="card-plus-btn"
-                onClick={() => setFlipped(f => !f)}
-                aria-label={flipped ? "Hide info" : "Show more info"}
-                style={{ width: 32, height: 32, background: 'none', border: 'none', cursor: 'pointer', zIndex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                className="card-close-btn"
+                onClick={handleClose}
+                aria-label="Close card"
+                title="Close this service card"
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  right: 18,
+                  transform: 'translateY(-50%)',
+                  width: 22,
+                  height: 22,
+                  minWidth: 22,
+                  minHeight: 22,
+                  maxWidth: 22,
+                  maxHeight: 22,
+                  background: '#ff5f57',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  zIndex: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.18)',
+                  flexShrink: 0,
+                  padding: 0,
+                }}
+                onMouseEnter={e => {
+                  e.target.style.background = '#ff3b30';
+                  e.target.style.transform = 'translateY(-50%) scale(1.1)';
+                }}
+                onMouseLeave={e => {
+                  e.target.style.background = '#ff5f57';
+                  e.target.style.transform = 'translateY(-50%) scale(1)';
+                }}
               >
-                <span style={{ fontSize: 22, fontWeight: 700, color: '#888' }}>{flipped ? '−' : '+'}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1 }}>×</span>
               </button>
-            </div>
+            )}
           </div>
           <div className="live-pulse-headline">{headline}</div>
           {children}
@@ -163,48 +217,6 @@ export default function LivePulseCard({
           </button>
         </div>
       </div>
-      {/* Close button - top right corner */}
-      {onClose && (
-        <button
-          className="card-close-btn"
-          onClick={handleClose}
-          aria-label="Close card"
-          title="Close this service card"
-          style={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            width: 20,
-            height: 20,
-            minWidth: 20,
-            minHeight: 20,
-            maxWidth: 20,
-            maxHeight: 20,
-            background: '#ff5f57',
-            border: 'none',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            zIndex: 4,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
-            flexShrink: 0,
-            padding: 0,
-          }}
-          onMouseEnter={e => {
-            e.target.style.background = '#ff3b30';
-            e.target.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={e => {
-            e.target.style.background = '#ff5f57';
-            e.target.style.transform = 'scale(1)';
-          }}
-        >
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'white', lineHeight: 1 }}>×</span>
-        </button>
-      )}
     </div>
   );
 }

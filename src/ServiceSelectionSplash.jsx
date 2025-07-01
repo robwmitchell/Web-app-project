@@ -91,8 +91,10 @@ const AVAILABLE_SERVICES = [
   }
 ];
 
-export default function ServiceSelectionSplash({ onServicesSelected }) {
-  const [selectedServices, setSelectedServices] = useState(new Set());
+export default function ServiceSelectionSplash({ onServicesSelected, selected }) {
+  // Convert array to Set for selection management
+  const initialSelected = Array.isArray(selected) ? new Set(selected) : new Set();
+  const [selectedServices, setSelectedServices] = useState(initialSelected);
   const [selectedAlertTypes, setSelectedAlertTypes] = useState(new Map());
   const [expandedServices, setExpandedServices] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -206,36 +208,49 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
     
     // Simulate a brief loading state
     setTimeout(() => {
-      onServicesSelected([...selectedServices], alertTypesAsArrays);
+      onServicesSelected([...selectedServices]);
     }, 500);
   };
 
   return (
     <div className="splash-screen">
+      {/* Enhanced animated background */}
       <div className="splash-background">
         <div className="splash-particles"></div>
+        <div className="splash-orbs">
+          <div className="orb orb-1"></div>
+          <div className="orb orb-2"></div>
+          <div className="orb orb-3"></div>
+        </div>
       </div>
       
       <div className="splash-container" ref={containerRef}>
+        {/* Enhanced header with better branding */}
         <div className="splash-header">
           <div className="splash-logo">
-            <img 
-              src={logoImage} 
-              alt="Stack Status IO Logo" 
-              style={{
-                height: 80,
-                width: 80,
-                borderRadius: 12,
-                objectFit: 'cover',
-                marginBottom: 16
-              }}
-            />
+            <div className="logo-container">
+              <img 
+                src={logoImage} 
+                alt="Stack Status IO Logo" 
+                className="logo-image"
+              />
+              <div className="logo-glow"></div>
+            </div>
+            <div className="brand-info">
+              <h1 className="brand-title">
+                Stack Status
+                <span className="brand-accent">IO</span>
+              </h1>
+              <div className="brand-tagline">Real-time Service Monitoring</div>
+            </div>
           </div>
-          <p className="splash-subtitle">
-            Monitor the services that matter to you. Select the platforms you'd like to track.
-          </p>
+          <div className="splash-subtitle">
+            <h2>Select Your Services</h2>
+            <p>Choose the platforms you'd like to monitor for real-time status updates and outage notifications.</p>
+          </div>
         </div>
 
+        {/* Enhanced service grid */}
         <div className="service-selection-grid">
           {AVAILABLE_SERVICES.map((service) => (
             <div
@@ -248,22 +263,39 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
                 onClick={() => toggleService(service.id)}
               >
                 <div className="service-logo">
+                  <div className="logo-bg" style={{ '--service-color': service.color }}></div>
                   <img 
                     src={service.logo} 
                     alt={`${service.name} logo`}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain'
+                    className="service-logo-img"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling?.classList.add('show');
                     }}
                   />
+                  <div className="service-logo-fallback">
+                    {service.name.charAt(0).toUpperCase()}
+                  </div>
                 </div>
                 <div className="service-info">
-                  <h3>{service.name}</h3>
-                  <p>{service.description}</p>
+                  <h3 className="service-name">{service.name}</h3>
+                  <p className="service-description">{service.description}</p>
+                  <div className="service-status">
+                    <span className="status-dot"></span>
+                    <span className="status-text">Monitoring Available</span>
+                  </div>
                 </div>
                 <div className="service-checkbox">
-                  {selectedServices.has(service.id) ? '✓' : '○'}
+                  <div className="checkbox-inner" style={{ '--service-color': service.color }}>
+                    {selectedServices.has(service.id) ? (
+                      <svg className="check-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <div className="checkbox-circle"></div>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -277,36 +309,50 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
                     }}
                   >
                     <span className="config-icon">⚙️</span>
-                    Configure Alerts
-                    <span className={`expand-icon ${expandedServices.has(service.id) ? 'expanded' : ''}`}>▼</span>
+                    <span className="config-text">Configure Alerts</span>
+                    <span className={`expand-icon ${expandedServices.has(service.id) ? 'expanded' : ''}`}>
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </span>
                   </button>
                   
                   {expandedServices.has(service.id) && (
                     <div className="alert-types">
                       <div className="alert-types-header">
-                        <span>Alert Types:</span>
+                        <span className="alert-header-title">Alert Types</span>
                         <span className="alert-count">
-                          {selectedAlertTypes.get(service.id)?.size || 0} selected
+                          {selectedAlertTypes.get(service.id)?.size || 0} of {service.alertTypes.length} selected
                         </span>
                       </div>
-                      {service.alertTypes.map((alertType) => (
-                        <div
-                          key={alertType.id}
-                          className={`alert-type-item ${selectedAlertTypes.get(service.id)?.has(alertType.id) ? 'selected' : ''}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleAlertType(service.id, alertType.id);
-                          }}
-                        >
-                          <div className="alert-type-info">
-                            <span className="alert-type-name">{alertType.name}</span>
-                            <span className="alert-type-desc">{alertType.description}</span>
+                      <div className="alert-types-grid">
+                        {service.alertTypes.map((alertType) => (
+                          <div
+                            key={alertType.id}
+                            className={`alert-type-item ${selectedAlertTypes.get(service.id)?.has(alertType.id) ? 'selected' : ''}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleAlertType(service.id, alertType.id);
+                            }}
+                          >
+                            <div className="alert-type-info">
+                              <span className="alert-type-name">{alertType.name}</span>
+                              <span className="alert-type-desc">{alertType.description}</span>
+                            </div>
+                            <div className="alert-type-checkbox">
+                              <div className="checkbox-inner small">
+                                {selectedAlertTypes.get(service.id)?.has(alertType.id) ? (
+                                  <svg className="check-icon" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                ) : (
+                                  <div className="checkbox-circle"></div>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <div className="alert-type-checkbox">
-                            {selectedAlertTypes.get(service.id)?.has(alertType.id) ? '✓' : '○'}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -315,20 +361,52 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
           ))}
         </div>
 
+        {/* Enhanced actions section */}
         <div className="splash-actions">
           <div className="quick-actions">
-            <button className="quick-action-btn" onClick={selectAll}>
+            <button className="quick-action-btn select-all" onClick={selectAll}>
+              <span className="btn-icon">✓</span>
               Select All
             </button>
-            <button className="quick-action-btn" onClick={selectNone}>
+            <button className="quick-action-btn clear-all" onClick={selectNone}>
+              <span className="btn-icon">✕</span>
               Clear All
             </button>
           </div>
           
           <div className="continue-section">
-            <p className="selection-count">
-              {selectedServices.size} service{selectedServices.size !== 1 ? 's' : ''} selected
-            </p>
+            <div className="selection-summary">
+              <div className="selection-count">
+                <span className="count-number">{selectedServices.size}</span>
+                <span className="count-text">service{selectedServices.size !== 1 ? 's' : ''} selected</span>
+              </div>
+              {selectedServices.size > 0 && (
+                <div className="selected-services-preview">
+                  {Array.from(selectedServices).slice(0, 3).map(serviceId => {
+                    const service = AVAILABLE_SERVICES.find(s => s.id === serviceId);
+                    return (
+                      <div key={serviceId} className="preview-service" style={{ '--service-color': service.color }}>
+                        <img 
+                          src={service.logo} 
+                          alt={service.name}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextElementSibling?.classList.add('show');
+                          }}
+                        />
+                        <div className="preview-service-fallback">
+                          {service.name.charAt(0)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {selectedServices.size > 3 && (
+                    <div className="preview-more">+{selectedServices.size - 3}</div>
+                  )}
+                </div>
+              )}
+            </div>
             <button
               className={`continue-btn ${selectedServices.size === 0 ? 'disabled' : ''}`}
               onClick={handleContinue}
@@ -336,11 +414,14 @@ export default function ServiceSelectionSplash({ onServicesSelected }) {
             >
               {isSubmitting ? (
                 <>
-                  <span className="loading-spinner"></span>
-                  Refreshing Dashboard...
+                  <div className="loading-spinner"></div>
+                  <span>Setting up your dashboard...</span>
                 </>
               ) : (
-                `Continue with ${selectedServices.size} service${selectedServices.size !== 1 ? 's' : ''}`
+                <>
+                  <span className="btn-text">Start Monitoring</span>
+                  <span className="btn-icon-arrow">→</span>
+                </>
               )}
             </button>
           </div>

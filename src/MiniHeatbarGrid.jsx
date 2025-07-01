@@ -56,9 +56,11 @@ function ServiceLogo({ service }) {
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: '28px', height: '28px', background: '#f5f5f5', borderRadius: '6px',
-        fontSize: '16px', color: '#666', minWidth: '28px',
-        border: '1px solid #e0e0e0'
+        width: '32px', height: '32px', background: 'rgba(248, 250, 252, 0.9)', borderRadius: '8px',
+        fontSize: '16px', color: '#64748b', minWidth: '32px',
+        border: '1px solid rgba(148, 163, 184, 0.2)',
+        boxShadow: '0 2px 8px rgba(30, 41, 59, 0.08)',
+        backdropFilter: 'blur(8px)'
       }}>
         🏢
       </div>
@@ -81,9 +83,11 @@ function ServiceLogo({ service }) {
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        width: '28px', height: '28px', background: '#fff3cd', borderRadius: '6px',
-        fontSize: '14px', minWidth: '28px',
-        border: '1px solid #ffeaa7'
+        width: '32px', height: '32px', background: 'rgba(255, 243, 205, 0.9)', borderRadius: '8px',
+        fontSize: '14px', minWidth: '32px',
+        border: '1px solid rgba(255, 234, 167, 0.6)',
+        boxShadow: '0 2px 8px rgba(30, 41, 59, 0.08)',
+        backdropFilter: 'blur(8px)'
       }}>
         {serviceIcons[service] || '🏢'}
       </div>
@@ -94,11 +98,13 @@ function ServiceLogo({ service }) {
   return (
     <div style={{
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      width: '28px', height: '28px', minWidth: '28px',
-      background: 'white',
-      borderRadius: '6px',
-      border: '1px solid #e9ecef',
-      padding: '2px'
+      width: '32px', height: '32px', minWidth: '32px',
+      background: 'rgba(255, 255, 255, 0.9)',
+      borderRadius: '8px',
+      border: '1px solid rgba(148, 163, 184, 0.2)',
+      padding: '4px',
+      boxShadow: '0 2px 8px rgba(30, 41, 59, 0.08)',
+      backdropFilter: 'blur(8px)'
     }}>
       <img 
         src={logoSrc} 
@@ -163,38 +169,49 @@ function AreaSpark({ data = [], color = '#d32f2f', fill = '#ffd6d6' }) {
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
       <svg width={dimensions.width} height={dimensions.height} style={{ display: 'block', overflow: 'visible' }}>
-        <polygon points={areaStr} fill={fill} opacity="0.85" />
-        <polyline fill="none" stroke={color} strokeWidth="1.5" points={lineStr} />
+        <defs>
+          <linearGradient id={`gradient-${color.replace('#', '')}`} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style={{ stopColor: color, stopOpacity: 0.4 }} />
+            <stop offset="100%" style={{ stopColor: color, stopOpacity: 0.1 }} />
+          </linearGradient>
+        </defs>
+        <polygon points={areaStr} fill={`url(#gradient-${color.replace('#', '')})`} />
+        <polyline fill="none" stroke={color} strokeWidth="2" points={lineStr} style={{ filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.1))' }} />
         {points.map(([x, y], i) => (
-          <circle key={i} cx={x} cy={y} r="1.2" fill={color} />
+          <circle key={i} cx={x} cy={y} r="1.5" fill={color} style={{ filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.2))' }} />
         ))}
       </svg>
     </div>
   );
 }
 
-export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
+export default function MiniHeatbarGrid({ 
+  selectedServices = SERVICES, 
+  closedCards = [], 
+  onCloseCard, 
+  onRestoreCard, 
+  onRestoreAllCards 
+}) {
   const [trendData, setTrendData] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
-  const [refreshTrigger, setRefreshTrigger] = React.useState(0);
-  const [closedServices, setClosedServices] = React.useState(new Set());
+
+  // Convert closedCards array to Set for easier lookup, ensuring case-insensitive matching
+  const closedServices = React.useMemo(() => {
+    return new Set(closedCards.map(card => card.toLowerCase()));
+  }, [closedCards]);
 
   // Functions to handle closing and restoring services
   const closeService = (serviceName) => {
-    setClosedServices(prev => new Set([...prev, serviceName]));
+    if (onCloseCard) {
+      onCloseCard(serviceName);
+    }
   };
 
   const restoreService = (serviceName) => {
-    setClosedServices(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(serviceName);
-      return newSet;
-    });
-  };
-
-  const restoreAllServices = () => {
-    setClosedServices(new Set());
+    if (onRestoreCard) {
+      onRestoreCard(serviceName);
+    }
   };
 
   // Debug: log service logos on component mount and preload them
@@ -244,16 +261,14 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
         }
       });
     return () => { cancelled = true; };
-  }, [refreshTrigger, selectedServices]);
+  }, [selectedServices]);
 
-  // Listen for issue report events to refresh data
+  // Debug: log closed services synchronization
   React.useEffect(() => {
-    const handleIssueReported = () => {
-      setTimeout(() => setRefreshTrigger(prev => prev + 1), 1000);
-    };
-    window.addEventListener('issueReported', handleIssueReported);
-    return () => window.removeEventListener('issueReported', handleIssueReported);
-  }, []);
+    console.log('MiniHeatbarGrid - Closed cards from App:', closedCards);
+    console.log('MiniHeatbarGrid - Closed services Set:', closedServices);
+    console.log('MiniHeatbarGrid - Selected services:', selectedServices);
+  }, [closedCards, closedServices, selectedServices]);
 
   if (loading) return <div className="mini-heatbar-grid">Loading...</div>;
   if (error) return <div className="mini-heatbar-grid">{error}</div>;
@@ -283,54 +298,36 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
   // Debug: log the final rows array
   console.log('MiniHeatbarGrid rows:', rows);
 
-  // Filter out closed services
-  const visibleRows = rows.filter(row => !closedServices.has(row.service));
-  const hasClosedServices = closedServices.size > 0;
+  // Filter out closed services (case-insensitive)
+  const visibleRows = rows.filter(row => !closedServices.has(row.service.toLowerCase()));
 
   return (
     <div className="mini-heatbar-grid">
-      <div className="mini-heatbar-title" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span>User Reported Issues</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {hasClosedServices && (
-            <button
-              onClick={restoreAllServices}
-              style={{
-                background: 'none', border: '1px solid #ddd', cursor: 'pointer',
-                fontSize: '12px', color: '#666', padding: '4px 8px', borderRadius: '4px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={e => {
-                e.target.style.backgroundColor = '#f8f9fa';
-                e.target.style.borderColor = '#007bff';
-                e.target.style.color = '#007bff';
-              }}
-              onMouseLeave={e => {
-                e.target.style.backgroundColor = 'transparent';
-                e.target.style.borderColor = '#ddd';
-                e.target.style.color = '#666';
-              }}
-              title={`Restore ${closedServices.size} hidden service${closedServices.size > 1 ? 's' : ''}`}
-            >
-              Restore ({closedServices.size})
-            </button>
-          )}
-          <button
-            onClick={() => setRefreshTrigger(prev => prev + 1)}
-            disabled={loading}
-            style={{
-              background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
-              fontSize: '14px', color: '#666', padding: '2px 6px', borderRadius: '4px',
-              transition: 'all 0.2s', opacity: loading ? 0.5 : 1
-            }}
-            onMouseEnter={e => !loading && (e.target.style.backgroundColor = '#f0f0f0')}
-            onMouseLeave={e => (e.target.style.backgroundColor = 'transparent')}
-            title="Refresh data"
-            aria-label="Refresh issue reports data"
-          >
-            {loading ? '⟳' : '↻'}
-          </button>
-        </div>
+      <div className="mini-heatbar-title" style={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        width: '100%',
+        maxWidth: '1200px',
+        padding: '0 32px',
+        marginBottom: '24px'
+      }}>
+        <span style={{
+          fontSize: '1.3em',
+          fontWeight: '800',
+          color: '#1e293b',
+          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          letterSpacing: '-0.01em',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
+          <span style={{ fontSize: '1.2em' }}>📊</span>
+          User Reported Issues
+        </span>
       </div>
       <div className="mini-heatbar-header" style={{ fontWeight: 700, fontSize: '1.08em' }}>
         <span>Logo</span>
@@ -343,11 +340,46 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
         // Debug log for each row
         console.log(`Rendering row for service: "${row.service}"`);
         return (
-          <div className="mini-heatbar-row" key={row.service} style={{ position: 'relative' }}>
+          <div 
+            className="mini-heatbar-row" 
+            key={row.service} 
+            style={{ 
+              position: 'relative',
+              background: 'rgba(255, 255, 255, 0.4)',
+              borderRadius: '8px',
+              margin: '4px 16px',
+              padding: '8px 16px',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(148, 163, 184, 0.1)',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 1px 3px rgba(30, 41, 59, 0.04)'
+            }}
+            onMouseEnter={e => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.6)';
+              e.target.style.borderColor = 'rgba(148, 163, 184, 0.2)';
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 12px rgba(30, 41, 59, 0.08)';
+            }}
+            onMouseLeave={e => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.4)';
+              e.target.style.borderColor = 'rgba(148, 163, 184, 0.1)';
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 1px 3px rgba(30, 41, 59, 0.04)';
+            }}
+          >
             <span style={{ minWidth: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <ServiceLogo service={row.service} />
             </span>
-            <span style={{ minWidth: 80, display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px' }}>
+            <span style={{ 
+              minWidth: 80, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'flex-start', 
+              paddingLeft: '8px',
+              fontWeight: '600',
+              color: '#1e293b',
+              fontSize: '0.95em'
+            }}>
               {row.service}
             </span>
             <span className="mini-heatbar-trend">
@@ -358,21 +390,39 @@ export default function MiniHeatbarGrid({ selectedServices = SERVICES }) {
               <button
                 onClick={() => closeService(row.service)}
                 style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  fontSize: '14px', color: '#999', padding: '2px 4px', borderRadius: '2px',
-                  transition: 'all 0.2s', opacity: 0.6,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: '20px', height: '20px'
+                  background: 'rgba(239, 68, 68, 0.1)', 
+                  border: '1px solid rgba(239, 68, 68, 0.2)', 
+                  cursor: 'pointer',
+                  fontSize: '12px', 
+                  color: '#dc2626', 
+                  padding: '0', 
+                  borderRadius: '50%',
+                  transition: 'all 0.2s ease', 
+                  opacity: 0.7,
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  width: '20px', 
+                  height: '20px',
+                  backdropFilter: 'blur(8px)',
+                  boxShadow: '0 2px 4px rgba(239, 68, 68, 0.1)',
+                  fontWeight: '600'
                 }}
                 onMouseEnter={e => {
-                  e.target.style.backgroundColor = '#ffebee';
-                  e.target.style.color = '#d32f2f';
+                  e.target.style.background = 'rgba(239, 68, 68, 0.9)';
+                  e.target.style.borderColor = '#dc2626';
+                  e.target.style.color = '#ffffff';
                   e.target.style.opacity = '1';
+                  e.target.style.transform = 'scale(1.1)';
+                  e.target.style.boxShadow = '0 4px 8px rgba(239, 68, 68, 0.3)';
                 }}
                 onMouseLeave={e => {
-                  e.target.style.backgroundColor = 'transparent';
-                  e.target.style.color = '#999';
-                  e.target.style.opacity = '0.6';
+                  e.target.style.background = 'rgba(239, 68, 68, 0.1)';
+                  e.target.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                  e.target.style.color = '#dc2626';
+                  e.target.style.opacity = '0.7';
+                  e.target.style.transform = 'scale(1)';
+                  e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.1)';
                 }}
                 title={`Hide ${row.service} from dashboard`}
                 aria-label={`Close ${row.service} card`}
