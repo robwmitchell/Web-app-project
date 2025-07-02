@@ -6,6 +6,7 @@ import CustomServiceCard from './CustomServiceCard';
 import Modal from './Modal';
 import MiniHeatbarGrid from './MiniHeatbarGrid';
 import ServiceSelectionSplash from './ServiceSelectionSplash';
+import AddCustomService from './AddCustomService';
 import './App.css';
 import './MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -221,6 +222,7 @@ function App() {
     }
   });
   const [alertDismissed, setAlertDismissed] = useState(false);
+  const [showAddCustomModal, setShowAddCustomModal] = useState(false);
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -655,6 +657,9 @@ const SPLASH_CONFIG = {
     const updatedSelectedServices = [...(selectedServices || []), customService.id];
     setSelectedServices(updatedSelectedServices);
     localStorage.setItem('selectedServices', JSON.stringify(updatedSelectedServices));
+    
+    // Close the modal
+    setShowAddCustomModal(false);
   }
 
   // Show splash screen if no services selected
@@ -1305,6 +1310,24 @@ const SPLASH_CONFIG = {
                 />
               )
             ))}
+            
+            {/* Add Custom Service Button */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+              padding: '20px 0',
+              marginTop: '16px'
+            }}>
+              <button
+                className="add-custom-service-main-btn"
+                onClick={() => setShowAddCustomModal(true)}
+              >
+                <span style={{ fontSize: '18px' }}>+</span>
+                Add Custom RSS Service
+              </button>
+            </div>
           </div>
         )}
         {/* Mini Heatbar Grid at the bottom of the page */}
@@ -1316,6 +1339,26 @@ const SPLASH_CONFIG = {
           onRestoreCard={restoreCard}
           onRestoreAllCards={restoreAllCards}
         />
+        
+        {/* Add Custom Service Modal */}
+        {showAddCustomModal && (
+          <AddCustomService 
+            onAddService={handleAddCustomService}
+            onCancel={() => setShowAddCustomModal(false)}
+            existingServices={[...Array.from(new Set([
+              'cloudflare', 'zscaler', 'okta', 'sendgrid', 'slack', 'datadog', 'aws'
+            ].concat(customServices.map(s => s.id)))).map(id => {
+              // Find the service by ID from built-in services or custom services
+              const builtInService = ['cloudflare', 'zscaler', 'okta', 'sendgrid', 'slack', 'datadog', 'aws'].find(s => s === id);
+              if (builtInService) {
+                return { id: builtInService, name: builtInService.charAt(0).toUpperCase() + builtInService.slice(1) };
+              }
+              const customService = customServices.find(s => s.id === id);
+              return customService ? { id: customService.id, name: customService.name } : null;
+            }).filter(Boolean)]}
+          />
+        )}
+        
         <SpeedInsights />
         <Analytics />
       </div>
