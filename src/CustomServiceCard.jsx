@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import './LivePulseCard.css'; // Reuse existing card styles
+import TimelineScroller from './TimelineScroller';
+import './LivePulseCard.css';
 
 const CustomServiceCard = ({ 
   service, 
   onClose, 
   isClosed, 
-  onToggleShowMore, 
-  showMore,
   onReportIssue 
 }) => {
   const [serviceData, setServiceData] = useState({
@@ -16,6 +15,7 @@ const CustomServiceCard = ({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Fetch data from the custom RSS feed
   useEffect(() => {
@@ -281,12 +281,68 @@ const CustomServiceCard = ({
     return 'Operational';
   }
 
+  // Generate day indicators for the last 7 days
+  function getLast7DaysUTC() {
+    const days = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      d.setUTCDate(d.getUTCDate() - i);
+      days.push(d);
+    }
+    return days;
+  }
+
+  function getDayIndicator(day) {
+    // Check if any updates occurred on this day
+    const hasEvent = serviceData.updates.some(update => {
+      if (!update.date) return false;
+      const updateDate = new Date(update.date);
+      const dayStart = new Date(day);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(day);
+      dayEnd.setHours(23, 59, 59, 999);
+      return updateDate >= dayStart && updateDate <= dayEnd;
+    });
+    
+    if (hasEvent) {
+      // Check severity of events on this day
+      const dayEvents = serviceData.updates.filter(update => {
+        if (!update.date) return false;
+        const updateDate = new Date(update.date);
+        const dayStart = new Date(day);
+        dayStart.setHours(0, 0, 0, 0);
+        const dayEnd = new Date(day);
+        dayEnd.setHours(23, 59, 59, 999);
+        return updateDate >= dayStart && updateDate <= dayEnd;
+      });
+      
+      if (dayEvents.some(e => e.eventType === 'outage' || e.severity === 'critical')) {
+        return 'critical';
+      }
+      if (dayEvents.some(e => e.eventType === 'incident' || e.severity === 'major')) {
+        return 'major';
+      }
+      return 'minor';
+    }
+    
+    return 'none';
+  }
+
+  const last7Days = getLast7DaysUTC();
+  const dayEvents = last7Days.map(day => {
+    const indicator = getDayIndicator(day);
+    const dayStr = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return {
+      date: dayStr,
+      indicator,
+      statusText: indicator === 'none' ? 'No issues' : 'Issues reported'
+    };
+  });
+
   if (isClosed) {
     return null;
   }
-
-  const displayUpdates = showMore ? serviceData.updates : serviceData.updates.slice(0, 3);
-  const hasMoreUpdates = serviceData.updates.length > 3;
 
   return (
     <div className="live-pulse-card custom-service-card">
@@ -346,67 +402,81 @@ const CustomServiceCard = ({
       )}
 
       <div className="card-content">
-        {serviceData.updates.length > 0 ? (
-          <div className="updates-section">
-            <h4 className="updates-title">Recent Updates</h4>
-            <div className="updates-list">
-              {displayUpdates.map((update, index) => (
-                <div key={update.id || index} className="update-item">
-                  <div className="update-header">
-                    <span className="event-type">{formatEventType(update.eventType)}</span>
-                    <span className="update-date">{formatDate(update.date)}</span>
+        
+        {/* Day indicators */}
+        <TimelineScroller events={dayEvents} />
+        
+        {/* Card actions - always visible */}
+        <div className="card-actions">
+          <button 
+            className="bug-report-btn"
+            onClick={() => onReportIssue && onReportIssue(service.name)}
+          >
+            🐛 Report Issue
+          </button>
+          <button 
+            className="view-history-btn"
+            onClick={() => setShowHistory(v => !v)}
+          >
+            📋 {showHistory ? 'Hide History' : 'View History'}
+          </button>
+        </div>
+        
+        {showHistory && serviceData.updates.length > 0 && (
+          <div className="card-history-section">
+            <div className="updates-section">
+              <div className="history-header">
+                <h4>Recent History</h4>
+                <span className="history-count">{serviceData.updates.length} items</span>
+              </div>
+              <div className="history-list">
+                {serviceData.updates.map((update, index) => (
+                  <div key={update.id || index} className="history-item">
+                    <div className="history-dot" style={{
+                      background: update.eventType === 'incident' ? '#f59e0b' : '#10b981'
+                    }}></div>
+                    <div className="history-content">
+                      <div className="history-title">{update.title}</div>
+                      <div className="history-date">{formatDate(update.date)}</div>
+                      {update.description && (
+                        <div className="history-description">
+                          {update.description.length > 150 
+                            ? `${update.description.substring(0, 150)}...`
+                            : update.description
+                          }
+                        </div>
+                      )}
+                      {update.link && (
+                        <a 
+                          href={update.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="history-link"
+                        >
+                          Read more →
+                        </a>
+                      )}
+                    </div>
                   </div>
-                  <h5 className="update-title">{update.title}</h5>
-                  {update.description && (
-                    <p className="update-description">
-                      {update.description.length > 200 
-                        ? `${update.description.substring(0, 200)}...`
-                        : update.description
-                      }
-                    </p>
-                  )}
-                  {update.link && (
-                    <a 
-                      href={update.link} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="update-link"
-                    >
-                      Read more →
-                    </a>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-            
-            {hasMoreUpdates && (
-              <button 
-                className="show-more-btn"
-                onClick={() => onToggleShowMore(service.id)}
-              >
-                {showMore ? 'Show Less' : `Show ${serviceData.updates.length - 3} More Updates`}
-              </button>
-            )}
           </div>
-        ) : (
-          !loading && (
+        )}
+        
+        {showHistory && serviceData.updates.length === 0 && !loading && (
+          <div className="card-history-section">
             <div className="no-updates">
               <span className="no-updates-icon">📋</span>
               <p>No recent updates available</p>
             </div>
-          )
+          </div>
         )}
-
+        
         <div className="card-footer">
           <div className="last-updated">
             Last updated: {serviceData.lastUpdated ? serviceData.lastUpdated.toLocaleTimeString() : 'Never'}
           </div>
-          <button 
-            className="report-issue-btn"
-            onClick={() => onReportIssue && onReportIssue(service.name)}
-          >
-            Report Issue
-          </button>
         </div>
       </div>
     </div>

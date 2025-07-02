@@ -4,6 +4,7 @@ import LivePulseCardContainer from './LivePulseCardContainer';
 import ZscalerPulseCardContainer from './ZscalerPulseCardContainer';
 import CustomServiceCard from './CustomServiceCard';
 import Modal from './Modal';
+import ReportImpactForm from './ReportImpactForm';
 import MiniHeatbarGrid from './MiniHeatbarGrid';
 import ServiceSelectionSplash from './ServiceSelectionSplash';
 import AddCustomService from './AddCustomService';
@@ -223,6 +224,8 @@ function App() {
   });
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [showAddCustomModal, setShowAddCustomModal] = useState(false);
+  const [showBugModal, setShowBugModal] = useState(false);
+  const [bugReportService, setBugReportService] = useState('');
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -261,8 +264,8 @@ function App() {
   };
 
   const handleReportIssue = (serviceName) => {
-    // Placeholder for issue reporting functionality
-    alert(`Report issue for ${serviceName} - This feature will be implemented to allow users to report issues.`);
+    setBugReportService(serviceName);
+    setShowBugModal(true);
   };
 
   const isCardClosed = (provider) => {
@@ -1358,6 +1361,20 @@ const SPLASH_CONFIG = {
             }).filter(Boolean)]}
           />
         )}
+        
+        
+        {/* Bug Report Modal */}
+        <Modal 
+          open={showBugModal} 
+          onClose={() => setShowBugModal(false)} 
+          title={`Report Issue - ${bugReportService}`}
+          enhanced={true}
+        >
+          <ReportImpactForm 
+            serviceName={bugReportService} 
+            onClose={() => setShowBugModal(false)} 
+          />
+        </Modal>
         
         <SpeedInsights />
         <Analytics />

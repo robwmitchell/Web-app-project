@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from './Button';
+import './ReportImpactForm.css';
 
 export default function ReportImpactForm({ serviceName, onClose }) {
   // List of allowed services
@@ -70,35 +71,133 @@ export default function ReportImpactForm({ serviceName, onClose }) {
   }
 
   if (success) return (
-    <div style={{ color: '#388e3c', padding: 12, textAlign: 'center' }}>
-      Thank you for reporting your issue!
-      <br />
-      <Button onClick={onClose} style={{ marginTop: 16, background: '#eee', color: '#333' }}>Close</Button>
+    <div className="report-form-success">
+      <div className="success-icon">🎉</div>
+      <h3>Thank you for your report!</h3>
+      <p>We've received your issue report and will investigate it promptly. Your feedback helps us maintain reliable service status monitoring.</p>
+      <button 
+        onClick={onClose} 
+        className="btn btn-primary"
+        style={{ marginTop: '20px', maxWidth: '200px', margin: '20px auto 0' }}
+      >
+        <span className="btn-icon">✨</span>
+        Close
+      </button>
     </div>
   );
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <label htmlFor="service_name">Service</label>
-      <select
-        id="service_name"
-        name="service_name"
-        value={selectedService}
-        onChange={e => setSelectedService(e.target.value)}
-        style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', background: '#fff' }}
-        required
-      >
-        {ALLOWED_SERVICES.map(s => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
-      <input type="hidden" name="impacted_provider" value={selectedService} />
-      <input type="text" placeholder="Your name (optional)" value={name} onChange={e => setName(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-      <input type="email" placeholder="Your email (optional)" value={email} onChange={e => setEmail(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
-      <textarea placeholder="Describe your issue..." required value={description} onChange={e => setDescription(e.target.value)} style={{ padding: 8, borderRadius: 4, border: '1px solid #ccc', minHeight: 60 }} />
-      {error && <div style={{ color: '#b71c1c', fontSize: '0.98em' }}>{error}</div>}
-      <Button type="submit" disabled={loading} style={{ background: '#b71c1c' }}>{loading ? 'Submitting...' : 'Submit'}</Button>
-      <Button type="button" onClick={onClose} style={{ background: '#eee', color: '#333' }}>Cancel</Button>
-    </form>
+    <div className="report-form-container">
+      <form onSubmit={handleSubmit} className="report-form">
+        <div className="form-group">
+          <label htmlFor="service_name" className="form-label">
+            <span className="label-icon">🔧</span>
+            Service
+          </label>
+          <select
+            id="service_name"
+            name="service_name"
+            value={selectedService}
+            onChange={e => setSelectedService(e.target.value)}
+            className="form-select"
+            required
+          >
+            {ALLOWED_SERVICES.map(s => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="reporter_name" className="form-label">
+            <span className="label-icon">👤</span>
+            Your Name
+            <span className="optional-badge">Optional</span>
+          </label>
+          <input 
+            id="reporter_name"
+            type="text" 
+            placeholder="Enter your name" 
+            value={name} 
+            onChange={e => setName(e.target.value)} 
+            className="form-input"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="reporter_email" className="form-label">
+            <span className="label-icon">📧</span>
+            Your Email
+            <span className="optional-badge">Optional</span>
+          </label>
+          <input 
+            id="reporter_email"
+            type="email" 
+            placeholder="Enter your email address" 
+            value={email} 
+            onChange={e => setEmail(e.target.value)} 
+            className="form-input"
+          />
+          <div className="form-help">
+            We'll only use this to follow up if we need clarification about your report
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="issue_description" className="form-label">
+            <span className="label-icon">📝</span>
+            Issue Description
+            <span className="required-badge">Required</span>
+          </label>
+          <textarea 
+            id="issue_description"
+            placeholder="Please describe the issue you're experiencing in detail. Include any error messages, when it started, and what you were trying to do..."
+            required 
+            value={description} 
+            onChange={e => setDescription(e.target.value)} 
+            className="form-textarea"
+            rows={5}
+          />
+          <div className="form-help">
+            Include specific details like error messages, timestamps, and affected functionality to help us investigate faster
+          </div>
+        </div>
+
+        {error && (
+          <div className="error-message">
+            <span className="error-icon">⚠️</span>
+            {error}
+          </div>
+        )}
+
+        <div className="form-actions">
+          <button 
+            type="submit" 
+            disabled={loading || !description.trim()} 
+            className={`btn btn-primary ${loading ? 'loading' : ''}`}
+          >
+            {loading ? (
+              <>
+                <span className="loading-spinner"></span>
+                Submitting...
+              </>
+            ) : (
+              <>
+                <span className="btn-icon">🚀</span>
+                Submit Report
+              </>
+            )}
+          </button>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="btn btn-secondary"
+            disabled={loading}
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
