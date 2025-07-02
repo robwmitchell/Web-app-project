@@ -666,11 +666,32 @@
   letter-spacing: 0.5px;
 }
 
+/* --- Custom Service Card Header Responsive Layout Fix --- */
+.custom-service-card .card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: relative;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+}
+
+.custom-service-card .service-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
 .custom-service-card .status-section {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .custom-service-card .status-indicator {
@@ -683,19 +704,119 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   animation: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.custom-service-card .status-icon {
-  font-size: 14px;
+  min-width: 0;
+  max-width: 160px;
 }
 
 .custom-service-card .status-text {
-  color: #334155 !important; /* slate-800 for good contrast */
+  color: #334155 !important;
   font-size: 0.95rem;
   font-weight: 600;
   white-space: nowrap;
   letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+  display: inline-block;
 }
+
+.custom-service-card .close-card-btn {
+  margin-left: 8px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px 2px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1.5px 6px 0 #0001;
+}
+.custom-service-card .close-card-btn:hover {
+  background: #e2e8f0;
+  box-shadow: 0 4px 16px 0 #0002;
+}
+/* --- End Custom Service Card Close Button Match --- */
+
+@media (max-width: 600px) {
+  .custom-service-card .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .custom-service-card .status-section {
+    justify-content: flex-end;
+  }
+  .custom-service-card .status-indicator {
+    max-width: 110px;
+  }
+  .custom-service-card .status-text {
+    max-width: 60px;
+  }
+}
+/* --- End Custom Service Card Header Responsive Layout Fix --- */
+
+.custom-service-card .status-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 80px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.custom-service-card .status-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5em;
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  min-width: 0;
+  box-shadow: none;
+  font-size: 1.1em;
+}
+
+.custom-service-card .status-icon {
+  font-size: 1.2em;
+  margin-right: 0.3em;
+}
+
+.custom-service-card .status-text {
+  color: #1e293b !important;
+  font-size: 1.08rem;
+  font-weight: 700;
+  margin-top: 2px;
+  margin-bottom: 0;
+  white-space: normal;
+  letter-spacing: 0.01em;
+  text-align: right;
+  max-width: 120px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+@media (max-width: 600px) {
+  .custom-service-card .status-section {
+    align-items: flex-end;
+    min-width: 60px;
+  }
+  .custom-service-card .status-text {
+    font-size: 1rem;
+    max-width: 80px;
+  }
+}
+
+/* --- End Custom Service Card Status Section Redesign --- */
 
 .loading-spinner {
   width: 16px;

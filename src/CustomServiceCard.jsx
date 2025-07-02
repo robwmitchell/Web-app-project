@@ -322,23 +322,19 @@ const CustomServiceCard = ({
         </div>
         
         <div className="status-section">
-          <div 
-            className="status-indicator"
-            style={{ color: getStatusColor(serviceData.status) }}
-          >
-            <span className="status-icon">{getStatusIcon(serviceData.status)}</span>
-            <span className="status-text">{serviceData.status}</span>
-          </div>
+          <span className="status-text">{serviceData.status}</span>
           {loading && <div className="loading-spinner"></div>}
         </div>
-        
         <button 
           className="close-card-btn"
           onClick={() => onClose(service.id)}
           title={`Hide ${service.name} card`}
           aria-label={`Hide ${service.name} card`}
         >
-          ×
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="10" cy="10" r="9" fill="#e2e8f0"/>
+            <path d="M7 7L13 13M13 7L7 13" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
         </button>
       </div>
 
