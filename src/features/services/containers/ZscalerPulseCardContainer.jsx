@@ -3,6 +3,7 @@ import Modal from '../../../components/common/Modal';
 import ReportImpactForm from '../../../components/forms/ReportImpactForm';
 import TimelineScroller from '../../../components/charts/TimelineScroller';
 import { formatDate, htmlToText } from '../components/ServiceStatusCard';
+import { cleanAndTruncateHtml } from '../../../utils/textFormatting';
 import { getUTCMidnight } from '../../../utils/dateHelpers';
 import { serviceLogos } from '../../../services/serviceLogos';
 import '../components/LivePulseCard.css';
@@ -214,7 +215,7 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
                         <div className="history-date">{formatDate(item.date || item.updated_at || item.updatedAt || item.reported_at)}</div>
                         {item.description && (
                           <div className="history-description">
-                            {typeof item.description === 'string' ? (item.description.length > 150 ? `${item.description.substring(0, 150)}...` : item.description) : ''}
+                            {cleanAndTruncateHtml(item.description, 150)}
                           </div>
                         )}
                         {(item.link || item.shortlink || item.url) && (

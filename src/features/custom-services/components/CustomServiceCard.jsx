@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TimelineScroller from '../../../components/charts/TimelineScroller';
+import { htmlToText } from '../../services/components/ServiceStatusCard';
+import { cleanAndTruncateHtml } from '../../../utils/textFormatting';
 import '../../services/components/LivePulseCard.css';
 
 const CustomServiceCard = ({ 
@@ -440,10 +442,7 @@ const CustomServiceCard = ({
                       <div className="history-date">{formatDate(update.date)}</div>
                       {update.description && (
                         <div className="history-description">
-                          {update.description.length > 150 
-                            ? `${update.description.substring(0, 150)}...`
-                            : update.description
-                          }
+                          {cleanAndTruncateHtml(update.description, 150)}
                         </div>
                       )}
                       {update.link && (

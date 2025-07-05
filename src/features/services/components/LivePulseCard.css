@@ -1221,6 +1221,11 @@
   color: #4b5563;
   line-height: 1.5;
   margin-bottom: 8px;
+  white-space: pre-line; /* Preserve line breaks from cleaned text */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 100%;
 }
 
 .history-link {
