@@ -10,7 +10,10 @@
     "preview": "vite preview",
     "db:cleanup": "node utils/database-cleanup.js",
     "db:cleanup:7days": "node utils/database-cleanup.js 7",
-    "db:cleanup:14days": "node utils/database-cleanup.js 14"
+    "db:cleanup:14days": "node utils/database-cleanup.js 14",
+    "seo:audit": "node scripts/seo-audit.js",
+    "seo:sitemap": "node scripts/generate-sitemap.js",
+    "analyze": "npm run build && npx vite-bundle-analyzer dist"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

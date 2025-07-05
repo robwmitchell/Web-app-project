@@ -1,29 +1,75 @@
+# Enhanced robots.txt for Stack Status IO
+
 User-agent: *
 Allow: /
 
-# Sitemap
-Sitemap: https://stack-status-io.vercel.app/sitemap.xml
+# Performance optimization - allow crawling of critical resources
+Allow: /logo.png
+Allow: /manifest.json
+Allow: /*.css$
+Allow: /*.js$
 
-# Specific bot instructions
+# Sitemap location
+Sitemap: https://stack-status.io/sitemap.xml
+
+# Specific bot instructions for major search engines
 User-agent: Googlebot
 Allow: /
+Crawl-delay: 1
 
 User-agent: Bingbot
 Allow: /
+Crawl-delay: 2
 
 User-agent: Slurp
 Allow: /
+Crawl-delay: 2
 
-# Block unwanted bots
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 1
+
+# Social media bots
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+# Block resource-intensive and unwanted bots
 User-agent: AhrefsBot
 Disallow: /
 
 User-agent: MJ12bot
 Disallow: /
 
+User-agent: SemrushBot
+Disallow: /
+
 User-agent: DotBot
 Disallow: /
 
-# Crawl delay for aggressive bots
-User-agent: *
-Crawl-delay: 1
+User-agent: MegaIndex
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+# Block AI training bots (optional - uncomment if needed)
+# User-agent: GPTBot
+# Disallow: /
+
+# User-agent: ChatGPT-User
+# Disallow: /
+
+# User-agent: CCBot
+# Disallow: /
+
+# User-agent: anthropic-ai
+# Disallow: /
+
+# User-agent: Claude-Web
+# Disallow: /

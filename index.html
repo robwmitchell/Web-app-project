@@ -13,25 +13,32 @@
     <meta name="theme-color" content="#667eea" />
     
     <!-- SEO Meta Tags -->
-    <title>Stack Status IO - Real-Time Service Status Monitoring Dashboard</title>
-    <meta name="description" content="Monitor the real-time status of critical cloud services including AWS, Cloudflare, Okta, Zscaler, SendGrid, Slack, and Datadog. Get instant notifications about service disruptions, outages, and maintenance windows." />
-    <meta name="keywords" content="service status, monitoring, dashboard, AWS status, Cloudflare status, Okta status, Zscaler status, SendGrid status, Slack status, Datadog status, cloud services, uptime monitoring, service outage, incident tracking" />
+    <title>Stack Status IO - Real-Time Cloud Service Status Monitoring Dashboard</title>
+    <meta name="description" content="Monitor real-time status of AWS, Cloudflare, Okta, Zscaler, SendGrid, Slack & Datadog. Get instant alerts for service outages, incidents & maintenance windows. Free cloud service monitoring dashboard." />
+    <meta name="keywords" content="service status monitor, cloud service dashboard, AWS status checker, Cloudflare monitoring, uptime tracker, service outage alerts, incident monitoring, DevOps tools, SaaS status, real-time monitoring" />
     <meta name="author" content="Stack Status IO" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="1 day" />
+    <meta name="distribution" content="global" />
+    <meta name="rating" content="general" />
+    <meta name="geo.region" content="US" />
+    <meta name="geo.placename" content="United States" />
+    <meta name="format-detection" content="telephone=no" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Stack Status IO - Real-Time Service Status Monitoring" />
     <meta property="og:description" content="Monitor the real-time status of critical cloud services. Get instant notifications about service disruptions and outages for AWS, Cloudflare, Okta, and more." />
-    <meta property="og:image" content="/logo.png" />
-    <meta property="og:url" content="https://stack-status-io.vercel.app" />
+    <meta property="og:image" content="https://stack-status.io/logo.png" />
+    <meta property="og:url" content="https://stack-status.io" />
     <meta property="og:site_name" content="Stack Status IO" />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Stack Status IO - Real-Time Service Status Monitoring" />
     <meta name="twitter:description" content="Monitor the real-time status of critical cloud services. Get instant notifications about service disruptions and outages." />
-    <meta name="twitter:image" content="/logo.png" />
+    <meta name="twitter:image" content="https://stack-status.io/logo.png" />
     
     <!-- Additional SEO -->
     <meta name="application-name" content="Stack Status IO" />
@@ -39,7 +46,32 @@
     <meta name="msapplication-config" content="/browserconfig.xml" />
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://stack-status-io.vercel.app" />
+    <link rel="canonical" href="https://stack-status.io" />
+    
+    <!-- Performance and Analytics -->
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', {
+        page_title: 'Stack Status IO',
+        custom_map: {'custom_parameter_1': 'service_monitoring'}
+      });
+    </script>
+    
+    <!-- Hotjar Tracking Code (optional) -->
+    <!-- <script>
+        (function(h,o,t,j,a,r){
+            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+            h._hjSettings={hjid:XXXXXX,hjsv:6};
+            a=o.getElementsByTagName('head')[0];
+            r=o.createElement('script');r.async=1;
+            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+            a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    </script> -->
     
     <!-- Preconnect to external resources for performance -->
     <link rel="preconnect" href="https://www.cloudflarestatus.com" />
@@ -50,6 +82,21 @@
     <link rel="preconnect" href="https://status.datadoghq.eu" />
     <link rel="preconnect" href="https://status.aws.amazon.com" />
     <link rel="preconnect" href="https://vitals.vercel-analytics.com" />
+    <link rel="preconnect" href="https://www.googletagmanager.com" />
+    <link rel="preconnect" href="https://www.google-analytics.com" />
+    
+    <!-- DNS prefetch for faster lookups -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/logo.png" as="image" type="image/png" />
+    <link rel="preload" href="/src/main.jsx" as="script" />
+    
+    <!-- Resource hints for better performance -->
+    <link rel="prefetch" href="/logos/aws-logo.png" />
+    <link rel="prefetch" href="/logos/cloudflare-logo.svg" />
+    <link rel="prefetch" href="/logos/Okta-logo.svg" />
     
     <!-- Structured Data for Search Engines -->
     <script type="application/ld+json">
@@ -58,7 +105,7 @@
       "@type": "WebApplication",
       "name": "Stack Status IO",
       "description": "Real-time service status monitoring dashboard for critical cloud services",
-      "url": "https://stack-status-io.vercel.app",
+      "url": "https://stack-status.io",
       "applicationCategory": "UtilityApplication",
       "operatingSystem": "Web Browser",
       "offers": {

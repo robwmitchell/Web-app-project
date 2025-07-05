@@ -6,58 +6,58 @@
   
   <!-- Main page -->
   <url>
-    <loc>https://stack-status-io.vercel.app/</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>1.0</priority>
   </url>
   
   <!-- Service-specific pages (virtual pages for SEO) -->
   <url>
-    <loc>https://stack-status-io.vercel.app/#aws</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/#aws</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://stack-status-io.vercel.app/#cloudflare</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/#cloudflare</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://stack-status-io.vercel.app/#okta</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/#okta</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://stack-status-io.vercel.app/#zscaler</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/#zscaler</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://stack-status-io.vercel.app/#sendgrid</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/#sendgrid</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://stack-status-io.vercel.app/#slack</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/#slack</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <url>
-    <loc>https://stack-status-io.vercel.app/#datadog</loc>
-    <lastmod>2024-12-21</lastmod>
+    <loc>https://stack-status.io/#datadog</loc>
+    <lastmod>2025-07-05</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.8</priority>
   </url>
