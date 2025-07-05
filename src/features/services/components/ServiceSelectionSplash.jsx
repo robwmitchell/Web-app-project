@@ -95,7 +95,6 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected, c
 	const initialSelected = Array.isArray(selected) ? new Set(selected) : new Set();
 	const [selectedServices, setSelectedServices] = useState(initialSelected);
 	const [selectedAlertTypes, setSelectedAlertTypes] = useState(new Map());
-	const [expandedServices, setExpandedServices] = useState(new Set());
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const allServices = [...AVAILABLE_SERVICES, ...customServices];
 	const containerRef = useRef(null);
@@ -129,24 +128,10 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected, c
 		const newSelected = new Set(selectedServices);
 		if (newSelected.has(serviceId)) {
 			newSelected.delete(serviceId);
-			const newExpanded = new Set(expandedServices);
-			newExpanded.delete(serviceId);
-			setExpandedServices(newExpanded);
 		} else {
 			newSelected.add(serviceId);
 		}
 		setSelectedServices(newSelected);
-	};
-
-	const toggleServiceExpansion = (serviceId) => {
-		if (!selectedServices.has(serviceId)) return;
-		const newExpanded = new Set(expandedServices);
-		if (newExpanded.has(serviceId)) {
-			newExpanded.delete(serviceId);
-		} else {
-			newExpanded.add(serviceId);
-		}
-		setExpandedServices(newExpanded);
 	};
 
 	const toggleAlertType = (serviceId, alertTypeId) => {
@@ -175,7 +160,6 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected, c
 
 	const selectNone = () => {
 		setSelectedServices(new Set());
-		setExpandedServices(new Set());
 	};
 
 	const handleContinue = () => {
@@ -230,7 +214,7 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected, c
 					{allServices.map((service) => (
 						<div
 							key={service.id}
-							className={`service-card ${selectedServices.has(service.id) ? 'selected' : ''} ${expandedServices.has(service.id) ? 'expanded' : ''}`}
+							className={`service-card ${selectedServices.has(service.id) ? 'selected' : ''}`}
 							style={{ '--service-color': service.color }}
 						>
 							<div 
@@ -273,61 +257,43 @@ export default function ServiceSelectionSplash({ onServicesSelected, selected, c
 									</div>
 								</div>
 							</div>
+							
 							{selectedServices.has(service.id) && (
-								<div className="service-controls">
-									<button
-										className="alert-config-btn"
-										onClick={(e) => {
-											e.stopPropagation();
-											toggleServiceExpansion(service.id);
-										}}
-									>
-										<span className="config-icon">⚙️</span>
-										<span className="config-text">Configure Alerts</span>
-										<span className={`expand-icon ${expandedServices.has(service.id) ? 'expanded' : ''}`}>
-											<svg viewBox="0 0 20 20" fill="currentColor">
-												<path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-											</svg>
+								<div className="alert-configuration">
+									<div className="alert-header">
+										<span className="alert-title">Alert Types</span>
+										<span className="alert-count">
+											{selectedAlertTypes.get(service.id)?.size || 0} of {service.alertTypes.length} enabled
 										</span>
-									</button>
-									{expandedServices.has(service.id) && (
-										<div className="alert-types">
-											<div className="alert-types-header">
-												<span className="alert-header-title">Alert Types</span>
-												<span className="alert-count">
-													{selectedAlertTypes.get(service.id)?.size || 0} of {service.alertTypes.length} selected
-												</span>
-											</div>
-											<div className="alert-types-grid">
-												{service.alertTypes.map((alertType) => (
-													<div
-														key={alertType.id}
-														className={`alert-type-item ${selectedAlertTypes.get(service.id)?.has(alertType.id) ? 'selected' : ''}`}
-														onClick={(e) => {
-															e.stopPropagation();
-															toggleAlertType(service.id, alertType.id);
-														}}
-													>
-														<div className="alert-type-info">
-															<span className="alert-type-name">{alertType.name}</span>
-															<span className="alert-type-desc">{alertType.description}</span>
-														</div>
-														<div className="alert-type-checkbox">
-															<div className="checkbox-inner small">
-																{selectedAlertTypes.get(service.id)?.has(alertType.id) ? (
-																	<svg className="check-icon" viewBox="0 0 20 20" fill="currentColor">
-																		<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-																	</svg>
-																) : (
-																	<div className="checkbox-circle"></div>
-																)}
-															</div>
-														</div>
+									</div>
+									<div className="alert-options">
+										{service.alertTypes.map((alertType) => (
+											<label
+												key={alertType.id}
+												className={`alert-option ${selectedAlertTypes.get(service.id)?.has(alertType.id) ? 'enabled' : ''}`}
+												onClick={(e) => {
+													e.stopPropagation();
+													toggleAlertType(service.id, alertType.id);
+												}}
+											>
+												<div className="alert-option-checkbox">
+													<div className="checkbox-inner small" style={{ '--service-color': service.color }}>
+														{selectedAlertTypes.get(service.id)?.has(alertType.id) ? (
+															<svg className="check-icon" viewBox="0 0 20 20" fill="currentColor">
+																<path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+															</svg>
+														) : (
+															<div className="checkbox-circle"></div>
+														)}
 													</div>
-												))}
-											</div>
-										</div>
-									)}
+												</div>
+												<div className="alert-option-content">
+													<div className="alert-option-name">{alertType.name}</div>
+													<div className="alert-option-description">{alertType.description}</div>
+												</div>
+											</label>
+										))}
+									</div>
 								</div>
 							)}
 						</div>
