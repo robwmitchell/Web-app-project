@@ -5,11 +5,13 @@ import ZscalerPulseCardContainer from './features/services/containers/ZscalerPul
 import CustomServiceCard from './features/custom-services/components/CustomServiceCard';
 import Modal from './components/common/Modal';
 import ReportImpactForm from './components/forms/ReportImpactForm';
-import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
+// import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
 import ServiceSelectionSplash from './features/services/components/ServiceSelectionSplash';
 import AddCustomService from './features/custom-services/components/AddCustomService';
+import UnifiedLiveFeedPanel from './components/feeds/UnifiedLiveFeedPanel';
+import LiveFeedButton from './components/feeds/LiveFeedButton';
 import './styles/globals/App.css';
-import './components/charts/MiniHeatbarGrid.css';
+// import './components/charts/MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import NotificationChatbot from './components/notifications/NotificationChatbot';
@@ -226,6 +228,9 @@ function App() {
   const [showAddCustomModal, setShowAddCustomModal] = useState(false);
   const [showBugModal, setShowBugModal] = useState(false);
   const [bugReportService, setBugReportService] = useState('');
+  const [showLiveFeedPanel, setShowLiveFeedPanel] = useState(false);
+  const [liveFeedHasNewItems, setLiveFeedHasNewItems] = useState(false);
+  const [previousDataSnapshot, setPreviousDataSnapshot] = useState(null);
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -572,6 +577,48 @@ const SPLASH_CONFIG = {
     setCriticalMode({ active: openIssues.length > 0, details: openIssues });
   }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws, selectedServices]);
 
+  // Check for new items in live feed
+  useEffect(() => {
+    const currentSnapshot = {
+      cloudflareCount: cloudflare.incidents?.length || 0,
+      zscalerCount: zscaler.updates?.length || 0,
+      oktaCount: okta.updates?.length || 0,
+      sendgridCount: sendgrid.updates?.length || 0,
+      slackCount: slack.updates?.length || 0,
+      datadogCount: datadog.updates?.length || 0,
+      awsCount: aws.updates?.length || 0,
+    };
+
+    if (previousDataSnapshot) {
+      const hasNewItems = 
+        currentSnapshot.cloudflareCount > previousDataSnapshot.cloudflareCount ||
+        currentSnapshot.zscalerCount > previousDataSnapshot.zscalerCount ||
+        currentSnapshot.oktaCount > previousDataSnapshot.oktaCount ||
+        currentSnapshot.sendgridCount > previousDataSnapshot.sendgridCount ||
+        currentSnapshot.slackCount > previousDataSnapshot.slackCount ||
+        currentSnapshot.datadogCount > previousDataSnapshot.datadogCount ||
+        currentSnapshot.awsCount > previousDataSnapshot.awsCount;
+
+      if (hasNewItems) {
+        setLiveFeedHasNewItems(true);
+        // Auto-clear new items indicator after 5 seconds
+        setTimeout(() => setLiveFeedHasNewItems(false), 5000);
+      }
+    }
+
+    setPreviousDataSnapshot(currentSnapshot);
+  }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws, previousDataSnapshot]);
+
+  // Calculate total feed items count
+  const totalFeedItemsCount = 
+    (cloudflare.incidents?.length || 0) +
+    (zscaler.updates?.length || 0) +
+    (okta.updates?.length || 0) +
+    (sendgrid.updates?.length || 0) +
+    (slack.updates?.length || 0) +
+    (datadog.updates?.length || 0) +
+    (aws.updates?.length || 0);
+
   useEffect(() => {
     setToday(new Date()); // Update on mount (in case of SSR)
     fetchAllStatuses();
@@ -781,6 +828,12 @@ const SPLASH_CONFIG = {
           </div>
           {/* Actions */}
           <div className="header-actions-modern" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            <LiveFeedButton
+              onClick={() => setShowLiveFeedPanel(true)}
+              hasNewItems={liveFeedHasNewItems}
+              itemCount={totalFeedItemsCount}
+              isActive={showLiveFeedPanel}
+            />
             <button
               className="action-btn-modern settings-btn-modern"
               onClick={() => setShowSplash(true)}
@@ -1082,8 +1135,6 @@ const SPLASH_CONFIG = {
                       }}
                       onMouseEnter={(e) => {
                         e.target.style.background = 'rgba(255, 255, 255, 0.3)';
-                        e.target.style.transform = 'translateY(-1px)';
-                        e.target.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
                       }}
                       onMouseLeave={(e) => {
                         e.target.style.background = 'rgba(255, 255, 255, 0.2)';
@@ -1333,7 +1384,8 @@ const SPLASH_CONFIG = {
             </div>
           </div>
         )}
-        {/* Mini Heatbar Grid at the bottom of the page */}
+        {/* Mini Heatbar Grid at the bottom of the page - TEMPORARILY DISABLED */}
+        {/* 
         <MiniHeatbarGrid 
           selectedServices={selectedServices} 
           customServices={customServices}
@@ -1342,6 +1394,7 @@ const SPLASH_CONFIG = {
           onRestoreCard={restoreCard}
           onRestoreAllCards={restoreAllCards}
         />
+        */}
         
         {/* Add Custom Service Modal */}
         {showAddCustomModal && (
@@ -1379,6 +1432,21 @@ const SPLASH_CONFIG = {
         <SpeedInsights />
         <Analytics />
       </div>
+      
+      {/* Unified Live Feed Panel */}
+      <UnifiedLiveFeedPanel
+        isOpen={showLiveFeedPanel}
+        onClose={() => setShowLiveFeedPanel(false)}
+        selectedServices={selectedServices}
+        cloudflareIncidents={cloudflare.incidents}
+        zscalerUpdates={zscaler.updates}
+        oktaUpdates={okta.updates}
+        sendgridUpdates={sendgrid.updates}
+        slackUpdates={slack.updates}
+        datadogUpdates={datadog.updates}
+        awsUpdates={aws.updates}
+        customServices={customServices}
+      />
     </>;
 }
 
