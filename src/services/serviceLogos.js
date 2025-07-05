@@ -17,3 +17,25 @@ export const serviceLogos = {
   'datadog': '/logos/datadog-logo.png',
   'aws': '/logos/aws-logo.png',
 };
+
+// Helper function to get service logo with fallback
+export const getServiceLogo = (serviceName) => {
+  if (!serviceName) return null;
+  
+  // Try exact match first
+  let logo = serviceLogos[serviceName];
+  if (logo) return logo;
+  
+  // Try lowercase match
+  logo = serviceLogos[serviceName.toLowerCase()];
+  if (logo) return logo;
+  
+  // Try finding partial matches
+  const keys = Object.keys(serviceLogos);
+  const partialMatch = keys.find(key => 
+    key.toLowerCase().includes(serviceName.toLowerCase()) ||
+    serviceName.toLowerCase().includes(key.toLowerCase())
+  );
+  
+  return partialMatch ? serviceLogos[partialMatch] : null;
+};

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { serviceLogos } from './serviceLogos';
+import { serviceLogos } from '../../../services/serviceLogos';
 
 // Helper to extract country from component name (e.g., "API - US" -> "US")
 function getCountryFromName(name) {

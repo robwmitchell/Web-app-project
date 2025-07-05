@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './NotificationBell.css';
-import { serviceLogos } from './serviceLogos';
+import { serviceLogos } from '../../services/serviceLogos';
 
 export default function NotificationBell({ 
   cloudflareIncidents = [], 

@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import Modal from './Modal';
-import ReportImpactForm from './ReportImpactForm';
-import TimelineScroller from './TimelineScroller';
-import { formatDate, htmlToText } from './ServiceStatusCard';
-import { getLast7Days, getUTCMidnight } from './utils/dateHelpers';
-import { serviceLogos } from './serviceLogos';
-import './LivePulseCard.css';
+import Modal from '../../../components/common/Modal';
+import ReportImpactForm from '../../../components/forms/ReportImpactForm';
+import TimelineScroller from '../../../components/charts/TimelineScroller';
+import { formatDate, htmlToText } from '../components/ServiceStatusCard';
+import { getLast7Days, getUTCMidnight } from '../../../utils/dateHelpers';
+import { serviceLogos } from '../../../services/serviceLogos';
+import '../components/LivePulseCard.css';
 
 // Use the same date logic as other services for consistency
 function getLast7DaysUTC() {

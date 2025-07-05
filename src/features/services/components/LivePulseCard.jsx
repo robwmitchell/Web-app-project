@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LivePulseCard.css';
-import './Glassmorphism.css';
-import { serviceLogos } from './serviceLogos';
+import '../../../styles/globals/Glassmorphism.css';
+import { serviceLogos } from '../../../services/serviceLogos';
 
 // Icon mapping for status
 const STATUS_ICONS = {

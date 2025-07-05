@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import './NotificationBell.css'; // Reuse notification styles for consistency
-import { htmlToText } from './ServiceStatusCard';
+import { htmlToText } from '../../features/services/components/ServiceStatusCard';
 
 export default function NotificationChatbot({
   selectedServices = null,

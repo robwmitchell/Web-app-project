@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import LivePulseCard from './LivePulseCard';
-import LivePulseCardContainer from './LivePulseCardContainer';
-import ZscalerPulseCardContainer from './ZscalerPulseCardContainer';
-import CustomServiceCard from './CustomServiceCard';
-import Modal from './Modal';
-import ReportImpactForm from './ReportImpactForm';
-import MiniHeatbarGrid from './MiniHeatbarGrid';
-import ServiceSelectionSplash from './ServiceSelectionSplash';
-import AddCustomService from './AddCustomService';
-import './App.css';
-import './MiniHeatbarGrid.css';
+import LivePulseCard from './features/services/components/LivePulseCard';
+import LivePulseCardContainer from './features/services/containers/LivePulseCardContainer';
+import ZscalerPulseCardContainer from './features/services/containers/ZscalerPulseCardContainer';
+import CustomServiceCard from './features/custom-services/components/CustomServiceCard';
+import Modal from './components/common/Modal';
+import ReportImpactForm from './components/forms/ReportImpactForm';
+import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
+import ServiceSelectionSplash from './features/services/components/ServiceSelectionSplash';
+import AddCustomService from './features/custom-services/components/AddCustomService';
+import './styles/globals/App.css';
+import './components/charts/MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
-import NotificationChatbot from './NotificationChatbot';
+import NotificationChatbot from './components/notifications/NotificationChatbot';
 import logoImage from './assets/stackstatus1.png';
 
 function parseZscalerRSS(xmlText, maxItems = 25) {

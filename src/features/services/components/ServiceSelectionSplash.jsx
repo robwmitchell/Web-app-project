@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ServiceSelectionSplash.css';
-import logoImage from './assets/stackstatus1.png';
-import { serviceLogos } from './serviceLogos';
+import logoImage from '../../../assets/stackstatus1.png';
+import { serviceLogos } from '../../../services/serviceLogos';
 
 const AVAILABLE_SERVICES = [
 	{

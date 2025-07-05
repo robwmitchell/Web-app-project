@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import './LivePulseCard.css';
-import { getServiceLogo } from './serviceLogos';
+import '../../features/services/components/LivePulseCard.css';
+import { getServiceLogo } from '../../services/serviceLogos';
 
 const SENTIMENT_COLORS = {
   resolved: '#4caf50',

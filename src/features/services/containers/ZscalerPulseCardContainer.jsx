@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import Modal from './Modal';
-import ReportImpactForm from './ReportImpactForm';
-import TimelineScroller from './TimelineScroller';
-import { formatDate, htmlToText } from './ServiceStatusCard';
-import { getUTCMidnight } from './utils/dateHelpers';
-import { serviceLogos } from './serviceLogos';
-import './LivePulseCard.css';
+import Modal from '../../../components/common/Modal';
+import ReportImpactForm from '../../../components/forms/ReportImpactForm';
+import TimelineScroller from '../../../components/charts/TimelineScroller';
+import { formatDate, htmlToText } from '../components/ServiceStatusCard';
+import { getUTCMidnight } from '../../../utils/dateHelpers';
+import { serviceLogos } from '../../../services/serviceLogos';
+import '../components/LivePulseCard.css';
 
 // Zscaler-specific: get last 7 days using UTC midnight
 function getLast7DaysUTC() {

@@ -1,6 +1,6 @@
 import React from 'react';
 import './MiniHeatbarGrid.css';
-import { serviceLogos } from './serviceLogos';
+import { serviceLogos } from '../../services/serviceLogos';
 
 const SERVICES = [
   'Cloudflare',

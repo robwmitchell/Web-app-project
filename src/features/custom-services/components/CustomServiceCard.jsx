@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import TimelineScroller from './TimelineScroller';
-import './LivePulseCard.css';
+import TimelineScroller from '../../../components/charts/TimelineScroller';
+import '../../services/components/LivePulseCard.css';
 
 const CustomServiceCard = ({ 
   service, 
