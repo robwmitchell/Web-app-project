@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 
-// SEO Configuration - centralized configuration for the entire app
+/**
+ * SEO Configuration for Stack Status IO
+ * Vite + React optimized SEO configuration
+ */
+
 export const SEO_CONFIG = {
-  // Site configuration
   site: {
     name: 'Stack Status IO',
     domain: 'https://stack-status.io',
@@ -14,7 +17,6 @@ export const SEO_CONFIG = {
     backgroundColor: '#ffffff'
   },
 
-  // Social media and sharing
   social: {
     twitterHandle: '@stackstatusio',
     ogImage: '/logo.png',
@@ -22,66 +24,242 @@ export const SEO_CONFIG = {
     twitterCard: 'summary_large_image'
   },
 
-  // Analytics and tracking IDs (replace with actual IDs)
   analytics: {
-    googleAnalyticsId: 'G-XXXXXXXXXX', // Replace with actual GA4 ID
-    googleTagManagerId: 'GTM-XXXXXXX', // Optional GTM ID
-    hotjarId: 'XXXXXX', // Optional Hotjar ID
-    microsoftClarityId: 'XXXXXXXXXX' // Optional Microsoft Clarity ID
+    googleAnalyticsId: 'G-XXXXXXXXXX',
+    googleTagManagerId: 'GTM-XXXXXXX',
+    hotjarId: 'XXXXXX',
+    microsoftClarityId: 'XXXXXXXXXX'
+  },
+
+  services: {
+    aws: {
+      name: 'Amazon Web Services (AWS)',
+      description: 'Monitor Amazon Web Services status including EC2, S3, RDS, Lambda, CloudFront, and other AWS services. Get real-time alerts for AWS outages and service disruptions.',
+      keywords: 'AWS status, Amazon Web Services outage, EC2 status, S3 status, AWS service health, CloudFront status, Lambda outage',
+      icon: '/logos/aws-logo.png',
+      officialStatusPage: 'https://status.aws.amazon.com/'
+    },
+    cloudflare: {
+      name: 'Cloudflare',
+      description: 'Track Cloudflare CDN, DNS, and security services status including edge locations and network performance. Monitor Cloudflare Workers and Pages.',
+      keywords: 'Cloudflare status, CDN outage, DNS issues, Cloudflare edge locations, Workers status, Pages deployment',
+      icon: '/logos/cloudflare-logo.svg',
+      officialStatusPage: 'https://www.cloudflarestatus.com/'
+    },
+    okta: {
+      name: 'Okta',
+      description: 'Monitor Okta identity and access management services, SSO authentication, user directory status, and API availability.',
+      keywords: 'Okta status, SSO outage, identity management, authentication issues, Okta API status, SAML issues',
+      icon: '/logos/Okta-logo.svg',
+      officialStatusPage: 'https://status.okta.com/'
+    },
+    zscaler: {
+      name: 'Zscaler',
+      description: 'Check Zscaler cloud security platform status including ZIA and ZPA services, internet access, and private access.',
+      keywords: 'Zscaler status, cloud security, ZIA status, ZPA outage, internet access, private access',
+      icon: '/logos/Zscaler.svg',
+      officialStatusPage: 'https://trust.zscaler.com/'
+    },
+    sendgrid: {
+      name: 'SendGrid',
+      description: 'Monitor SendGrid email delivery service status, API availability, and SMTP performance for reliable email sending.',
+      keywords: 'SendGrid status, email delivery issues, SMTP outage, email API, transactional email',
+      icon: '/logos/SendGrid.svg',
+      officialStatusPage: 'https://status.sendgrid.com/'
+    },
+    slack: {
+      name: 'Slack',
+      description: 'Track Slack workspace connectivity, messaging, file sharing, and collaboration platform status across all regions.',
+      keywords: 'Slack status, workspace outage, messaging issues, Slack downtime, file sharing problems',
+      icon: '/logos/slack-logo.png',
+      officialStatusPage: 'https://status.slack.com/'
+    },
+    datadog: {
+      name: 'Datadog',
+      description: 'Monitor Datadog monitoring and analytics platform status including metrics collection, logging, APM, and dashboard availability.',
+      keywords: 'Datadog status, monitoring platform, metrics collection, logging service, APM status, dashboard outage',
+      icon: '/logos/datadog-logo.png',
+      officialStatusPage: 'https://status.datadoghq.eu/'
+    }
+  },
+
+  performance: {
+    preconnectDomains: [
+      'https://www.cloudflarestatus.com',
+      'https://trust.zscaler.com',
+      'https://status.okta.com',
+      'https://status.sendgrid.com',
+      'https://status.slack.com',
+      'https://status.datadoghq.eu',
+      'https://status.aws.amazon.com',
+      'https://vitals.vercel-analytics.com',
+      'https://www.googletagmanager.com',
+      'https://www.google-analytics.com'
+    ],
+    criticalResources: [
+      '/logo.png',
+      '/manifest.json'
+    ]
+  },
+
+  structuredData: {
+    website: {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: 'Stack Status IO',
+      url: 'https://stack-status.io',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: 'https://stack-status.io/#search={search_term_string}',
+        'query-input': 'required name=search_term_string'
+      }
+    },
+    webApplication: {
+      '@context': 'https://schema.org',
+      '@type': 'WebApplication',
+      name: 'Stack Status IO',
+      description: 'Real-time service status monitoring dashboard for critical cloud services',
+      url: 'https://stack-status.io',
+      applicationCategory: 'UtilityApplication',
+      operatingSystem: 'Web Browser',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD'
+      },
+      creator: {
+        '@type': 'Organization',
+        name: 'Stack Status IO',
+        url: 'https://stack-status.io'
+      },
+      featureList: [
+        'Real-time status monitoring',
+        'Service disruption alerts',
+        'Multi-service dashboard',
+        'Incident tracking',
+        'Customizable notifications',
+        'Historical data analysis',
+        'Mobile-responsive design'
+      ]
+    },
+    organization: {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'Stack Status IO',
+      url: 'https://stack-status.io',
+      logo: 'https://stack-status.io/logo.png',
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'Customer Service',
+        url: 'https://stack-status.io'
+      }
+    }
   }
 };
 
-// Service-specific SEO data
-const SERVICE_SEO_DATA = {
-  aws: {
-    name: 'Amazon Web Services (AWS)',
-    description: 'Monitor Amazon Web Services status including EC2, S3, RDS, Lambda, CloudFront, and other AWS services. Get real-time alerts for AWS outages and service disruptions.',
-    keywords: 'AWS status, Amazon Web Services outage, EC2 status, S3 status, AWS service health, CloudFront status, Lambda outage',
-    icon: '/logos/aws-logo.png',
-    officialStatusPage: 'https://status.aws.amazon.com/'
-  },
-  cloudflare: {
-    name: 'Cloudflare',
-    description: 'Track Cloudflare CDN, DNS, and security services status including edge locations and network performance. Monitor Cloudflare Workers and Pages.',
-    keywords: 'Cloudflare status, CDN outage, DNS issues, Cloudflare edge locations, Workers status, Pages deployment',
-    icon: '/logos/cloudflare-logo.svg',
-    officialStatusPage: 'https://www.cloudflarestatus.com/'
-  },
-  okta: {
-    name: 'Okta',
-    description: 'Monitor Okta identity and access management services, SSO authentication, and user directory status. Track Okta login issues and authentication problems.',
-    keywords: 'Okta status, SSO outage, identity management, authentication issues, Okta login problems, SAML issues',
-    icon: '/logos/Okta-logo.svg',
-    officialStatusPage: 'https://status.okta.com/'
-  },
-  zscaler: {
-    name: 'Zscaler',
-    description: 'Check Zscaler cloud security platform status including ZIA (Zscaler Internet Access) and ZPA (Zscaler Private Access) services.',
-    keywords: 'Zscaler status, cloud security, ZIA status, ZPA outage, Zscaler Internet Access, Zscaler Private Access',
-    icon: '/logos/Zscaler.svg',
-    officialStatusPage: 'https://trust.zscaler.com/'
-  },
-  sendgrid: {
-    name: 'SendGrid',
-    description: 'Monitor SendGrid email delivery service status and API availability. Track email sending issues and SMTP problems.',
-    keywords: 'SendGrid status, email delivery issues, SMTP outage, email API, SendGrid downtime, email service problems',
-    icon: '/logos/SendGrid.svg',
-    officialStatusPage: 'https://status.sendgrid.com/'
-  },
-  slack: {
-    name: 'Slack',
-    description: 'Track Slack workspace connectivity, messaging, and collaboration platform status. Monitor Slack API and notification issues.',
-    keywords: 'Slack status, workspace outage, messaging issues, Slack downtime, collaboration platform, Slack API problems',
-    icon: '/logos/slack-logo.png',
-    officialStatusPage: 'https://status.slack.com/'
-  },
-  datadog: {
-    name: 'Datadog',
-    description: 'Monitor Datadog monitoring and analytics platform status including metrics collection, logging, and APM services.',
-    keywords: 'Datadog status, monitoring platform, metrics collection, logging service, APM outage, Datadog downtime',
-    icon: '/logos/datadog-logo.png',
-    officialStatusPage: 'https://status.datadoghq.eu/'
+/**
+ * Generate service-specific structured data
+ * @param {string} service - Service identifier
+ * @param {string} status - Service status
+ * @returns {Object|null} Structured data object
+ */
+export const generateServiceStructuredData = (service, status) => {
+  const serviceData = SEO_CONFIG.services[service];
+  if (!serviceData) return null;
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: serviceData.name,
+    description: serviceData.description,
+    url: serviceData.officialStatusPage,
+    applicationCategory: 'WebApplication',
+    image: `https://stack-status.io${serviceData.icon}`,
+    aggregateRating: status === 'operational' ? {
+      '@type': 'AggregateRating',
+      ratingValue: '5',
+      ratingCount: '1',
+      bestRating: '5',
+      worstRating: '1'
+    } : undefined
+  };
+};
+
+/**
+ * Generate breadcrumb structured data
+ * @param {string[]} selectedServices - Array of service IDs
+ * @returns {Object|null} Breadcrumb structured data
+ */
+export const generateBreadcrumbStructuredData = (selectedServices) => {
+  if (!selectedServices?.length) return null;
+
+  const itemListElement = [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: 'Home',
+      item: 'https://stack-status.io'
+    }
+  ];
+
+  selectedServices.forEach((service, index) => {
+    const serviceData = SEO_CONFIG.services[service];
+    if (serviceData) {
+      itemListElement.push({
+        '@type': 'ListItem',
+        position: index + 2,
+        name: `${serviceData.name} Status`,
+        item: `https://stack-status.io/#${service}`
+      });
+    }
+  });
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement
+  };
+};
+
+/**
+ * Generate dynamic page title
+ * @param {string[]} selectedServices - Array of service IDs
+ * @returns {string} Optimized page title
+ */
+export const generatePageTitle = (selectedServices = []) => {
+  if (selectedServices.length === 0) {
+    return SEO_CONFIG.site.defaultTitle;
   }
+  
+  const serviceNames = selectedServices
+    .map(service => SEO_CONFIG.services[service]?.name)
+    .filter(Boolean)
+    .slice(0, 3);
+  
+  const title = `${serviceNames.join(', ')} Status | ${SEO_CONFIG.site.name}`;
+  return title.length > 60 ? `${serviceNames[0]} Status | ${SEO_CONFIG.site.name}` : title;
+};
+
+/**
+ * Generate dynamic meta description
+ * @param {string[]} selectedServices - Array of service IDs
+ * @param {number} incidentCount - Number of active incidents
+ * @returns {string} Optimized meta description
+ */
+export const generateMetaDescription = (selectedServices = [], incidentCount = 0) => {
+  if (selectedServices.length === 0) {
+    return SEO_CONFIG.site.defaultDescription;
+  }
+  
+  const serviceNames = selectedServices
+    .map(service => SEO_CONFIG.services[service]?.name)
+    .filter(Boolean);
+  
+  const statusText = incidentCount > 0 
+    ? `${incidentCount} active incident${incidentCount > 1 ? 's' : ''} detected` 
+    : 'All services operational';
+    
+  return `Monitor ${serviceNames.join(', ')} status in real-time. ${statusText}. Get instant alerts for service disruptions and outages.`;
 };
 
 // SEO utility functions
@@ -95,12 +273,12 @@ export const SEOUtils = {
     }
     
     if (selectedServices.length === 1) {
-      const service = SERVICE_SEO_DATA[selectedServices[0]];
+      const service = SEO_CONFIG.services[selectedServices[0]];
       const statusText = incidentCount > 0 ? `${incidentCount} Issue${incidentCount > 1 ? 's' : ''}` : 'Status';
       return `${service?.name || selectedServices[0]} ${statusText} - Real-Time Monitoring | ${site.name}`;
     }
     
-    const serviceNames = selectedServices.slice(0, 3).map(s => SERVICE_SEO_DATA[s]?.name || s).join(', ');
+    const serviceNames = selectedServices.slice(0, 3).map(s => SEO_CONFIG.services[s]?.name || s).join(', ');
     const moreText = selectedServices.length > 3 ? ` +${selectedServices.length - 3} more` : '';
     return `${serviceNames}${moreText} Status Monitor | ${site.name}`;
   },
@@ -114,14 +292,14 @@ export const SEOUtils = {
     }
     
     if (selectedServices.length === 1) {
-      const service = SERVICE_SEO_DATA[selectedServices[0]];
+      const service = SEO_CONFIG.services[selectedServices[0]];
       const statusText = incidentCount > 0 ? 
         `Currently tracking ${incidentCount} incident${incidentCount > 1 ? 's' : ''}.` : 
         'All systems operational.';
       return `${service?.description || `Monitor ${service?.name || selectedServices[0]} status.`} ${statusText}`;
     }
     
-    const serviceNames = selectedServices.map(s => SERVICE_SEO_DATA[s]?.name || s).join(', ');
+    const serviceNames = selectedServices.map(s => SEO_CONFIG.services[s]?.name || s).join(', ');
     return `Monitor ${serviceNames} in real-time. Get instant notifications about service disruptions, outages, and maintenance windows.`;
   },
 
@@ -134,7 +312,7 @@ export const SEOUtils = {
     }
     
     const serviceKeywords = selectedServices
-      .map(service => SERVICE_SEO_DATA[service]?.keywords || '')
+      .map(service => SEO_CONFIG.services[service]?.keywords || '')
       .filter(Boolean)
       .join(', ');
     
@@ -149,7 +327,7 @@ export const SEOUtils = {
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
       name: site.name,
-      description: this.generateDescription(selectedServices),
+      description: SEOUtils.generateDescription(selectedServices),
       url: site.domain,
       applicationCategory: 'UtilityApplication',
       operatingSystem: 'Web Browser',
@@ -177,7 +355,7 @@ export const SEOUtils = {
     // Add service-specific data if services are selected
     if (selectedServices.length > 0) {
       baseStructuredData.about = selectedServices.map(serviceId => {
-        const service = SERVICE_SEO_DATA[serviceId];
+        const service = SEO_CONFIG.services[serviceId];
         const status = serviceStatuses[serviceId];
         
         return {
@@ -207,30 +385,30 @@ export const SEOUtils = {
 
   // Update all meta tags at once
   updateAllMetaTags(selectedServices = [], serviceStatuses = {}, incidentCount = 0) {
-    const title = this.generatePageTitle(selectedServices, incidentCount);
-    const description = this.generateDescription(selectedServices, incidentCount);
-    const keywords = this.generateKeywords(selectedServices);
+    const title = SEOUtils.generatePageTitle(selectedServices, incidentCount);
+    const description = SEOUtils.generateDescription(selectedServices, incidentCount);
+    const keywords = SEOUtils.generateKeywords(selectedServices);
     
     // Update document title
     document.title = title;
     
     // Update meta tags
-    this.updateMetaTag('name', 'description', description);
-    this.updateMetaTag('name', 'keywords', keywords);
+    SEOUtils.updateMetaTag('name', 'description', description);
+    SEOUtils.updateMetaTag('name', 'keywords', keywords);
     
     // Update Open Graph
-    this.updateMetaTag('property', 'og:title', title);
-    this.updateMetaTag('property', 'og:description', description);
+    SEOUtils.updateMetaTag('property', 'og:title', title);
+    SEOUtils.updateMetaTag('property', 'og:description', description);
     
     // Update Twitter Cards
-    this.updateMetaTag('name', 'twitter:title', title);
-    this.updateMetaTag('name', 'twitter:description', description);
+    SEOUtils.updateMetaTag('name', 'twitter:title', title);
+    SEOUtils.updateMetaTag('name', 'twitter:description', description);
     
     // Update canonical URL
-    this.updateCanonicalUrl(selectedServices);
+    SEOUtils.updateCanonicalUrl(selectedServices);
     
     // Update structured data
-    this.updateStructuredData(selectedServices, serviceStatuses);
+    SEOUtils.updateStructuredData(selectedServices, serviceStatuses);
   },
 
   // Helper function to update meta tags
@@ -273,7 +451,7 @@ export const SEOUtils = {
     }
 
     // Create new structured data
-    const structuredData = this.generateStructuredData(selectedServices, serviceStatuses);
+    const structuredData = SEOUtils.generateStructuredData(selectedServices, serviceStatuses);
     
     const script = document.createElement('script');
     script.id = 'dynamic-structured-data';
@@ -284,12 +462,12 @@ export const SEOUtils = {
 
   // Get service data
   getServiceData(serviceId) {
-    return SERVICE_SEO_DATA[serviceId] || null;
+    return SEO_CONFIG.services[serviceId] || null;
   },
 
   // Get all service data
   getAllServiceData() {
-    return SERVICE_SEO_DATA;
+    return SEO_CONFIG.services;
   }
 };
 
@@ -320,12 +498,6 @@ export const SEOHead = ({
 };
 
 // Export service data for use in other components
-export { SERVICE_SEO_DATA };
+export const SERVICE_SEO_DATA = SEO_CONFIG.services;
 
-// Default export
-export default {
-  SEO_CONFIG,
-  SEOUtils,
-  SEOHead,
-  SERVICE_SEO_DATA
-};
+export default SEO_CONFIG;
