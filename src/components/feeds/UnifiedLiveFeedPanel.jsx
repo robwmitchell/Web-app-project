@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { formatFeedTitle, formatFeedDescription, getReadablePreview, isHtmlContent } from '../../utils/htmlToText';
+import { formatFeedTitle, formatFeedDescription, getReadablePreview } from '../../utils/htmlToText';
 import './UnifiedLiveFeedPanel.css';
 
 const UnifiedLiveFeedPanel = ({ 
@@ -119,7 +119,6 @@ const UnifiedLiveFeedPanel = ({
           source: 'cloudflare',
           title: formatFeedTitle(rawTitle),
           description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-          fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
           timestamp: incident.updated_at || incident.created_at,
           status: incident.impact || incident.status || 'unknown',
           url: incident.shortlink || incident.url,
@@ -141,7 +140,6 @@ const UnifiedLiveFeedPanel = ({
           source: 'zscaler',
           title: formatFeedTitle(rawTitle),
           description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-          fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
           timestamp: update.date,
           status: update.eventType || 'info',
           url: update.link,
@@ -163,7 +161,6 @@ const UnifiedLiveFeedPanel = ({
           source: 'okta',
           title: formatFeedTitle(rawTitle),
           description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-          fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
           timestamp: update.date,
           status: 'info',
           url: update.link,
@@ -185,7 +182,6 @@ const UnifiedLiveFeedPanel = ({
           source: 'sendgrid',
           title: formatFeedTitle(rawTitle),
           description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-          fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
           timestamp: update.date,
           status: 'info',
           url: update.link,
@@ -207,7 +203,6 @@ const UnifiedLiveFeedPanel = ({
           source: 'slack',
           title: formatFeedTitle(rawTitle),
           description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-          fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
           timestamp: update.reported_at,
           status: update.status || 'info',
           url: update.url,
@@ -229,7 +224,6 @@ const UnifiedLiveFeedPanel = ({
           source: 'datadog',
           title: formatFeedTitle(rawTitle),
           description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-          fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
           timestamp: update.reported_at,
           status: update.status || 'info',
           url: update.url,
@@ -251,7 +245,6 @@ const UnifiedLiveFeedPanel = ({
           source: 'aws',
           title: formatFeedTitle(rawTitle),
           description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-          fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
           timestamp: update.reported_at,
           status: update.status || 'info',
           url: update.url,
@@ -274,7 +267,6 @@ const UnifiedLiveFeedPanel = ({
             source: customService.id, // Use service ID as source for consistency
             title: formatFeedTitle(rawTitle),
             description: formatFeedDescription(rawDescription, { maxLength: 200 }),
-            fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
             timestamp: update.date || update.pubDate || update.timestamp,
             status: update.status || 'info',
             url: update.link || update.url,
@@ -576,21 +568,6 @@ const UnifiedLiveFeedPanel = ({
                           : `${item.description?.slice(0, 120)}${item.description?.length > 120 ? '...' : ''}`
                         }
                       </p>
-                      
-                      {/* Show full HTML content if available and expanded */}
-                      {isExpanded && item.fullDescription && (
-                        <div className="item-full-content">
-                          <details className="html-content-toggle">
-                            <summary className="html-content-label">
-                              View Full Content (HTML)
-                            </summary>
-                            <div 
-                              className="html-content"
-                              dangerouslySetInnerHTML={{ __html: item.fullDescription }}
-                            />
-                          </details>
-                        </div>
-                      )}
                       
                       {isExpanded && (
                         <div className="item-actions">
