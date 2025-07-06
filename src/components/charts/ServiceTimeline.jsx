@@ -36,6 +36,26 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
   const validIncidents = Array.isArray(incidents) ? incidents : [];
   const validUpdates = Array.isArray(updates) ? updates : [];
 
+  // Helper function to get date from various possible fields
+  function getItemDate(item) {
+    if (!item) return null;
+    
+    // Try different date field names
+    const possibleDateFields = [
+      'date', 'reported_at', 'created_at', 'createdAt', 
+      'updated_at', 'updatedAt', 'startTime', 'timestamp'
+    ];
+    
+    for (const field of possibleDateFields) {
+      if (item[field]) {
+        const date = new Date(item[field]);
+        if (!isNaN(date)) return date;
+      }
+    }
+    
+    return null;
+  }
+
   if (provider === 'Cloudflare') {
     // Check Cloudflare incidents
     const dayIncidents = validIncidents.filter(inc => {
@@ -73,12 +93,16 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
       else dayStatus = 'major'; // Default for any unclassified incident
     }
   } else {
-    // For other providers using RSS updates
+    // For other providers using RSS updates or different data formats
     const dayUpdates = validUpdates.filter(update => {
-      if (!update || !update.date) return false;
-      const updateDate = new Date(update.date);
-      if (isNaN(updateDate)) return false;
-      return updateDate >= dayStart && updateDate <= dayEnd;
+      const updateDate = getItemDate(update);
+      if (!updateDate) return false;
+      
+      // Use calendar date comparison to handle timezone issues
+      const updateCalendarDate = new Date(updateDate.getFullYear(), updateDate.getMonth(), updateDate.getDate());
+      const dayCalendarDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      
+      return updateCalendarDate.getTime() === dayCalendarDate.getTime();
     });
 
     issueCount = dayUpdates.length;
@@ -105,6 +129,9 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
         return text.includes('minor') || text.includes('investigating') || text.includes('monitoring');
       });
 
+      // For providers like Slack, Datadog, AWS - if there's any update, it's likely an issue
+      const isIssueProvider = ['Slack', 'Datadog', 'AWS'].includes(provider);
+      
       // If all issues are resolved, show as operational
       if (hasResolved && dayUpdates.every(update => {
         const text = `${update.title || ''} ${update.description || ''}`.toLowerCase();
@@ -117,8 +144,11 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
         dayStatus = 'major';
       } else if (hasMinor) {
         dayStatus = 'minor';
+      } else if (isIssueProvider) {
+        // For Slack, Datadog, AWS - default to major since any update likely indicates an issue
+        dayStatus = 'major';
       } else {
-        dayStatus = 'minor'; // Default for any update
+        dayStatus = 'minor'; // Default for other providers
       }
     }
   }
@@ -130,7 +160,6 @@ export default function ServiceTimeline({
   provider, 
   incidents = [], 
   updates = [], 
-  showPercentage = true,
   showLabels = true 
 }) {
   // Validate provider
@@ -144,16 +173,12 @@ export default function ServiceTimeline({
     ...analyzeDay(day, incidents, updates, provider)
   }));
 
-  // Calculate uptime percentage
-  const operationalDays = dayAnalysis.filter(day => day.status === 'operational').length;
-  const uptimePercentage = ((operationalDays / 7) * 100).toFixed(3);
-
   return (
     <div className="service-timeline">
       {showLabels && (
         <div className="timeline-header">
           <span className="timeline-title">
-            {provider} → {showPercentage && `| ${uptimePercentage}%`}
+            {provider} {updates.length > 0 && `(${updates.length} updates)`}
           </span>
           <span className="timeline-status">
             <span 

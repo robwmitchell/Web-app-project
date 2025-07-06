@@ -193,7 +193,6 @@ export default function LivePulseCard({
             provider={provider}
             incidents={incidents}
             updates={updates}
-            showPercentage={true}
             showLabels={true}
           />
           

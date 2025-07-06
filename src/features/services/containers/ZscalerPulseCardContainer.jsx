@@ -127,7 +127,6 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
           provider={provider}
           incidents={[]}
           updates={updates}
-          showPercentage={true}
           showLabels={true}
         />
 

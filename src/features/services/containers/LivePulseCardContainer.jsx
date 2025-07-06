@@ -176,7 +176,6 @@ export default function LivePulseCardContainer({
           provider={provider}
           incidents={incidents}
           updates={updates}
-          showPercentage={true}
           showLabels={true}
         />
 
