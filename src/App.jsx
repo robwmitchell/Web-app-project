@@ -289,7 +289,7 @@ function App() {
     return selectedServices.includes(serviceId);
   };
 
-  const demoIssues = [
+  const demoIssues = React.useMemo(() => [
     // Only include demo issues for selected services
     ...(isServiceSelected('cloudflare') ? [{ provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' }] : []),
     ...(isServiceSelected('zscaler') ? [{ provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' }] : []),
@@ -298,7 +298,7 @@ function App() {
     ...(isServiceSelected('slack') ? [{ provider: 'Slack', name: 'Message Sync Issues', status: 'minor', updated: new Date().toISOString(), url: 'https://status.slack.com/' }] : []),
     ...(isServiceSelected('datadog') ? [{ provider: 'Datadog', name: 'Monitoring Delays', status: 'major', updated: new Date().toISOString(), url: 'https://status.datadoghq.com/' }] : []),
     ...(isServiceSelected('aws') ? [{ provider: 'AWS', name: 'EC2 Instance Issues', status: 'critical', updated: new Date().toISOString(), url: 'https://status.aws.amazon.com/' }] : []),
-  ];
+  ], [selectedServices]);
 
   // Configuration for splash screen behavior
 const SPLASH_CONFIG = {
@@ -613,7 +613,7 @@ const SPLASH_CONFIG = {
     }
 
     setPreviousDataSnapshot(currentSnapshot);
-  }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws, previousDataSnapshot]);
+  }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws]);
 
   // Calculate total feed items count
   const totalFeedItemsCount = 
@@ -643,7 +643,7 @@ const SPLASH_CONFIG = {
     } else {
       setTickerIndex(0);
     }
-  }, [criticalMode.active, criticalMode.details.length]);
+  }, [criticalMode.active, criticalMode.details.length, demoIssues.length]);
 
   // Handle service selection
   function handleServiceSelect(services) {
