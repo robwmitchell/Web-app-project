@@ -974,7 +974,6 @@ const SPLASH_CONFIG = {
               minHeight: 48,
               borderRadius: 12,
               boxShadow: '0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
-              animation: 'alertPulse 3s ease-in-out infinite',
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}>
             {/* Dismiss button */}
@@ -1026,7 +1025,6 @@ const SPLASH_CONFIG = {
               {/* Alert Icon */}
               <div style={{
                 fontSize: 20,
-                animation: 'alertIcon 2s ease-in-out infinite',
                 filter: 'drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))',
                 flexShrink: 0
               }}>

@@ -222,28 +222,6 @@
   }
 }
 
-/* Enhanced Alert Banner Animations */
-@keyframes alertPulse {
-  0%, 100% {
-    box-shadow: 0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
-  }
-  50% {
-    box-shadow: 0 6px 25px rgba(255, 71, 87, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.2);
-  }
-}
-
-@keyframes alertIcon {
-  0%, 100% {
-    transform: scale(1) rotate(0deg);
-  }
-  25% {
-    transform: scale(1.1) rotate(-5deg);
-  }
-  75% {
-    transform: scale(1.1) rotate(5deg);
-  }
-}
-
 /* Modern Header Styles */
 .site-header {
   position: sticky;
