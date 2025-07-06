@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './LivePulseCard.css';
 import '../../../styles/globals/Glassmorphism.css';
 import { serviceLogos } from '../../../services/serviceLogos';
+import ServiceTimeline from '../../../components/charts/ServiceTimeline';
 
 // Icon mapping for status
 const STATUS_ICONS = {
@@ -23,6 +24,8 @@ export default function LivePulseCard({
   companyInfo = null,
   onBugClick, // new prop
   onClose, // new prop for close functionality
+  incidents = [], // new prop for timeline
+  updates = [], // new prop for timeline
 }) {
   const [pop, setPop] = useState(false);
   const [flipped, setFlipped] = useState(false); // flip state
@@ -184,6 +187,16 @@ export default function LivePulseCard({
             )}
           </div>
           <div className="live-pulse-headline">{headline}</div>
+          
+          {/* 7-Day Service Timeline */}
+          <ServiceTimeline 
+            provider={provider}
+            incidents={incidents}
+            updates={updates}
+            showPercentage={true}
+            showLabels={true}
+          />
+          
           {children}
         </div>
         {/* Back Side */}

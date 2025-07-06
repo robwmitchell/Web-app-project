@@ -19,7 +19,9 @@ This project is a modern, glassmorphic dashboard for monitoring the status of ke
 
 ### 📊 Status Visualization
 - **Real-time Indicators**: Live pulse animations and color-coded status indicators
-- **7-Day History**: Visual timeline showing service reliability over the past week
+- **7-Day Timeline Visualization**: Beautiful horizontal timeline showing daily service status with color-coded alert types
+- **Historical Analysis**: Visual representation of operational (green), minor issues (yellow), major issues (orange), and critical issues (red)
+- **Uptime Percentage**: Calculated reliability metrics displayed prominently on each service card
 - **Incident Timeline**: Detailed incident history with timestamps and descriptions
 - **Service Impact Reporting**: Report service impacts directly from the dashboard
 
@@ -32,7 +34,14 @@ This project is a modern, glassmorphic dashboard for monitoring the status of ke
 
 ## 🚀 Recent Enhancements
 
-### Enhanced Service Selector (Latest)
+### 7-Day Timeline Visualization (Latest)
+- **Horizontal Timeline Display**: Visual representation of service status over the last 7 days
+- **Color-Coded Alert Types**: Green (operational), yellow (minor), orange (major), red (critical)
+- **Interactive Tooltips**: Hover over timeline bars to see detailed day information
+- **Uptime Percentage**: Real-time calculation and display of service reliability metrics
+- **Responsive Design**: Timeline adapts beautifully to different screen sizes
+
+### Enhanced Service Selector
 - **Single Scroll Experience**: Optimized modal with unified scroll behavior
 - **Gradient Scroll Bars**: Beautiful custom-styled scroll indicators
 - **Scroll State Tracking**: Visual feedback for scrolling with smooth animations

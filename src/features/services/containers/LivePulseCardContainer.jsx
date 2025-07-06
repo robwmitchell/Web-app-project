@@ -1,24 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import Modal from '../../../components/common/Modal';
 import ReportImpactForm from '../../../components/forms/ReportImpactForm';
-import TimelineScroller from '../../../components/charts/TimelineScroller';
+import ServiceTimeline from '../../../components/charts/ServiceTimeline';
 import { formatDate, htmlToText } from '../components/ServiceStatusCard';
 import { cleanAndTruncateHtml } from '../../../utils/textFormatting';
-import { getLast7Days, getUTCMidnight } from '../../../utils/dateHelpers';
 import { serviceLogos } from '../../../services/serviceLogos';
 import '../components/LivePulseCard.css';
-
-// Use the same date logic as other services for consistency
-function getLast7DaysUTC() {
-  const days = [];
-  const now = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    d.setUTCDate(d.getUTCDate() - i);
-    days.push(d);
-  }
-  return days;
-}
 
 export default function LivePulseCardContainer({
   provider,
@@ -123,60 +110,6 @@ export default function LivePulseCardContainer({
     ),
   };
 
-  // Helper: get indicator for a given day - simplified and universal
-  function getDayIndicator(day) {
-    const dayStr = day.toISOString().slice(0, 10);
-    
-    // Check both incidents and updates for events on this day
-    const allItems = [...(incidents || []), ...(updates || [])];
-    const dayEvents = allItems.filter(item => {
-      // Handle different date field names
-      const dateField = item.created_at || item.createdAt || item.updated_at || item.updatedAt || item.date || item.reported_at;
-      if (!dateField) return false;
-      
-      const itemDateStr = new Date(dateField).toISOString().slice(0, 10);
-      return itemDateStr === dayStr;
-    });
-    
-    if (dayEvents.length === 0) return 'none';
-    
-    // Determine severity based on event types or status
-    const hasCritical = dayEvents.some(e => 
-      e.impact === 'critical' || 
-      e.status === 'major_outage' || 
-      e.eventType === 'outage' ||
-      (e.title && e.title.toLowerCase().includes('outage'))
-    );
-    
-    if (hasCritical) return 'critical';
-    
-    const hasMajor = dayEvents.some(e => 
-      e.impact === 'major' || 
-      e.status === 'partial_outage' || 
-      e.eventType === 'incident' ||
-      e.status === 'investigating'
-    );
-    
-    if (hasMajor) return 'major';
-    
-    return 'minor';
-  }
-  // Day labels
-  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const last7 = getLast7DaysUTC();
-
-  // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)
-  let filteredUpdates = updates;
-  if (provider === 'Zscaler' && updates.length > 0) {
-    const minDate = last7[0].getTime();
-    filteredUpdates = updates.filter(u => {
-      // Parse the date robustly
-      const updateDate = new Date(u.date);
-      updateDate.setHours(0, 0, 0, 0);
-      return updateDate.getTime() >= minDate;
-    });
-  }
-
   // Memoize the headline JSX to prevent unnecessary re-renders that cause pulsing
   const memoizedHeadline = useMemo(() => {
     return <div style={headlineStyle}>{headline}</div>;
@@ -191,18 +124,6 @@ export default function LivePulseCardContainer({
   } else if (updates && updates.length > 0) {
     historyItems = updates;
   }
-
-  // Generate day indicators for the last 7 days
-  const last7Days = getLast7DaysUTC();
-  const dayEvents = last7Days.map(day => {
-    const indicator = getDayIndicator(day);
-    const dayStr = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return {
-      date: dayStr,
-      indicator,
-      statusText: indicator === 'none' ? 'No issues' : 'Issues reported'
-    };
-  });
 
   return (
     <>
@@ -250,10 +171,16 @@ export default function LivePulseCardContainer({
 
         <div className="live-pulse-headline">{memoizedHeadline}</div>
 
+        {/* 7-Day Service Timeline */}
+        <ServiceTimeline 
+          provider={provider}
+          incidents={incidents}
+          updates={updates}
+          showPercentage={true}
+          showLabels={true}
+        />
+
         <div className="card-content">
-          {/* Day indicators */}
-          <TimelineScroller events={dayEvents} />
-          
           {/* Card actions - always visible */}
           <div className="card-actions">
             <button 

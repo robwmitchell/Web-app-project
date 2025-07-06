@@ -1,24 +1,12 @@
 import React, { useState } from 'react';
 import Modal from '../../../components/common/Modal';
 import ReportImpactForm from '../../../components/forms/ReportImpactForm';
-import TimelineScroller from '../../../components/charts/TimelineScroller';
+import ServiceTimeline from '../../../components/charts/ServiceTimeline';
 import { formatDate, htmlToText } from '../components/ServiceStatusCard';
 import { cleanAndTruncateHtml } from '../../../utils/textFormatting';
 import { getUTCMidnight } from '../../../utils/dateHelpers';
 import { serviceLogos } from '../../../services/serviceLogos';
 import '../components/LivePulseCard.css';
-
-// Zscaler-specific: get last 7 days using UTC midnight
-function getLast7DaysUTC() {
-  const days = [];
-  const now = new Date();
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    d.setUTCDate(d.getUTCDate() - i);
-    days.push(d);
-  }
-  return days;
-}
 
 export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, indicator, status, updates = [], onClose }) {
   const [bugModalOpen, setBugModalOpen] = useState(false);
@@ -32,35 +20,12 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
     return null;
   }
 
-  function getDayIndicator(day) {
-    if (["SendGrid", "Slack", "Datadog", "AWS"].includes(provider) && updates.length > 0) {
-      // For these providers, highlight any day with an event (RSS event)
-      const hasEvent = updates.some(u => {
-        const updateDate = getUpdateDate(u);
-        if (!updateDate) return false;
-        return updateDate.getTime() === day.getTime();
-      });
-      if (hasEvent) return 'major'; // Orange for any event
-      return 'none';
-    }
-    // Only show indicator if a Service Degradation is present for this day
-    const dayDegradations = updates.filter(u => {
-      const updateDate = getUpdateDate(u);
-      if (!updateDate) return false;
-      // Compare UTC midnight
-      if (updateDate.getTime() !== day.getTime()) return false;
-      // Only consider eventType === "Service Degradation"
-      return u.eventType === "Service Degradation";
-    });
-    if (dayDegradations.length > 0) {
-      return 'major';
-    }
-    return 'none';
-  }
-
   // For Zscaler, filter updates to only last 7 days for modal (show all updates, not just disruptions)
-  const last7 = getLast7DaysUTC();
-  const minDate = last7[0].getTime();
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+  const minDate = sevenDaysAgo.getTime();
+  
   const filteredUpdates = updates.filter(u => {
     const updateDate = getUpdateDate(u);
     if (!updateDate) return false;
@@ -109,21 +74,7 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
     </>
   );
 
-  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-
   const historyItems = updates || [];
-
-  // Generate day indicators for the last 7 days
-  const last7Days = getLast7DaysUTC();
-  const dayEvents = last7Days.map(day => {
-    const indicator = getDayIndicator(day);
-    const dayStr = day.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    return {
-      date: dayStr,
-      indicator,
-      statusText: indicator === 'none' ? 'No issues' : 'Issues reported'
-    };
-  });
 
   return (
     <>
@@ -171,10 +122,16 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
 
         <div className="live-pulse-headline">{headline}</div>
 
+        {/* 7-Day Service Timeline */}
+        <ServiceTimeline 
+          provider={provider}
+          incidents={[]}
+          updates={updates}
+          showPercentage={true}
+          showLabels={true}
+        />
+
         <div className="card-content">
-          {/* Day indicators */}
-          <TimelineScroller events={dayEvents} />
-          
           {/* Card actions - always visible */}
           <div className="card-actions">
             <button 
