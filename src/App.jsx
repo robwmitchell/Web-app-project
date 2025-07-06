@@ -515,9 +515,54 @@ const SPLASH_CONFIG = {
         });
     }
     
+    // Custom RSS services fetch
+    if (customServices && customServices.length > 0) {
+      const selectedCustomServices = customServices.filter(service => 
+        isServiceSelected(service.id)
+      );
+      
+      selectedCustomServices.forEach(async (customService) => {
+        try {
+          const proxyUrl = 'https://api.allorigins.win/raw?url=';
+          const targetUrl = encodeURIComponent(customService.feedUrl);
+          const fetchUrl = `${proxyUrl}${targetUrl}`;
+          
+          const response = await fetch(fetchUrl, { signal });
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: Failed to fetch RSS feed`);
+          }
+          
+          const xmlText = await response.text();
+          const items = parseZscalerRSS(xmlText, 25); // Reuse RSS parsing function
+          
+          // Update the custom service with RSS data
+          setCustomServices(prevServices => 
+            prevServices.map(service => 
+              service.id === customService.id 
+                ? { ...service, updates: items, lastUpdated: new Date() }
+                : service
+            )
+          );
+          
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            console.error(`Error fetching custom RSS for ${customService.name}:`, error);
+            // Update the custom service with error state
+            setCustomServices(prevServices => 
+              prevServices.map(service => 
+                service.id === customService.id 
+                  ? { ...service, updates: [], error: error.message }
+                  : service
+              )
+            );
+          }
+        }
+      });
+    }
+    
     setLastUpdated(new Date());
     setLoading(false);
-  }, [selectedServices]);
+  }, [selectedServices, customServices]);
 
   // Check for any open/unresolved issue across selected providers only
   useEffect(() => {

@@ -47,7 +47,7 @@ const UnifiedLiveFeedPanel = ({
   };
 
   // Get source icon and type
-  const getSourceInfo = (source) => {
+  const getSourceInfo = (source, customServiceName = null) => {
     const sourceMap = {
       'cloudflare': { icon: '☁️', type: 'API', color: '#f38020' },
       'zscaler': { icon: '🛡️', type: 'RSS', color: '#0066cc' },
@@ -58,6 +58,17 @@ const UnifiedLiveFeedPanel = ({
       'aws': { icon: '☁️', type: 'API', color: '#ff9900' },
       'custom': { icon: '📰', type: 'RSS', color: '#6c757d' }
     };
+    
+    // If it's a custom service, use the service name with custom icon
+    if (customServiceName && !sourceMap[source.toLowerCase()]) {
+      return { 
+        icon: '📰', 
+        type: 'RSS', 
+        color: '#6c757d',
+        displayName: customServiceName
+      };
+    }
+    
     return sourceMap[source.toLowerCase()] || sourceMap['custom'];
   };
 
@@ -234,6 +245,32 @@ const UnifiedLiveFeedPanel = ({
       });
     }
 
+    // Custom RSS services
+    customServices?.forEach(customService => {
+      if (selectedServices.includes(customService.id) && customService.updates) {
+        customService.updates.forEach(update => {
+          const rawTitle = update.title || '';
+          const rawDescription = update.description || `${customService.name} service update`;
+          
+          allItems.push({
+            id: `custom-${customService.id}-${update.title}-${update.date || update.pubDate || update.timestamp}`,
+            source: customService.name?.toLowerCase() || 'custom',
+            title: formatFeedTitle(rawTitle),
+            description: formatFeedDescription(rawDescription, { maxLength: 200 }),
+            fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
+            timestamp: update.date || update.pubDate || update.timestamp,
+            status: update.status || 'info',
+            url: update.link || update.url,
+            type: 'update',
+            isResolved: false,
+            rawData: update,
+            customServiceName: customService.name,
+            customServiceId: customService.id
+          });
+        });
+      }
+    });
+
     // Sort items based on selected sort method
     return allItems.sort((a, b) => {
       switch (sortBy) {
@@ -255,6 +292,7 @@ const UnifiedLiveFeedPanel = ({
     slackUpdates,
     datadogUpdates,
     awsUpdates,
+    customServices,
     sortBy
   ]);
 
@@ -446,7 +484,7 @@ const UnifiedLiveFeedPanel = ({
           ) : (
             <>
               {filteredFeedData.map(item => {
-                const sourceInfo = getSourceInfo(item.source);
+                const sourceInfo = getSourceInfo(item.source, item.customServiceName);
                 const isExpanded = expandedItems.has(item.id);
                 const isNew = newItemIds.has(item.id);
                 
@@ -463,7 +501,9 @@ const UnifiedLiveFeedPanel = ({
                           style={{ backgroundColor: sourceInfo.color }}
                         >
                           <span className="source-icon">{sourceInfo.icon}</span>
-                          <span className="source-name">{item.source}</span>
+                          <span className="source-name">
+                            {sourceInfo.displayName || item.source}
+                          </span>
                         </span>
                         <span className="source-type-badge">{sourceInfo.type}</span>
                         {isNew && <span className="new-badge">NEW</span>}
