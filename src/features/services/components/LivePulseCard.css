@@ -497,8 +497,8 @@
     width: calc(100vw - 24px);
     min-width: 320px;
     max-width: calc(100vw - 24px);
-    min-height: 800px;
-    padding: 24px 18px 130px 18px;
+    min-height: auto;
+    padding: 20px 16px;
     margin: 12px auto;
     font-size: 0.96em;
     border-radius: 16px;
@@ -515,11 +515,6 @@
     height: 28px;
     margin-right: 10px;
   }
-  .card-bottom-row {
-    bottom: 20px;
-    gap: 10px;
-    padding: 0 18px;
-  }
   .live-pulse-headline {
     font-size: 0.92em;
     padding: 12px 14px;
@@ -528,42 +523,28 @@
 
 @media (max-width: 768px) {
   .live-pulse-card {
-    width: 440px;
-    min-width: 440px;
-    max-width: 440px;
-    min-height: 1100px;
-    padding: 32px 28px 140px 28px;
-    margin: 20px auto;
-  }
-  .card-bottom-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 0 28px;
-    bottom: 30px;
-  }
-  .card-bottom-row .view-7days-btn,
-  .card-bottom-row .bug-btn {
-    width: 100%;
-    margin: 0;
-    font-size: 1em;
-    justify-content: center;
+    width: calc(100vw - 32px);
+    min-width: 320px;
+    max-width: calc(100vw - 32px);
+    min-height: auto;
+    padding: 20px 16px;
+    margin: 16px auto;
   }
 }
 
 @media (max-width: 600px) {
   .live-pulse-card {
-    width: calc(100vw - 40px);
-    min-width: 350px;
-    max-width: calc(100vw - 40px);
-    min-height: 900px;
-    padding: 28px 24px 140px 24px;
-    margin: 20px auto;
+    width: calc(100vw - 32px);
+    min-width: 320px;
+    max-width: calc(100vw - 32px);
+    min-height: auto;
+    padding: 20px 16px;
+    margin: 16px auto;
     font-size: 0.98em;
     border-radius: 18px;
   }
   .card-header {
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     padding-bottom: 12px;
   }
   .card-title {
@@ -573,20 +554,6 @@
     width: 30px;
     height: 30px;
     margin-right: 12px;
-  }
-  .card-bottom-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 0 20px;
-    bottom: 20px;
-  }
-  .card-bottom-row .view-7days-btn,
-  .card-bottom-row .bug-btn {
-    width: 100%;
-    margin: 0;
-    font-size: 1em;
-    justify-content: center;
   }
   .live-pulse-headline {
     font-size: 0.94em;
@@ -1135,8 +1102,33 @@
 @media (max-width: 768px) {
   .card-actions {
     flex-direction: column;
+    gap: 8px;
+    padding: 12px 16px 16px 16px;
+    margin: 8px -16px -16px -16px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .bug-report-btn, .view-history-btn {
+    width: 100%;
+    max-width: 280px;
+    min-width: 0;
+    padding: 14px 16px;
+    font-size: 14px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-actions {
+    flex-direction: column;
     gap: 6px;
-    padding: 10px 16px 16px 16px;
+    padding: 10px 12px 12px 12px;
+    margin: 6px -12px -12px -12px;
+    align-items: center;
+    justify-content: center;
   }
   
   .bug-report-btn, .view-history-btn {
@@ -1145,6 +1137,9 @@
     min-width: 0;
     padding: 12px 16px;
     font-size: 13px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
   }
 }
 
