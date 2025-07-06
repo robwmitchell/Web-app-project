@@ -1,21 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import LivePulseCard from './features/services/components/LivePulseCard';
 import LivePulseCardContainer from './features/services/containers/LivePulseCardContainer';
 import ZscalerPulseCardContainer from './features/services/containers/ZscalerPulseCardContainer';
 import CustomServiceCard from './features/custom-services/components/CustomServiceCard';
 import Modal from './components/common/Modal';
 import ReportImpactForm from './components/forms/ReportImpactForm';
-// import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
-import ServiceSelectionSplash from './features/services/components/ServiceSelectionSplash';
-import AddCustomService from './features/custom-services/components/AddCustomService';
-import UnifiedLiveFeedPanel from './components/feeds/UnifiedLiveFeedPanel';
+import NotificationChatbot from './components/notifications/NotificationChatbot';
 import LiveFeedButton from './components/feeds/LiveFeedButton';
+// import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
 import './styles/globals/App.css';
 // import './components/charts/MiniHeatbarGrid.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
-import NotificationChatbot from './components/notifications/NotificationChatbot';
 import logoImage from './assets/stackstatus1.png';
+
+// Lazy load heavy components
+const UnifiedLiveFeedPanel = lazy(() => import('./components/feeds/UnifiedLiveFeedPanel'));
+const ServiceSelectionSplash = lazy(() => import('./features/services/components/ServiceSelectionSplash'));
+const AddCustomService = lazy(() => import('./features/custom-services/components/AddCustomService'));
+
+// Memoized components to prevent unnecessary re-renders
+const MemoizedLivePulseCardContainer = React.memo(LivePulseCardContainer);
+const MemoizedZscalerPulseCardContainer = React.memo(ZscalerPulseCardContainer);
 
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
@@ -828,12 +834,6 @@ const SPLASH_CONFIG = {
           </div>
           {/* Actions */}
           <div className="header-actions-modern" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <LiveFeedButton
-              onClick={() => setShowLiveFeedPanel(true)}
-              hasNewItems={liveFeedHasNewItems}
-              itemCount={totalFeedItemsCount}
-              isActive={showLiveFeedPanel}
-            />
             <button
               className="action-btn-modern settings-btn-modern"
               onClick={() => setShowSplash(true)}
@@ -1278,7 +1278,7 @@ const SPLASH_CONFIG = {
             )}
             
             {isServiceSelected('cloudflare') && !isCardClosed('cloudflare') && (
-              <LivePulseCardContainer
+              <MemoizedLivePulseCardContainer
                 provider="Cloudflare"
                 name={cloudflare.name}
                 indicator={cloudflare.indicator}
@@ -1288,7 +1288,7 @@ const SPLASH_CONFIG = {
               />
             )}
             {isServiceSelected('zscaler') && !isCardClosed('zscaler') && (
-              <ZscalerPulseCardContainer
+              <MemoizedZscalerPulseCardContainer
                 provider="Zscaler"
                 name="Zscaler"
                 indicator={getZscalerIndicator(zscaler.status)}
@@ -1298,7 +1298,7 @@ const SPLASH_CONFIG = {
               />
             )}
             {isServiceSelected('okta') && !isCardClosed('okta') && (
-              <ZscalerPulseCardContainer
+              <MemoizedZscalerPulseCardContainer
                 provider="Okta"
                 name="Okta"
                 indicator={okta.indicator}
@@ -1308,7 +1308,7 @@ const SPLASH_CONFIG = {
               />
             )}
             {isServiceSelected('sendgrid') && !isCardClosed('sendgrid') && (
-              <ZscalerPulseCardContainer
+              <MemoizedZscalerPulseCardContainer
                 provider="SendGrid"
                 name="SendGrid"
                 indicator={sendgrid.indicator}
@@ -1318,7 +1318,7 @@ const SPLASH_CONFIG = {
               />
             )}
             {isServiceSelected('slack') && !isCardClosed('slack') && (
-              <ZscalerPulseCardContainer
+              <MemoizedZscalerPulseCardContainer
                 provider="Slack"
                 name="Slack"
                 indicator={slack.updates.length > 0 ? 'major' : 'none'}
@@ -1328,7 +1328,7 @@ const SPLASH_CONFIG = {
               />
             )}
             {isServiceSelected('datadog') && !isCardClosed('datadog') && (
-              <ZscalerPulseCardContainer
+              <MemoizedZscalerPulseCardContainer
                 provider="Datadog"
                 name="Datadog"
                 indicator={datadog.updates.length > 0 ? 'major' : 'none'}
@@ -1338,7 +1338,7 @@ const SPLASH_CONFIG = {
               />
             )}
             {isServiceSelected('aws') && !isCardClosed('aws') && (
-              <ZscalerPulseCardContainer
+              <MemoizedZscalerPulseCardContainer
                 provider="AWS"
                 name="AWS"
                 indicator={aws.updates.length > 0 ? 'major' : 'none'}
@@ -1432,19 +1432,21 @@ const SPLASH_CONFIG = {
       </div>
       
       {/* Unified Live Feed Panel */}
-      <UnifiedLiveFeedPanel
-        isOpen={showLiveFeedPanel}
-        onClose={() => setShowLiveFeedPanel(false)}
-        selectedServices={selectedServices}
-        cloudflareIncidents={cloudflare.incidents}
-        zscalerUpdates={zscaler.updates}
-        oktaUpdates={okta.updates}
-        sendgridUpdates={sendgrid.updates}
-        slackUpdates={slack.updates}
-        datadogUpdates={datadog.updates}
-        awsUpdates={aws.updates}
-        customServices={customServices}
-      />
+      <Suspense fallback={<div>Loading live feed...</div>}>
+        <UnifiedLiveFeedPanel
+          isOpen={showLiveFeedPanel}
+          onClose={() => setShowLiveFeedPanel(false)}
+          selectedServices={selectedServices}
+          cloudflareIncidents={cloudflare.incidents}
+          zscalerUpdates={zscaler.updates}
+          oktaUpdates={okta.updates}
+          sendgridUpdates={sendgrid.updates}
+          slackUpdates={slack.updates}
+          datadogUpdates={datadog.updates}
+          awsUpdates={aws.updates}
+          customServices={customServices}
+        />
+      </Suspense>
     </>;
 }
 
