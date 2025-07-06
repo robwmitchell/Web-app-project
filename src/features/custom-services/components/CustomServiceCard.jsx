@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import TimelineScroller from '../../../components/charts/TimelineScroller';
-import { htmlToText } from '../../services/components/ServiceStatusCard';
+import ServiceTimeline from '../../../components/charts/ServiceTimeline';
 import { cleanAndTruncateHtml } from '../../../utils/textFormatting';
 import '../../services/components/LivePulseCard.css';
+import '../../../styles/globals/Glassmorphism.css';
 
 const CustomServiceCard = ({ 
   service, 
   onClose, 
   isClosed, 
-  onReportIssue 
+  onReportIssue,
+  onToggleShowMore,
+  showMore = false
 }) => {
   const [serviceData, setServiceData] = useState({
     status: 'Loading...',
@@ -17,7 +19,29 @@ const CustomServiceCard = ({
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showHistory, setShowHistory] = useState(false);
+  const [pop, setPop] = useState(false);
+  const [bgVisible, setBgVisible] = useState(true);
+
+  // Animate pop on live update
+  React.useEffect(() => {
+    setPop(true);
+    const t = setTimeout(() => setPop(false), 600);
+    return () => clearTimeout(t);
+  }, [serviceData.status]);
+
+  // Fade out background image after 4 seconds
+  useEffect(() => {
+    setBgVisible(true);
+    const timer = setTimeout(() => setBgVisible(false), 4000);
+    return () => clearInterval(timer);
+  }, [service.id]);
+
+  const handleClose = (e) => {
+    e.stopPropagation();
+    if (onClose) {
+      onClose(service.id);
+    }
+  };
 
   // Fetch data from the custom RSS feed
   useEffect(() => {
@@ -101,6 +125,15 @@ const CustomServiceCard = ({
       default:
         return '🔄';
     }
+  };
+
+  const getStatusIndicator = (status) => {
+    const statusLower = status?.toLowerCase() || '';
+    if (statusLower.includes('critical') || statusLower.includes('outage')) return 'critical';
+    if (statusLower.includes('issues') || statusLower.includes('incident') || statusLower.includes('major')) return 'major';
+    if (statusLower.includes('degraded') || statusLower.includes('maintenance') || statusLower.includes('minor')) return 'minor';
+    if (statusLower.includes('operational') || statusLower.includes('resolved')) return 'none';
+    return 'unknown';
   };
 
   const formatEventType = (eventType) => {
@@ -346,135 +379,302 @@ const CustomServiceCard = ({
     return null;
   }
 
+  // Create headline content similar to other cards
+  const headline = error ? 
+    `⚠️ Failed to load RSS feed: ${error}` : 
+    loading ? 
+    `🔄 Loading ${service.name} status...` :
+    serviceData.updates.length > 0 ? 
+    `📡 ${serviceData.updates.length} recent updates from RSS feed` :
+    `📡 Custom RSS monitoring active`;
+
   return (
-    <div className="live-pulse-card custom-service-card">
-      <div className="card-header">
-        <div className="service-info">
-          <div className="service-logo-container">
-            {service.logo ? (
-              <img 
-                src={service.logo} 
-                alt={`${service.name} logo`} 
-                className="service-logo"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
+    <div
+      className={`live-pulse-card glass-card${pop ? ' live-update-pop' : ''}${showMore ? ' expanded' : ''}`}
+      style={{
+        perspective: '1000px',
+        minHeight: showMore ? 'auto' : 180,
+        minWidth: 280,
+        position: 'relative',
+        height: showMore ? 'auto' : undefined,
+        transition: 'all 0.3s ease-in-out',
+      }}
+    >
+      {/* Card background logo - use a generic RSS icon pattern */}
+      <div
+        className={`card-bg-logo${bgVisible ? '' : ' card-bg-logo-fade'}`}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '120px',
+          height: '120px',
+          background: `linear-gradient(135deg, ${service.color}15 0%, ${service.color}08 100%)`,
+          borderRadius: '0 20px 0 100px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '48px',
+          opacity: 0.3,
+          pointerEvents: 'none',
+          zIndex: 1
+        }}
+        aria-hidden="true"
+      >
+        📡
+      </div>
+      
+      <div
+        className="card-flip-inner"
+        style={{
+          transition: 'transform 0.6s cubic-bezier(.4,2,.6,1)',
+          transformStyle: 'preserve-3d',
+          position: 'relative',
+          width: '100%',
+          height: showMore ? 'auto' : '100%',
+          minHeight: showMore ? 'auto' : '100%',
+        }}
+      >
+        {/* Front Side */}
+        <div
+          className="card-flip-front"
+          style={{
+            backfaceVisibility: 'hidden',
+            position: showMore ? 'relative' : 'absolute',
+            width: '100%',
+            height: showMore ? 'auto' : '100%',
+            minHeight: showMore ? 'auto' : '100%',
+            top: 0,
+            left: 0,
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <div className="card-header-modern" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 20,
+            padding: '18px 20px 18px 0',
+            borderRadius: '18px 18px 0 0',
+            background: 'rgba(255,255,255,0.55)',
+            boxShadow: '0 4px 24px 0 rgba(30,41,59,0.07)',
+            backdropFilter: 'blur(12px)',
+            position: 'relative',
+            minHeight: 72,
+            borderBottom: '1px solid rgba(148, 163, 184, 0.10)',
+            zIndex: 2,
+          }}>
+            {/* Accent bar */}
+            <div style={{
+              width: 6,
+              height: 48,
+              borderRadius: 6,
+              background: `linear-gradient(135deg, ${service.color} 0%, ${service.color}80 100%)`,
+              marginRight: 18,
+              boxShadow: '0 2px 8px rgba(30,41,59,0.10)'
+            }} />
+            
+            {/* Logo in glassy circle */}
+            <div style={{
+              background: 'rgba(255,255,255,0.7)',
+              borderRadius: '50%',
+              boxShadow: '0 2px 8px rgba(15,23,42,0.10)',
+              padding: 8,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 56,
+              height: 56,
+              minWidth: 56,
+              minHeight: 56,
+              marginRight: 10,
+            }}>
+              {service.logo ? (
+                <img 
+                  src={service.logo} 
+                  alt={`${service.name} logo`} 
+                  style={{ width: 36, height: 36, borderRadius: 12 }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div 
+                className="custom-service-icon" 
+                style={{ 
+                  backgroundColor: service.color,
+                  display: service.logo ? 'none' : 'flex',
+                  width: 36,
+                  height: 36,
+                  borderRadius: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '18px'
                 }}
-              />
-            ) : null}
-            <div 
-              className="custom-service-icon" 
-              style={{ 
-                backgroundColor: service.color,
-                display: service.logo ? 'none' : 'flex'
+              >
+                📡
+              </div>
+            </div>
+            
+            {/* Name and status row */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
+              <span style={{ fontWeight: 900, fontSize: '1.45em', color: '#1e293b', letterSpacing: '-0.01em', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {service.name}
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+                <span 
+                  className={`status-indicator ${getStatusIndicator(serviceData.status)}`} 
+                  title={serviceData.status} 
+                  style={{ boxShadow: '0 0 0 4px #f3f4f6, 0 2px 8px rgba(15,23,42,0.08)' }}
+                ></span>
+                <span className="status-text" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>
+                  {serviceData.status}
+                  {loading && <span style={{ marginLeft: 8, fontSize: '0.9em' }}>Loading...</span>}
+                </span>
+              </span>
+            </div>
+            
+            {/* Close button - top right, vertically centered */}
+            <button
+              className="card-close-btn"
+              onClick={handleClose}
+              aria-label="Close card"
+              title="Close this service card"
+              style={{
+                position: 'absolute',
+                top: '50%',
+                right: 18,
+                transform: 'translateY(-50%)',
+                width: 22,
+                height: 22,
+                minWidth: 22,
+                minHeight: 22,
+                maxWidth: 22,
+                maxHeight: 22,
+                background: '#ff5f57',
+                border: 'none',
+                borderRadius: '50%',
+                cursor: 'pointer',
+                zIndex: 4,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.18)',
+                flexShrink: 0,
+                padding: 0,
+              }}
+              onMouseEnter={e => {
+                e.target.style.background = '#ff3b30';
+                e.target.style.transform = 'translateY(-50%) scale(1.1)';
+              }}
+              onMouseLeave={e => {
+                e.target.style.background = '#ff5f57';
+                e.target.style.transform = 'translateY(-50%) scale(1)';
               }}
             >
-              📡
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1 }}>×</span>
+            </button>
+          </div>
+          
+          <div className="live-pulse-headline">{headline}</div>
+          
+          {/* 7-Day Service Timeline */}
+          <ServiceTimeline 
+            provider={service.id}
+            incidents={serviceData.updates}
+            updates={serviceData.updates}
+            showLabels={true}
+          />
+          
+          {/* Card content with actions - matches other cards exactly */}
+          <div className="card-content" style={{ 
+            flex: showMore ? 'none' : '1',
+            display: 'flex',
+            flexDirection: 'column',
+            height: showMore ? 'auto' : undefined
+          }}>
+            {/* Card actions - always visible */}
+            <div className="card-actions">
+              <button 
+                className="bug-report-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onReportIssue && onReportIssue(service.name);
+                }}
+              >
+                Report Issue
+              </button>
+              <button 
+                className="view-history-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleShowMore && onToggleShowMore(service.id);
+                }}
+              >
+                {showMore ? 'Hide History' : 'View History'}
+              </button>
             </div>
-          </div>
-          <div className="service-details">
-            <h3 className="service-name">{service.name}</h3>
-            <p className="service-description">{service.description}</p>
-            <span className="custom-badge">Custom RSS</span>
-          </div>
-        </div>
-        
-        <div className="status-section">
-          <span className="status-text">{serviceData.status}</span>
-          {loading && <div className="loading-spinner"></div>}
-        </div>
-        <button 
-          className="close-card-btn"
-          onClick={() => onClose(service.id)}
-          title={`Hide ${service.name} card`}
-          aria-label={`Hide ${service.name} card`}
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="10" cy="10" r="9" fill="#e2e8f0"/>
-            <path d="M7 7L13 13M13 7L7 13" stroke="#64748b" strokeWidth="1.5" strokeLinecap="round"/>
-          </svg>
-        </button>
-      </div>
-
-      {error && (
-        <div className="error-banner">
-          <span className="error-icon">⚠️</span>
-          <span>Failed to load RSS feed: {error}</span>
-        </div>
-      )}
-
-      <div className="card-content">
-        
-        {/* Day indicators */}
-        <TimelineScroller events={dayEvents} />
-        
-        {/* Card actions - always visible */}
-        <div className="card-actions">
-          <button 
-            className="bug-report-btn"
-            onClick={() => onReportIssue && onReportIssue(service.name)}
-          >
-            🐛 Report Issue
-          </button>
-          <button 
-            className="view-history-btn"
-            onClick={() => setShowHistory(v => !v)}
-          >
-            📋 {showHistory ? 'Hide History' : 'View History'}
-          </button>
-        </div>
-        
-        {showHistory && serviceData.updates.length > 0 && (
-          <div className="card-history-section">
-            <div className="updates-section">
-              <div className="history-header">
-                <h4>Recent History</h4>
-                <span className="history-count">{serviceData.updates.length} items</span>
-              </div>
-              <div className="history-list">
-                {serviceData.updates.map((update, index) => (
-                  <div key={update.id || index} className="history-item">
-                    <div className="history-dot" style={{
-                      background: update.eventType === 'incident' ? '#f59e0b' : '#10b981'
-                    }}></div>
-                    <div className="history-content">
-                      <div className="history-title">{update.title}</div>
-                      <div className="history-date">{formatDate(update.date)}</div>
-                      {update.description && (
-                        <div className="history-description">
-                          {cleanAndTruncateHtml(update.description, 150)}
+            
+            {/* History section - matches other cards style */}
+            {showMore && (
+              <div className="card-history-section" style={{
+                marginTop: '16px',
+                padding: '16px',
+                backgroundColor: 'rgba(248, 250, 252, 0.8)',
+                borderRadius: '12px',
+                border: '1px solid rgba(148, 163, 184, 0.15)',
+                backdropFilter: 'blur(8px)',
+                transition: 'all 0.3s ease-in-out',
+                overflow: 'hidden'
+              }}>
+                {serviceData.updates.length > 0 ? (
+                  <div className="updates-section">
+                    <div className="history-header">
+                      <h4>Recent History</h4>
+                      <span className="history-count" style={{ backgroundColor: service.color }}>
+                        {serviceData.updates.length} items
+                      </span>
+                    </div>
+                    <div className="history-list">
+                      {serviceData.updates.map((update, index) => (
+                        <div key={update.id || index} className="history-item">
+                          <div className="history-dot" style={{
+                            background: update.eventType === 'incident' ? '#f59e0b' : '#10b981'
+                          }}></div>
+                          <div className="history-content">
+                            <div className="history-title">{update.title}</div>
+                            <div className="history-date">{formatDate(update.date)}</div>
+                            {update.description && (
+                              <div className="history-description">
+                                {cleanAndTruncateHtml(update.description, 150)}
+                              </div>
+                            )}
+                            {update.link && (
+                              <a 
+                                href={update.link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="history-link"
+                                style={{ color: service.color }}
+                              >
+                                Read more →
+                              </a>
+                            )}
+                          </div>
                         </div>
-                      )}
-                      {update.link && (
-                        <a 
-                          href={update.link} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="history-link"
-                        >
-                          Read more →
-                        </a>
-                      )}
+                      ))}
                     </div>
                   </div>
-                ))}
+                ) : !loading ? (
+                  <div className="no-updates">
+                    <span className="no-updates-icon">📋</span>
+                    <p>No recent updates available</p>
+                  </div>
+                ) : null}
               </div>
-            </div>
-          </div>
-        )}
-        
-        {showHistory && serviceData.updates.length === 0 && !loading && (
-          <div className="card-history-section">
-            <div className="no-updates">
-              <span className="no-updates-icon">📋</span>
-              <p>No recent updates available</p>
-            </div>
-          </div>
-        )}
-        
-        <div className="card-footer">
-          <div className="last-updated">
-            Last updated: {serviceData.lastUpdated ? serviceData.lastUpdated.toLocaleTimeString() : 'Never'}
+            )}
           </div>
         </div>
       </div>

@@ -896,6 +896,32 @@ const SPLASH_CONFIG = {
               />
             </div>
             <button
+              className="action-btn-modern add-rss-btn-modern"
+              onClick={() => setShowAddCustomModal(true)}
+              title="Add Custom RSS Service"
+              aria-label="Add custom RSS service monitoring"
+              style={{
+                background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                padding: '8px 16px',
+                fontWeight: 700,
+                fontSize: 15,
+                boxShadow: '0 2px 8px rgba(30,41,59,0.10)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={e => e.target.style.background = 'linear-gradient(90deg, #764ba2 0%, #667eea 100%)'}
+              onMouseLeave={e => e.target.style.background = 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'}
+            >
+              <span className="add-rss-icon-modern" style={{ fontSize: '20px' }}>+</span>
+              <span>Add RSS</span>
+            </button>
+            <button
               className="action-btn-modern settings-btn-modern"
               onClick={() => setShowSplash(true)}
               title="Configure Services"
@@ -1424,24 +1450,6 @@ const SPLASH_CONFIG = {
                 />
               )
             ))}
-            
-            {/* Add Custom Service Button */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-              padding: '20px 0',
-              marginTop: '16px'
-            }}>
-              <button
-                className="add-custom-service-main-btn"
-                onClick={() => setShowAddCustomModal(true)}
-              >
-                <span style={{ fontSize: '18px' }}>+</span>
-                Add Custom RSS Service
-              </button>
-            </div>
           </div>
         )}
         {/* Mini Heatbar Grid at the bottom of the page - TEMPORARILY DISABLED */}
