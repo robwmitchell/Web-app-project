@@ -190,7 +190,7 @@ export default function LivePulseCardContainer({
                 setBugModalOpen(true);
               }}
             >
-              🐛 Report Issue
+              Report Issue
             </button>
             <button 
               className="view-history-btn"
@@ -199,7 +199,7 @@ export default function LivePulseCardContainer({
                 setShowHistory(v => !v);
               }}
             >
-              📋 {showHistory ? 'Hide History' : 'View History'}
+              {showHistory ? 'Hide History' : 'View History'}
             </button>
           </div>
           
