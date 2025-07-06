@@ -370,22 +370,33 @@ const UnifiedLiveFeedPanel = ({
     };
   }, [isOpen, onClose]);
 
-  // Track new items for animations
+  // Track new items - simple approach without flashing
   useEffect(() => {
-    const currentIds = new Set(filteredFeedData.map(item => item.id));
-    const newIds = new Set();
+    if (!isOpen) return;
     
+    const currentIds = new Set(filteredFeedData.map(item => item.id));
+    const genuinelyNewIds = new Set();
+    
+    // Only mark items as new if they weren't in the previous set
     currentIds.forEach(id => {
-      if (!newItemIds.has(id) && Date.now() - lastUpdateTime < 5000) {
-        newIds.add(id);
+      if (!newItemIds.has(id)) {
+        genuinelyNewIds.add(id);
       }
     });
 
-    if (newIds.size > 0) {
-      setNewItemIds(newIds);
-      setTimeout(() => setNewItemIds(new Set()), 3000);
+    if (genuinelyNewIds.size > 0) {
+      setNewItemIds(prev => new Set([...prev, ...genuinelyNewIds]));
+      
+      // Remove "new" status after 10 seconds (no animation, just removes highlight)
+      setTimeout(() => {
+        setNewItemIds(prev => {
+          const updated = new Set(prev);
+          genuinelyNewIds.forEach(id => updated.delete(id));
+          return updated;
+        });
+      }, 10000);
     }
-  }, [filteredFeedData, lastUpdateTime]); // Removed setLastUpdateTime call
+  }, [filteredFeedData, isOpen]);
 
   // Update last update time only when data actually changes
   useEffect(() => {

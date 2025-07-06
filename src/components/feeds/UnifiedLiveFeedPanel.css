@@ -49,15 +49,17 @@
 
 @keyframes newItemPulse {
   0% { 
-    background: var(--status-success, #10b981);
+    background: rgba(16, 185, 129, 0.15);
+    border-color: var(--status-success, #10b981);
     transform: scale(1);
   }
-  50% { 
-    background: rgba(16, 185, 129, 0.2);
-    transform: scale(1.02);
+  30% { 
+    background: rgba(16, 185, 129, 0.25);
+    transform: scale(1.01);
   }
   100% { 
     background: var(--bg-card, rgba(255, 255, 255, 0.9));
+    border-color: var(--border-primary, rgba(148, 163, 184, 0.15));
     transform: scale(1);
   }
 }
@@ -367,8 +369,9 @@
 }
 
 .feed-item.new-item {
-  animation: newItemPulse 2s ease-out;
-  border-color: var(--status-success, #10b981);
+  background: rgba(16, 185, 129, 0.08);
+  border-left: 4px solid var(--status-success, #10b981);
+  /* No animation - just a static highlight */
 }
 
 .feed-item.expanded {
