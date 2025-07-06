@@ -59,8 +59,14 @@ const UnifiedLiveFeedPanel = ({
       'custom': { icon: '📰', type: 'RSS', color: '#6c757d' }
     };
     
-    // If it's a custom service, use the service name with custom icon
-    if (customServiceName && !sourceMap[source.toLowerCase()]) {
+    // Check if it's a known service first
+    const knownService = sourceMap[source.toLowerCase()];
+    if (knownService) {
+      return knownService;
+    }
+    
+    // If not found and we have a custom service name, it's a custom service
+    if (customServiceName) {
       return { 
         icon: '📰', 
         type: 'RSS', 
@@ -69,7 +75,18 @@ const UnifiedLiveFeedPanel = ({
       };
     }
     
-    return sourceMap[source.toLowerCase()] || sourceMap['custom'];
+    // For custom services in the filter buttons, find the service name
+    const customService = customServices?.find(cs => cs.id === source);
+    if (customService) {
+      return {
+        icon: '📰', 
+        type: 'RSS', 
+        color: '#6c757d',
+        displayName: customService.name
+      };
+    }
+    
+    return sourceMap['custom'];
   };
 
   // Get status severity for sorting and styling
@@ -254,7 +271,7 @@ const UnifiedLiveFeedPanel = ({
           
           allItems.push({
             id: `custom-${customService.id}-${update.title}-${update.date || update.pubDate || update.timestamp}`,
-            source: customService.name?.toLowerCase() || 'custom',
+            source: customService.id, // Use service ID as source for consistency
             title: formatFeedTitle(rawTitle),
             description: formatFeedDescription(rawDescription, { maxLength: 200 }),
             fullDescription: isHtmlContent(rawDescription) ? rawDescription : null,
@@ -322,9 +339,17 @@ const UnifiedLiveFeedPanel = ({
   // Available sources for filtering
   const availableSources = useMemo(() => {
     const sources = new Set();
+    
+    // Add sources from actual data
     unifiedFeedData.forEach(item => sources.add(item.source));
+    
+    // Always include selected services even if they don't have data yet
+    selectedServices.forEach(service => {
+      sources.add(service); // Add the service ID directly
+    });
+    
     return Array.from(sources).sort();
-  }, [unifiedFeedData]);
+  }, [unifiedFeedData, selectedServices]);
 
   // Handle outside click to close panel
   useEffect(() => {
@@ -360,9 +385,21 @@ const UnifiedLiveFeedPanel = ({
       setNewItemIds(newIds);
       setTimeout(() => setNewItemIds(new Set()), 3000);
     }
-    
+  }, [filteredFeedData, lastUpdateTime]); // Removed setLastUpdateTime call
+
+  // Update last update time only when data actually changes
+  useEffect(() => {
     setLastUpdateTime(Date.now());
-  }, [filteredFeedData]);
+  }, [
+    cloudflareIncidents,
+    zscalerUpdates,
+    oktaUpdates,
+    sendgridUpdates,
+    slackUpdates,
+    datadogUpdates,
+    awsUpdates,
+    customServices
+  ]);
 
   // Handle item expansion
   const toggleExpanded = (itemId) => {
@@ -452,7 +489,9 @@ const UnifiedLiveFeedPanel = ({
                     style={{ '--source-color': sourceInfo.color }}
                   >
                     <span className="source-icon">{sourceInfo.icon}</span>
-                    <span className="source-name">{source}</span>
+                    <span className="source-name">
+                      {sourceInfo.displayName || source}
+                    </span>
                     <span className="source-type">{sourceInfo.type}</span>
                   </button>
                 );
