@@ -366,7 +366,7 @@ const SPLASH_CONFIG = {
                 return !isNaN(updatedDate) && updatedDate >= sevenDaysAgo;
               });
               // --- Merge with localStorage ---
-              let stored = getStoredCloudflareIncidents();
+              let stored = get
               // Remove old stored incidents
               stored = stored.filter(inc => {
                 const updatedAt = inc.updated_at || inc.updatedAt;
@@ -955,6 +955,31 @@ const SPLASH_CONFIG = {
             <span style={{ fontSize: 14, color: '#888' }}>Last updated: {lastUpdated.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
           </div>
         </div>
+
+        {/* Live Feed Button */}
+        <div style={{ 
+          width: '100%', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          marginBottom: '16px',
+          marginTop: '8px'
+        }}>
+          <LiveFeedButton
+            onClick={() => setShowLiveFeedPanel(true)}
+            hasNewItems={false} // You can add logic to detect new items
+            itemCount={
+              (cloudflare.incidents?.length || 0) +
+              (zscaler.updates?.length || 0) +
+              (okta.updates?.length || 0) +
+              (sendgrid.updates?.length || 0) +
+              (slack.updates?.length || 0) +
+              (datadog.updates?.length || 0) +
+              (aws.updates?.length || 0)
+            }
+            isActive={showLiveFeedPanel}
+          />
+        </div>
+
         {/* Enhanced Critical Alert Banner */}
         {(
           !alertDismissed && (criticalMode.active || process.env.NODE_ENV === 'development')
