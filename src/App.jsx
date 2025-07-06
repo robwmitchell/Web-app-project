@@ -782,243 +782,285 @@ const SPLASH_CONFIG = {
           background: #fafbff;
         }
       `}</style>
-      {/* Modern Enhanced Header */}
-      <header className="site-header-modern" style={{
+      {/* Modern Menu-Based Header */}
+      <header className="site-header-menu" style={{
         width: '100%',
-        background: 'rgba(255,255,255,0.85)',
-        boxShadow: '0 4px 32px 0 rgba(30,41,59,0.09)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(148, 163, 184, 0.10)',
+        background: 'rgba(255,255,255,0.90)',
+        boxShadow: '0 2px 20px 0 rgba(30,41,59,0.08)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
         position: 'sticky',
         top: 0,
         zIndex: 100,
         padding: 0,
         marginBottom: 18
       }}>
-        <div className="header-container-modern" style={{
+        <div className="header-container-menu" style={{
           maxWidth: 1280,
           margin: '0 auto',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 32px',
-          minHeight: 74,
+          padding: '0 24px',
+          minHeight: 70,
           position: 'relative',
         }}>
-          {/* Brand/Logo */}
-          <div className="header-brand-modern" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <div className="logo-container-modern" style={{
-              background: 'rgba(255,255,255,0.7)',
-              borderRadius: 16,
-              boxShadow: '0 2px 8px rgba(30,41,59,0.10)',
-              padding: 8,
+          {/* Brand/Logo Section */}
+          <div className="header-brand-menu" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 16,
+            flex: '0 0 auto'
+          }}>
+            <div className="logo-container-menu" style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%)',
+              borderRadius: 14,
+              boxShadow: '0 3px 12px rgba(30,41,59,0.08)',
+              padding: 10,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 56,
-              height: 56,
-              minWidth: 56,
-              minHeight: 56,
+              width: 50,
+              height: 50,
+              border: '1px solid rgba(255,255,255,0.2)',
             }}>
               <img 
                 src={logoImage} 
                 alt="Stack Status IO Logo" 
-                className="header-logo-modern"
-                style={{ width: 36, height: 36, borderRadius: 12 }}
+                className="header-logo-menu"
+                style={{ width: 30, height: 30, borderRadius: 8 }}
               />
             </div>
-            <div className="brand-info-modern" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <h1 className="brand-title-modern" style={{
-                fontWeight: 900,
-                fontSize: '2.1em',
+            <div className="brand-info-menu" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <h1 className="brand-title-menu" style={{
+                fontWeight: 800,
+                fontSize: '1.8em',
                 color: '#1e293b',
-                letterSpacing: '-0.01em',
+                letterSpacing: '-0.02em',
                 margin: 0,
                 lineHeight: 1.1,
                 display: 'flex',
                 alignItems: 'center',
-                gap: 8
+                gap: 6
               }}>
                 Stack Status
-                <span className="brand-subtitle-modern" style={{
-                  fontWeight: 700,
-                  fontSize: '0.6em',
-                  color: '#60a5fa',
-                  marginLeft: 2,
-                  letterSpacing: '0.1em',
+                <span className="brand-subtitle-menu" style={{
+                  fontWeight: 600,
+                  fontSize: '0.55em',
+                  color: '#3b82f6',
+                  marginLeft: 3,
+                  letterSpacing: '0.15em',
                   textTransform: 'uppercase',
-                  background: 'linear-gradient(90deg, #60a5fa 0%, #1976d2 100%)',
+                  background: 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                   display: 'inline-block'
                 }}>IO</span>
               </h1>
-              <div className="status-indicators-modern" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 2 }}>
-                <div className="status-dot-modern" style={{
-                  width: 12,
-                  height: 12,
+              <div className="status-compact-menu" style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 8
+              }}>
+                <div className="status-dot-menu" style={{
+                  width: 8,
+                  height: 8,
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-                  boxShadow: '0 0 8px 2px #10b98144',
-                  marginRight: 4
+                  boxShadow: '0 0 6px 1px #10b98130',
                 }}></div>
-                <span className="status-text-modern" style={{ fontWeight: 600, color: '#64748b', fontSize: '1.08em' }}>All Systems Operational</span>
-                <div className="live-indicator-modern" style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 10 }}>
-                  <span className="live-pulse-modern" style={{
-                    width: 8,
-                    height: 8,
+                <span className="status-text-menu" style={{ 
+                  fontWeight: 600, 
+                  color: '#64748b', 
+                  fontSize: '0.85em' 
+                }}>
+                  All Systems Operational
+                </span>
+                <div className="live-indicator-menu" style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: 3, 
+                  marginLeft: 6 
+                }}>
+                  <span className="live-pulse-menu" style={{
+                    width: 6,
+                    height: 6,
                     borderRadius: '50%',
                     background: '#ef4444',
                     boxShadow: '0 0 0 0 #ef4444',
                     animation: 'pulseLive 1.5s infinite cubic-bezier(0.66,0,0,1)'
                   }}></span>
-                  <span className="live-text-modern" style={{ fontWeight: 700, color: '#ef4444', fontSize: 12, letterSpacing: 1 }}>LIVE</span>
+                  <span className="live-text-menu" style={{ 
+                    fontWeight: 700, 
+                    color: '#ef4444', 
+                    fontSize: 10, 
+                    letterSpacing: 0.8 
+                  }}>LIVE</span>
                 </div>
               </div>
             </div>
           </div>
-          {/* Actions */}
-          <div className="header-actions-modern" style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <div className="live-feed-wrapper-modern">
-              <LiveFeedButton
-                onClick={() => setShowLiveFeedPanel(true)}
-                hasNewItems={false} // You can add logic to detect new items
-                itemCount={
-                  (cloudflare.incidents?.length || 0) +
-                  (zscaler.updates?.length || 0) +
-                  (okta.updates?.length || 0) +
-                  (sendgrid.updates?.length || 0) +
-                  (slack.updates?.length || 0) +
-                  (datadog.updates?.length || 0) +
-                  (aws.updates?.length || 0)
-                }
-                isActive={showLiveFeedPanel}
-              />
-            </div>
-            <button
-              className="action-btn-modern add-rss-btn-modern"
-              onClick={() => setShowAddCustomModal(true)}
-              title="Add Custom RSS Service"
-              aria-label="Add custom RSS service monitoring"
-              style={{
-                background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
+
+          {/* Navigation Menu */}
+          <nav className="header-nav-menu" style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 8,
+            flex: '1 1 auto',
+            justifyContent: 'flex-end'
+          }}>
+            {/* Menu Items Container */}
+            <div className="menu-items-container" style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'rgba(248, 250, 252, 0.6)',
+              borderRadius: 12,
+              padding: '6px',
+              border: '1px solid rgba(148, 163, 184, 0.12)',
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 2px 8px rgba(30,41,59,0.06)'
+            }}>
+              {/* Live Feed Menu Item */}
+              <div className="menu-item live-feed-menu-item">
+                <LiveFeedButton
+                  onClick={() => setShowLiveFeedPanel(true)}
+                  hasNewItems={false}
+                  itemCount={
+                    (cloudflare.incidents?.length || 0) +
+                    (zscaler.updates?.length || 0) +
+                    (okta.updates?.length || 0) +
+                    (sendgrid.updates?.length || 0) +
+                    (slack.updates?.length || 0) +
+                    (datadog.updates?.length || 0) +
+                    (aws.updates?.length || 0)
+                  }
+                  isActive={showLiveFeedPanel}
+                />
+              </div>
+
+              {/* Add RSS Menu Item */}
+              <button
+                className="menu-item-btn add-rss-menu-item"
+                onClick={() => setShowAddCustomModal(true)}
+                title="Add Custom RSS Service"
+                aria-label="Add custom RSS service monitoring"
+                style={{
+                  background: showAddCustomModal ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '10px 14px',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                  minWidth: 'auto',
+                }}
+                onMouseEnter={e => {
+                  e.target.style.background = 'rgba(102, 126, 234, 0.08)';
+                  e.target.style.color = '#1f2937';
+                }}
+                onMouseLeave={e => {
+                  e.target.style.background = showAddCustomModal ? 'rgba(102, 126, 234, 0.1)' : 'transparent';
+                  e.target.style.color = '#374151';
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>➕</span>
+                <span>Add RSS</span>
+              </button>
+
+              {/* Settings Menu Item */}
+              <button
+                className="menu-item-btn settings-menu-item"
+                onClick={() => setShowSplash(true)}
+                title="Configure Services"
+                aria-label="Configure service monitoring"
+                style={{
+                  background: showSplash ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '10px 14px',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                  minWidth: 'auto',
+                }}
+                onMouseEnter={e => {
+                  e.target.style.background = 'rgba(59, 130, 246, 0.08)';
+                  e.target.style.color = '#1f2937';
+                }}
+                onMouseLeave={e => {
+                  e.target.style.background = showSplash ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
+                  e.target.style.color = '#374151';
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>⚙️</span>
+                <span>Settings</span>
+              </button>
+
+              {/* Notifications Menu Item */}
+              <div className="menu-item notification-menu-item" style={{
+                background: 'transparent',
                 borderRadius: 8,
-                padding: '8px 16px',
-                fontWeight: 700,
-                fontSize: 15,
-                boxShadow: '0 2px 8px rgba(30,41,59,0.10)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => e.target.style.background = 'linear-gradient(90deg, #764ba2 0%, #667eea 100%)'}
-              onMouseLeave={e => e.target.style.background = 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)'}
-            >
-              <span className="add-rss-icon-modern" style={{ fontSize: '20px' }}>+</span>
-              <span>Add RSS</span>
-            </button>
-            <button
-              className="action-btn-modern settings-btn-modern"
-              onClick={() => setShowSplash(true)}
-              title="Configure Services"
-              aria-label="Configure service monitoring"
-              style={{
-                background: 'linear-gradient(90deg, #1976d2 0%, #60a5fa 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                padding: '8px 16px',
-                fontWeight: 700,
-                fontSize: 15,
-                boxShadow: '0 2px 8px rgba(30,41,59,0.10)',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => e.target.style.background = 'linear-gradient(90deg, #60a5fa 0%, #1976d2 100%)'}
-              onMouseLeave={e => e.target.style.background = 'linear-gradient(90deg, #1976d2 0%, #60a5fa 100%)'}
-            >
-              <span className="settings-icon-modern" style={{ fontSize: '20px' }}>⚙️</span>
-              <span>Settings</span>
-            </button>
-            <div className="notification-wrapper-modern">
-              <NotificationChatbot
-                selectedServices={selectedServices}
-                cloudflareIncidents={cloudflare.incidents}
-                zscalerUpdates={zscaler.updates}
-                oktaUpdates={okta.updates}
-                sendgridUpdates={sendgrid.updates}
-                slackUpdates={slack.updates}
-                datadogUpdates={datadog.updates}
-                awsUpdates={aws.updates}
-                headerMode={true}
-                usePortal={true}
-                modalZIndex={20000}
-              />
+                padding: '6px',
+                transition: 'all 0.2s ease'
+              }}>
+                <NotificationChatbot
+                  selectedServices={selectedServices}
+                  cloudflareIncidents={cloudflare.incidents}
+                  zscalerUpdates={zscaler.updates}
+                  oktaUpdates={okta.updates}
+                  sendgridUpdates={sendgrid.updates}
+                  slackUpdates={slack.updates}
+                  datadogUpdates={datadog.updates}
+                  awsUpdates={aws.updates}
+                  headerMode={true}
+                  usePortal={true}
+                  modalZIndex={20000}
+                />
+              </div>
             </div>
-          </div>
+          </nav>
         </div>
-        {/* Subtle animated background elements */}
-        <div className="header-bg-effects-modern" style={{
+
+        {/* Subtle background effects for the menu header */}
+        <div className="header-bg-effects-menu" style={{
           position: 'absolute',
           top: 0,
           left: 0,
           width: '100%',
           height: '100%',
-          zIndex: 0,
+          zIndex: -1,
           pointerEvents: 'none',
         }}>
-          <div className="bg-gradient-modern-1" style={{
+          <div className="bg-gradient-menu-1" style={{
             position: 'absolute',
-            top: '-40px',
-            left: '-80px',
-            width: 240,
-            height: 240,
-            background: 'radial-gradient(circle at 30% 30%, #60a5fa55 0%, transparent 80%)',
-            filter: 'blur(24px)',
-            zIndex: 0
+            top: '-20px',
+            left: '-40px',
+            width: 200,
+            height: 200,
+            background: 'radial-gradient(circle at 30% 30%, #3b82f620 0%, transparent 70%)',
+            filter: 'blur(20px)',
           }}></div>
-          <div className="bg-gradient-modern-2" style={{
+          <div className="bg-gradient-menu-2" style={{
             position: 'absolute',
-            bottom: '-60px',
-            right: '-100px',
-            width: 320,
-            height: 180,
-            background: 'radial-gradient(circle at 70% 70%, #1976d255 0%, transparent 80%)',
-            filter: 'blur(32px)',
-            zIndex: 0
-          }}></div>
-          <div className="floating-orb-modern orb-1" style={{
-            position: 'absolute',
-            top: 18,
-            left: 120,
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #60a5fa 0%, #1976d2 100%)',
-            opacity: 0.18,
-            filter: 'blur(2px)',
-            zIndex: 1,
-            animation: 'floatOrb 6s ease-in-out infinite alternate'
-          }}></div>
-          <div className="floating-orb-modern orb-2" style={{
-            position: 'absolute',
-            bottom: 12,
-            right: 80,
-            width: 24,
-            height: 24,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #1976d2 0%, #60a5fa 100%)',
-            opacity: 0.13,
-            filter: 'blur(1.5px)',
-            zIndex: 1,
-            animation: 'floatOrb 7s ease-in-out infinite alternate-reverse'
+            bottom: '-30px',
+            right: '-60px',
+            width: 250,
+            height: 150,
+            background: 'radial-gradient(circle at 70% 70%, #1d4ed820 0%, transparent 70%)',
+            filter: 'blur(25px)',
           }}></div>
         </div>
       </header>
