@@ -677,18 +677,16 @@ const SPLASH_CONFIG = {
     return () => clearInterval(interval);
   }, [fetchAllStatuses]);
 
-  // Ticker logic: cycle through issues if more than one
-  useEffect(() => {
-    const issues = criticalMode.active ? criticalMode.details : demoIssues;
-    if (issues.length > 1) {
-      const interval = setInterval(() => {
-        setTickerIndex(i => (i + 1) % issues.length);
-      }, 30000); // 30 seconds per issue
-      return () => clearInterval(interval);
-    } else {
-      setTickerIndex(0);
-    }
-  }, [criticalMode.active, criticalMode.details.length, demoIssues.length]);
+  // Ticker logic: cycle through issues when data refreshes (no separate interval)
+useEffect(() => {
+  const issues = criticalMode.active ? criticalMode.details : demoIssues;
+  if (issues.length > 1) {
+    // Cycle to next issue when data updates (every 2 minutes with main refresh)
+    setTickerIndex(prevIndex => (prevIndex + 1) % issues.length);
+  } else {
+    setTickerIndex(0);
+  }
+}, [criticalMode.active, criticalMode.details, demoIssues, cloudflare, zscaler, okta, sendgrid, slack, datadog, aws]);
 
   // Handle service selection
   function handleServiceSelect(services) {
