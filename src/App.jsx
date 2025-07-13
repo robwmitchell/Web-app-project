@@ -13,6 +13,8 @@ import './styles/globals/App.css';
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import logoImage from './assets/stackstatus1.png';
+import { parseCustomRSS } from './utils/rssParser';
+import { optimizedFetch, CACHE_DURATIONS, RequestMonitor } from './utils/requestOptimizer';
 
 // Lazy load heavy components
 const UnifiedLiveFeedPanel = lazy(() => import('./components/feeds/UnifiedLiveFeedPanel'));
@@ -439,11 +441,11 @@ const SPLASH_CONFIG = {
     
     // Cloudflare status (based on open incidents)
     if (isServiceSelected('cloudflare')) {
-      fetch('/api/cloudflare?endpoint=status', { signal })
+      optimizedFetch('/api/cloudflare?endpoint=status', { signal }, 60000) // 1 minute cache
         .then(res => res.json())
         .then(statusData => {
           if (signal.aborted) return;
-          fetch('/api/cloudflare?endpoint=summary', { signal })
+          optimizedFetch('/api/cloudflare?endpoint=summary', { signal }, 60000) // 1 minute cache
             .then(res => res.json())
             .then(summaryData => {
               if (signal.aborted) return;
@@ -494,7 +496,7 @@ const SPLASH_CONFIG = {
     
     // Zscaler RSS fetch via local proxy to avoid CORS
     if (isServiceSelected('zscaler')) {
-      fetch('/api/zscaler', { signal })
+      optimizedFetch('/api/zscaler', { signal }, 120000) // 2 minute cache
         .then(res => res.text())
         .then(data => {
           if (signal.aborted) return;
@@ -518,7 +520,7 @@ const SPLASH_CONFIG = {
     
     // Okta RSS fetch via local proxy to avoid CORS
     if (isServiceSelected('okta')) {
-      fetch('/api/okta-status', { signal })
+      optimizedFetch('/api/okta-status', { signal }, 120000) // 2 minute cache
         .then(res => res.text())
         .then(data => {
           if (signal.aborted) return;
@@ -541,7 +543,7 @@ const SPLASH_CONFIG = {
     
     // SendGrid RSS fetch via local proxy to avoid CORS
     if (isServiceSelected('sendgrid')) {
-      fetch('/api/sendgrid', { signal })
+      optimizedFetch('/api/sendgrid', { signal }, 120000) // 2 minute cache
         .then(res => res.text())
         .then(data => {
           if (signal.aborted) return;
@@ -564,7 +566,7 @@ const SPLASH_CONFIG = {
     
     // Slack, Datadog, AWS RSS fetch
     if (isServiceSelected('slack') || isServiceSelected('datadog') || isServiceSelected('aws')) {
-      fetch('/api/notifications-latest', { signal })
+      optimizedFetch('/api/notifications-latest', { signal }, 120000) // 2 minute cache
         .then(res => res.json())
         .then(({ data }) => {
           if (isServiceSelected('slack')) {
@@ -619,13 +621,13 @@ const SPLASH_CONFIG = {
           const targetUrl = encodeURIComponent(customService.feedUrl);
           const fetchUrl = `${proxyUrl}${targetUrl}`;
           
-          const response = await fetch(fetchUrl, { signal });
+          const response = await optimizedFetch(fetchUrl, { signal }, 120000); // 2 minute cache
           if (!response.ok) {
             throw new Error(`HTTP ${response.status}: Failed to fetch RSS feed`);
           }
           
           const xmlText = await response.text();
-          const items = parseZscalerRSS(xmlText, 25); // Reuse RSS parsing function
+          const items = parseCustomRSS(xmlText, 25); // Use proper custom RSS parser
           
           // Update the custom service with RSS data
           setCustomServices(prevServices => 

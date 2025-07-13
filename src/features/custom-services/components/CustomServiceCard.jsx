@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { parseCustomRSS, determineStatusFromItems } from '../../../utils/rssParser';
 import ServiceTimeline from '../../../components/charts/ServiceTimeline';
 import { cleanAndTruncateHtml } from '../../../utils/textFormatting';
 import '../../services/components/LivePulseCard.css';
@@ -43,57 +44,32 @@ const CustomServiceCard = ({
     }
   };
 
-  // Fetch data from the custom RSS feed
+  // Use the service data passed from parent instead of fetching independently
+  // This eliminates duplicate API polling - data is now fetched centrally in App.jsx
   useEffect(() => {
-    const fetchCustomData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Use CORS proxy for development
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        const targetUrl = encodeURIComponent(service.feedUrl);
-        const fetchUrl = `${proxyUrl}${targetUrl}`;
-        
-        console.log(`Fetching custom RSS for ${service.name}:`, service.feedUrl);
-        
-        const response = await fetch(fetchUrl);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: Failed to fetch RSS feed`);
-        }
-        
-        const xmlText = await response.text();
-        
-        // Parse the RSS feed directly in the browser
-        const items = parseCustomRSS(xmlText, 25);
-        const status = determineStatusFromItems(items);
-        
-        setServiceData({
-          status,
-          updates: items || [],
-          lastUpdated: new Date()
-        });
-        
-      } catch (err) {
-        console.error(`Error fetching custom service data for ${service.name}:`, err);
-        setError(err.message);
-        setServiceData({
-          status: 'Error',
-          updates: [],
-          lastUpdated: new Date()
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomData();
-    
-    // Refresh every 2 minutes to align with main app data fetching
-    const interval = setInterval(fetchCustomData, 2 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [service.feedUrl, service.name]);
+    if (service.updates && Array.isArray(service.updates)) {
+      const status = determineStatusFromItems(service.updates);
+      setServiceData({
+        status,
+        updates: service.updates,
+        lastUpdated: service.lastUpdated || new Date()
+      });
+      setLoading(false);
+      setError(null);
+    } else if (service.error) {
+      setError(service.error);
+      setServiceData({
+        status: 'Error',
+        updates: [],
+        lastUpdated: new Date()
+      });
+      setLoading(false);
+    } else {
+      // Initial loading state
+      setLoading(true);
+      setError(null);
+    }
+  }, [service.updates, service.error, service.lastUpdated]);
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
@@ -174,147 +150,6 @@ const CustomServiceCard = ({
       return dateString;
     }
   };
-
-  // RSS parsing functions for client-side use (same as in AddCustomService)
-  function parseCustomRSS(xmlText, maxItems = 25) {
-    try {
-      const cleanXml = xmlText.trim().replace(/^\uFEFF/, '');
-      const parser = new DOMParser();
-      const xml = parser.parseFromString(cleanXml, 'text/xml');
-      
-      const parserError = xml.querySelector('parsererror');
-      if (parserError) {
-        throw new Error('XML parsing failed: ' + parserError.textContent);
-      }
-      
-      let items = Array.from(xml.querySelectorAll('item')); // RSS 2.0
-      if (items.length === 0) {
-        items = Array.from(xml.querySelectorAll('entry')); // Atom
-      }
-      
-      if (items.length === 0) {
-        console.warn('[RSS] No items found in feed');
-        return [];
-      }
-      
-      return items.slice(0, maxItems).map((item, index) => {
-        const isAtom = item.tagName === 'entry';
-        
-        const title = isAtom 
-          ? item.querySelector('title')?.textContent?.trim() || ''
-          : item.querySelector('title')?.textContent?.trim() || '';
-          
-        const link = isAtom
-          ? item.querySelector('link')?.getAttribute('href') || item.querySelector('link')?.textContent?.trim() || ''
-          : item.querySelector('link')?.textContent?.trim() || '';
-          
-        const dateEl = isAtom
-          ? item.querySelector('updated, published')
-          : item.querySelector('pubDate, dc\\:date, date');
-        const date = dateEl?.textContent?.trim() || '';
-        
-        const description = isAtom
-          ? item.querySelector('summary, content')?.textContent?.trim() || ''
-          : item.querySelector('description, content\\:encoded')?.textContent?.trim() || '';
-        
-        const cleanDescription = description.replace(/<[^>]*>/g, '').trim();
-        
-        return {
-          id: `custom-${index}-${Date.now()}`,
-          title,
-          link,
-          date,
-          description: cleanDescription,
-          eventType: categorizeEvent(title, cleanDescription),
-          severity: determineSeverity(title, cleanDescription)
-        };
-      }).filter(item => item.title);
-      
-    } catch (error) {
-      console.error('[RSS] Error parsing RSS XML:', error);
-      throw new Error(`RSS parsing failed: ${error.message}`);
-    }
-  }
-
-  function categorizeEvent(title, description) {
-    const content = (title + ' ' + description).toLowerCase();
-    
-    if (content.includes('resolved') || content.includes('fixed') || content.includes('completed')) {
-      return 'resolved';
-    }
-    if (content.includes('investigating') || content.includes('ongoing') || content.includes('incident')) {
-      return 'incident';
-    }
-    if (content.includes('maintenance') || content.includes('scheduled') || content.includes('update')) {
-      return 'maintenance';
-    }
-    if (content.includes('degraded') || content.includes('slow') || content.includes('performance')) {
-      return 'degradation';
-    }
-    if (content.includes('outage') || content.includes('down') || content.includes('unavailable')) {
-      return 'outage';
-    }
-    
-    return 'update';
-  }
-
-  function determineSeverity(title, description) {
-    const content = (title + ' ' + description).toLowerCase();
-    
-    if (content.includes('critical') || content.includes('outage') || content.includes('down')) {
-      return 'critical';
-    }
-    if (content.includes('major') || content.includes('significant') || content.includes('widespread')) {
-      return 'major';
-    }
-    if (content.includes('minor') || content.includes('partial') || content.includes('limited')) {
-      return 'minor';
-    }
-    
-    return 'info';
-  }
-
-  function determineStatusFromItems(items) {
-    if (!items || items.length === 0) {
-      return 'Operational';
-    }
-    
-    const recentItems = items.slice(0, 5);
-    
-    const hasActiveIncident = recentItems.some(item => {
-      const content = (item.title + ' ' + item.description).toLowerCase();
-      return (
-        item.eventType === 'incident' ||
-        item.eventType === 'outage' ||
-        item.severity === 'critical' ||
-        (content.includes('investigating') && !content.includes('resolved')) ||
-        (content.includes('ongoing') && !content.includes('resolved')) ||
-        (content.includes('down') && !content.includes('resolved'))
-      );
-    });
-    
-    if (hasActiveIncident) {
-      return 'Issues Detected';
-    }
-    
-    const hasDegradation = recentItems.some(item => {
-      return item.eventType === 'degradation' || item.severity === 'major';
-    });
-    
-    if (hasDegradation) {
-      return 'Degraded Performance';
-    }
-    
-    const hasMaintenance = recentItems.some(item => {
-      return item.eventType === 'maintenance';
-    });
-    
-    if (hasMaintenance) {
-      return 'Under Maintenance';
-    }
-    
-    return 'Operational';
-  }
 
   // Generate day indicators for the last 7 days
   function getLast7DaysUTC() {
