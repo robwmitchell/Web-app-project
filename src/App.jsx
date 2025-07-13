@@ -9,6 +9,7 @@ import ReportImpactForm from './components/forms/ReportImpactForm';
 import NotificationChatbot from './components/notifications/NotificationChatbot';
 import SearchFeedButton from './components/feeds/LiveFeedButton';
 import SideDrawer from './components/SideDrawer';
+import CookieConsent from './components/CookieConsent';
 // import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
 import './styles/globals/App.css';
 // import './components/charts/MiniHeatbarGrid.css';
@@ -1006,7 +1007,6 @@ const SPLASH_CONFIG = {
               width: '20px',
               height: '2px',
               backgroundColor: '#374151',
-              borderRadius: '1px',
               transition: 'all 0.2s ease'
             }}></span>
           </button>
@@ -1813,6 +1813,9 @@ const SPLASH_CONFIG = {
           customServices={customServices}
         />
       </Suspense>
+      
+      {/* Cookie Consent Banner */}
+      <CookieConsent />
     </>;
 }
 
