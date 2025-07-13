@@ -31,6 +31,11 @@ const ALERT_THROTTLE_CONFIG = {
   onPageRefreshDelay: 1000, // 1 second delay after page refresh to allow initial load
 };
 
+// Feature flags
+const FEATURE_FLAGS = {
+  reportIssueEnabled: false, // Temporarily disabled - feature not ready
+};
+
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
   const xml = parser.parseFromString(xmlText, 'text/xml');
@@ -281,6 +286,11 @@ function App() {
   };
 
   const handleReportIssue = (serviceName) => {
+    // Feature temporarily disabled
+    if (!FEATURE_FLAGS.reportIssueEnabled) {
+      console.log('Report Issue feature is currently disabled');
+      return;
+    }
     setBugReportService(serviceName);
     setShowBugModal(true);
   };
@@ -1643,18 +1653,20 @@ const SPLASH_CONFIG = {
         )}
         
         
-        {/* Bug Report Modal */}
-        <Modal 
-          open={showBugModal} 
-          onClose={() => setShowBugModal(false)} 
-          title={`Report Issue - ${bugReportService}`}
-          enhanced={true}
-        >
-          <ReportImpactForm 
-            serviceName={bugReportService} 
+        {/* Bug Report Modal - temporarily disabled */}
+        {FEATURE_FLAGS.reportIssueEnabled && (
+          <Modal 
+            open={showBugModal} 
             onClose={() => setShowBugModal(false)} 
-          />
-        </Modal>
+            title={`Report Issue - ${bugReportService}`}
+            enhanced={true}
+          >
+            <ReportImpactForm 
+              serviceName={bugReportService} 
+              onClose={() => setShowBugModal(false)} 
+            />
+          </Modal>
+        )}
         
         <SpeedInsights />
         <Analytics />

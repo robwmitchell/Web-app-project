@@ -133,15 +133,18 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
         <div className="card-content">
           {/* Card actions - always visible */}
           <div className="card-actions">
-            <button 
-              className="bug-report-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                setBugModalOpen(true);
-              }}
-            >
-              Report Issue
-            </button>
+            {/* Report Issue button temporarily disabled */}
+            {false && (
+              <button 
+                className="bug-report-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setBugModalOpen(true);
+                }}
+              >
+                Report Issue
+              </button>
+            )}
             <button 
               className="view-history-btn"
               onClick={(e) => {
@@ -202,17 +205,20 @@ export default function ZscalerPulseCardContainer({ provider = "Zscaler", name, 
           )}
         </div>
       </div>
-      <Modal 
-        open={bugModalOpen} 
-        onClose={() => setBugModalOpen(false)} 
-        title={`Report Issue - ${name || provider}`}
-        enhanced={true}
-      >
-        <ReportImpactForm 
-          serviceName={name || provider} 
+      {/* Report Issue Modal - temporarily disabled */}
+      {false && (
+        <Modal 
+          open={bugModalOpen} 
           onClose={() => setBugModalOpen(false)} 
-        />
-      </Modal>
+          title={`Report Issue - ${name || provider}`}
+          enhanced={true}
+        >
+          <ReportImpactForm 
+            serviceName={name || provider} 
+            onClose={() => setBugModalOpen(false)} 
+          />
+        </Modal>
+      )}
     </>
   );
 }

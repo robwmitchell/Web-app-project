@@ -432,15 +432,18 @@ const CustomServiceCard = ({
           }}>
             {/* Card actions - always visible */}
             <div className="card-actions">
-              <button 
-                className="bug-report-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onReportIssue && onReportIssue(service.name);
-                }}
-              >
-                Report Issue
-              </button>
+              {/* Report Issue button temporarily disabled */}
+              {false && (
+                <button 
+                  className="bug-report-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onReportIssue && onReportIssue(service.name);
+                  }}
+                >
+                  Report Issue
+                </button>
+              )}
               <button 
                 className="view-history-btn"
                 onClick={(e) => {
