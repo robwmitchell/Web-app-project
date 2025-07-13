@@ -6,7 +6,7 @@ import CustomServiceCard from './features/custom-services/components/CustomServi
 import Modal from './components/common/Modal';
 import ReportImpactForm from './components/forms/ReportImpactForm';
 import NotificationChatbot from './components/notifications/NotificationChatbot';
-import LiveFeedButton from './components/feeds/LiveFeedButton';
+import SearchFeedButton from './components/feeds/LiveFeedButton';
 // import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
 import './styles/globals/App.css';
 // import './components/charts/MiniHeatbarGrid.css';
@@ -240,9 +240,7 @@ function App() {
   const [showAddCustomModal, setShowAddCustomModal] = useState(false);
   const [showBugModal, setShowBugModal] = useState(false);
   const [bugReportService, setBugReportService] = useState('');
-  const [showLiveFeedPanel, setShowLiveFeedPanel] = useState(false);
-  const [liveFeedHasNewItems, setLiveFeedHasNewItems] = useState(false);
-  const [previousDataSnapshot, setPreviousDataSnapshot] = useState(null);
+  const [showFeedSearchPanel, setShowFeedSearchPanel] = useState(false);
   
   // Alert banner throttling state
   const [lastAlertFetchTime, setLastAlertFetchTime] = useState(0);
@@ -793,39 +791,7 @@ const SPLASH_CONFIG = {
     setCriticalMode({ active: openIssues.length > 0, details: openIssues });
   }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws, selectedServices]);
 
-  // Check for new items in live feed
-  useEffect(() => {
-    const currentSnapshot = {
-      cloudflareCount: cloudflare.incidents?.length || 0,
-      zscalerCount: zscaler.updates?.length || 0,
-      oktaCount: okta.updates?.length || 0,
-      sendgridCount: sendgrid.updates?.length || 0,
-      slackCount: slack.updates?.length || 0,
-      datadogCount: datadog.updates?.length || 0,
-      awsCount: aws.updates?.length || 0,
-    };
-
-    if (previousDataSnapshot) {
-      const hasNewItems = 
-        currentSnapshot.cloudflareCount > previousDataSnapshot.cloudflareCount ||
-        currentSnapshot.zscalerCount > previousDataSnapshot.zscalerCount ||
-        currentSnapshot.oktaCount > previousDataSnapshot.oktaCount ||
-        currentSnapshot.sendgridCount > previousDataSnapshot.sendgridCount ||
-        currentSnapshot.slackCount > previousDataSnapshot.slackCount ||
-        currentSnapshot.datadogCount > previousDataSnapshot.datadogCount ||
-        currentSnapshot.awsCount > previousDataSnapshot.awsCount;
-
-      if (hasNewItems) {
-        setLiveFeedHasNewItems(true);
-        // Auto-clear new items indicator after 5 seconds
-        setTimeout(() => setLiveFeedHasNewItems(false), 5000);
-      }
-    }
-
-    setPreviousDataSnapshot(currentSnapshot);
-  }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws]);
-
-  // Calculate total feed items count
+  // Calculate total feed items count for search
   const totalFeedItemsCount = 
     (cloudflare.incidents?.length || 0) +
     (zscaler.updates?.length || 0) +
@@ -1106,21 +1072,12 @@ const SPLASH_CONFIG = {
               backdropFilter: 'blur(8px)',
               boxShadow: '0 2px 8px rgba(30,41,59,0.06)'
             }}>
-              {/* Live Feed Menu Item */}
-              <div className="menu-item live-feed-menu-item">
-                <LiveFeedButton
-                  onClick={() => setShowLiveFeedPanel(true)}
-                  hasNewItems={false}
-                  itemCount={
-                    (cloudflare.incidents?.length || 0) +
-                    (zscaler.updates?.length || 0) +
-                    (okta.updates?.length || 0) +
-                    (sendgrid.updates?.length || 0) +
-                    (slack.updates?.length || 0) +
-                    (datadog.updates?.length || 0) +
-                    (aws.updates?.length || 0)
-                  }
-                  isActive={showLiveFeedPanel}
+              {/* Feed Search Menu Item */}
+              <div className="menu-item search-feed-menu-item">
+                <SearchFeedButton
+                  onClick={() => setShowFeedSearchPanel(true)}
+                  itemCount={totalFeedItemsCount}
+                  isActive={showFeedSearchPanel}
                 />
               </div>
 
@@ -1752,11 +1709,11 @@ const SPLASH_CONFIG = {
         <Analytics />
       </div>
       
-      {/* Unified Live Feed Panel */}
-      <Suspense fallback={<div>Loading live feed...</div>}>
+      {/* Feed Search Panel */}
+      <Suspense fallback={<div>Loading feed search...</div>}>
         <UnifiedLiveFeedPanel
-          isOpen={showLiveFeedPanel}
-          onClose={() => setShowLiveFeedPanel(false)}
+          isOpen={showFeedSearchPanel}
+          onClose={() => setShowFeedSearchPanel(false)}
           selectedServices={selectedServices}
           cloudflareIncidents={cloudflare.incidents}
           zscalerUpdates={zscaler.updates}

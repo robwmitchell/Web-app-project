@@ -1,49 +1,38 @@
-/* Live Feed Button Styles */
+/* Search Feed Button Styles */
 
-.live-feed-btn {
+.search-feed-btn {
   position: relative;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border: none;
   border-radius: 12px;
   padding: 8px 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
   min-width: 140px;
   backdrop-filter: blur(8px);
 }
 
-.live-feed-btn:hover {
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+.search-feed-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
 }
 
-.live-feed-btn:active {
+.search-feed-btn:active {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
-.live-feed-btn.active {
+.search-feed-btn.active {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.live-feed-btn.active:hover {
+.search-feed-btn.active:hover {
   background: linear-gradient(135deg, #059669 0%, #047857 100%);
   box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
-}
-
-.live-feed-btn.has-new-items {
-  animation: newItemsPulse 2s ease-in-out infinite;
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.live-feed-btn.has-new-items:hover {
-  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
 
 @keyframes newItemsPulse {

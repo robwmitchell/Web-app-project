@@ -18,11 +18,9 @@ const UnifiedLiveFeedPanel = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSources, setSelectedSources] = useState([]);
   const [sortBy, setSortBy] = useState('timestamp'); // timestamp, source, status
-  const [showFilters, setShowFilters] = useState(false);
-  const [displayCount, setDisplayCount] = useState(20);
+  const [showFilters, setShowFilters] = useState(true); // Always show filters for search focus
+  const [displayCount, setDisplayCount] = useState(50); // Increased default for better search
   const [expandedItems, setExpandedItems] = useState(new Set());
-  const [newItemIds, setNewItemIds] = useState(new Set());
-  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
   
   const panelRef = useRef(null);
   const feedContainerRef = useRef(null);
@@ -362,47 +360,18 @@ const UnifiedLiveFeedPanel = ({
     };
   }, [isOpen, onClose]);
 
-  // Track new items - simple approach without flashing
+  // Focus search input when panel opens
   useEffect(() => {
-    if (!isOpen) return;
-    
-    const currentIds = new Set(filteredFeedData.map(item => item.id));
-    const genuinelyNewIds = new Set();
-    
-    // Only mark items as new if they weren't in the previous set
-    currentIds.forEach(id => {
-      if (!newItemIds.has(id)) {
-        genuinelyNewIds.add(id);
-      }
-    });
-
-    if (genuinelyNewIds.size > 0) {
-      setNewItemIds(prev => new Set([...prev, ...genuinelyNewIds]));
-      
-      // Remove "new" status after 10 seconds (no animation, just removes highlight)
+    if (isOpen) {
+      // Delay to ensure the panel is rendered
       setTimeout(() => {
-        setNewItemIds(prev => {
-          const updated = new Set(prev);
-          genuinelyNewIds.forEach(id => updated.delete(id));
-          return updated;
-        });
-      }, 10000);
+        const searchInput = document.querySelector('.search-input');
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }, 100);
     }
-  }, [filteredFeedData, isOpen]);
-
-  // Update last update time only when data actually changes
-  useEffect(() => {
-    setLastUpdateTime(Date.now());
-  }, [
-    cloudflareIncidents,
-    zscalerUpdates,
-    oktaUpdates,
-    sendgridUpdates,
-    slackUpdates,
-    datadogUpdates,
-    awsUpdates,
-    customServices
-  ]);
+  }, [isOpen]);
 
   // Handle item expansion
   const toggleExpanded = (itemId) => {
@@ -432,19 +401,19 @@ const UnifiedLiveFeedPanel = ({
         <div className="feed-header">
           <div className="feed-header-left">
             <h2 className="feed-title">
-              🔴 Live Feed
-              <span className="feed-count">({filteredFeedData.length})</span>
+              🔍 Feed Search
+              <span className="feed-count">({filteredFeedData.length} results)</span>
             </h2>
-            <div className="live-indicator">
-              <span className="live-dot"></span>
-              <span className="live-text">LIVE</span>
+            <div className="search-indicator">
+              <span className="search-dot"></span>
+              <span className="search-text">SEARCH</span>
             </div>
           </div>
           <div className="feed-header-right">
             <button
               className="filter-toggle-btn"
               onClick={() => setShowFilters(!showFilters)}
-              title="Toggle filters"
+              title="Toggle search filters"
             >
               🔍
             </button>
@@ -528,12 +497,11 @@ const UnifiedLiveFeedPanel = ({
               {filteredFeedData.map(item => {
                 const sourceInfo = getSourceInfo(item.source, item.customServiceName);
                 const isExpanded = expandedItems.has(item.id);
-                const isNew = newItemIds.has(item.id);
                 
                 return (
                   <div
                     key={item.id}
-                    className={`feed-item ${isNew ? 'new-item' : ''} ${isExpanded ? 'expanded' : ''}`}
+                    className={`feed-item ${isExpanded ? 'expanded' : ''}`}
                     onClick={() => toggleExpanded(item.id)}
                   >
                     <div className="feed-item-header">
@@ -548,7 +516,6 @@ const UnifiedLiveFeedPanel = ({
                           </span>
                         </span>
                         <span className="source-type-badge">{sourceInfo.type}</span>
-                        {isNew && <span className="new-badge">NEW</span>}
                       </div>
                       <div className="item-meta">
                         <span className="item-timestamp">{getRelativeTime(item.timestamp)}</span>

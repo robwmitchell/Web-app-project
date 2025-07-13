@@ -110,11 +110,11 @@
   border-radius: 12px;
 }
 
-.live-indicator {
+.search-indicator {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--status-error, #ef4444);
+  background: var(--status-info, #3b82f6);
   color: white;
   padding: 4px 8px;
   border-radius: 12px;
@@ -123,15 +123,14 @@
   letter-spacing: 0.5px;
 }
 
-.live-dot {
+.search-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: white;
-  animation: livePulse 2s infinite;
 }
 
-.live-text {
+.search-text {
   text-transform: uppercase;
 }
 
