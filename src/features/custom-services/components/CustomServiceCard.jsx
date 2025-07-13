@@ -629,50 +629,63 @@ const CustomServiceCard = ({
                 transition: 'all 0.3s ease-in-out',
                 overflow: 'hidden'
               }}>
-                {serviceData.updates.length > 0 ? (
-                  <div className="updates-section">
-                    <div className="history-header">
-                      <h4>Recent History</h4>
-                      <span className="history-count" style={{ backgroundColor: service.color }}>
-                        {serviceData.updates.length} items
-                      </span>
-                    </div>
-                    <div className="history-list">
-                      {serviceData.updates.map((update, index) => (
-                        <div key={update.id || index} className="history-item">
-                          <div className="history-dot" style={{
-                            background: update.eventType === 'incident' ? '#f59e0b' : '#10b981'
-                          }}></div>
-                          <div className="history-content">
-                            <div className="history-title">{update.title}</div>
-                            <div className="history-date">{formatDate(update.date)}</div>
-                            {update.description && (
-                              <div className="history-description">
-                                {cleanAndTruncateHtml(update.description, 150)}
-                              </div>
-                            )}
-                            {update.link && (
-                              <a 
-                                href={update.link} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="history-link"
-                                style={{ color: service.color }}
-                              >
-                                Read more →
-                              </a>
-                            )}
+                {(() => {
+                  // Filter updates to show only last 7 days for consistency with other services
+                  const sevenDaysAgo = new Date();
+                  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                  sevenDaysAgo.setHours(0, 0, 0, 0);
+                  
+                  const filteredUpdates = serviceData.updates.filter(update => {
+                    if (!update.date) return false;
+                    const updateDate = new Date(update.date);
+                    return !isNaN(updateDate) && updateDate >= sevenDaysAgo;
+                  });
+                  
+                  return filteredUpdates.length > 0 ? (
+                    <div className="updates-section">
+                      <div className="history-header">
+                        <h4>Recent History (Last 7 Days)</h4>
+                        <span className="history-count" style={{ backgroundColor: service.color }}>
+                          {filteredUpdates.length} items
+                        </span>
+                      </div>
+                      <div className="history-list">
+                        {filteredUpdates.map((update, index) => (
+                          <div key={update.id || index} className="history-item">
+                            <div className="history-dot" style={{
+                              background: update.eventType === 'incident' ? '#f59e0b' : '#10b981'
+                            }}></div>
+                            <div className="history-content">
+                              <div className="history-title">{update.title}</div>
+                              <div className="history-date">{formatDate(update.date)}</div>
+                              {update.description && (
+                                <div className="history-description">
+                                  {cleanAndTruncateHtml(update.description, 150)}
+                                </div>
+                              )}
+                              {update.link && (
+                                <a 
+                                  href={update.link} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="history-link"
+                                  style={{ color: service.color }}
+                                >
+                                  Read more →
+                                </a>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ) : !loading ? (
-                  <div className="no-updates">
-                    <span className="no-updates-icon">📋</span>
-                    <p>No recent updates available</p>
-                  </div>
-                ) : null}
+                  ) : !loading ? (
+                    <div className="no-updates">
+                      <span className="no-updates-icon">📋</span>
+                      <p>No updates in the last 7 days</p>
+                    </div>
+                  ) : null;
+                })()}
               </div>
             )}
           </div>

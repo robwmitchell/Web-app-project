@@ -206,7 +206,7 @@ export default function LivePulseCardContainer({
             <div className="card-history-section">
               <div className="updates-section">
                 <div className="history-header">
-                  <h4>Recent History</h4>
+                  <h4>Recent History (Last 7 Days)</h4>
                   <span className="history-count">{historyItems.length} items</span>
                 </div>
                 <div className="history-list">
@@ -246,7 +246,7 @@ export default function LivePulseCardContainer({
             <div className="card-history-section">
               <div className="no-updates">
                 <span className="no-updates-icon">📋</span>
-                <p>No recent updates available</p>
+                <p>No updates in the last 7 days</p>
               </div>
             </div>
           )}
