@@ -20,26 +20,25 @@ const CookieConsent = () => {
   }, []);
 
   const loadGoogleAnalytics = () => {
-    // Get GA ID from environment variable or use placeholder
-    const GA_ID = import.meta.env.VITE_GA_ID || 'G-XXXXXXXXXX';
+    // Get GA ID from environment variable or use your actual ID
+    const GA_ID = import.meta.env.VITE_GA_ID || 'G-9WPC4KBWSG';
     
     // Only load if not already loaded and if we have a valid GA ID
-    if (!window.gtag && GA_ID !== 'G-XXXXXXXXXX') {
+    if (!window.gtag && GA_ID && GA_ID !== 'G-XXXXXXXXXX') {
       // Create and append the GA script
       const script = document.createElement('script');
       script.async = true;
       script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
       document.head.appendChild(script);
 
-      // Initialize gtag
+      // Initialize gtag exactly as in your original setup
       window.dataLayer = window.dataLayer || [];
       function gtag(){window.dataLayer.push(arguments);}
       window.gtag = gtag;
       gtag('js', new Date());
-      gtag('config', GA_ID, {
-        page_title: 'Stack Status IO',
-        custom_map: {'custom_parameter_1': 'service_monitoring'}
-      });
+      gtag('config', GA_ID);
+      
+      console.log(`Google Analytics loaded with ID: ${GA_ID}`);
     }
   };
 
