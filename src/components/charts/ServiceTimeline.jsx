@@ -149,29 +149,29 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
 
       const hasCritical = dayUpdates.some(update => {
         const text = `${update.title || ''} ${update.description || ''}`.toLowerCase();
-        return text.includes('critical') || text.includes('outage') || text.includes('down');
+        return text.includes('critical') || text.includes('outage') || text.includes('down') || text.includes('unavailable');
       });
 
       const hasMajor = dayUpdates.some(update => {
         const text = `${update.title || ''} ${update.description || ''}`.toLowerCase();
-        return text.includes('major') || text.includes('degraded') || text.includes('disruption');
+        return text.includes('major') || text.includes('degraded') || text.includes('disruption') || 
+               text.includes('experiencing issues') || text.includes('experiencing delays') ||
+               text.includes('service disruption') || text.includes('performance issues');
       });
 
       const hasMinor = dayUpdates.some(update => {
         const text = `${update.title || ''} ${update.description || ''}`.toLowerCase();
-        return text.includes('minor') || text.includes('investigating') || text.includes('monitoring');
+        return text.includes('minor') || text.includes('investigating') || text.includes('monitoring') ||
+               text.includes('experiencing') || text.includes('issues') || text.includes('delays') ||
+               text.includes('intermittent') || text.includes('partial');
       });
 
       // For providers like Slack, Datadog, AWS - if there's any update, it's likely an issue
       const isIssueProvider = ['Slack', 'Datadog', 'AWS'].includes(provider);
       
-      // If all issues are resolved, show as operational
-      if (hasResolved && dayUpdates.every(update => {
-        const text = `${update.title || ''} ${update.description || ''}`.toLowerCase();
-        return text.includes('resolved') || text.includes('closed') || text.includes('completed');
-      })) {
-        dayStatus = 'operational';
-      } else if (hasCritical) {
+      // For SendGrid and similar providers, determine severity based on the presence of issues
+      // Don't mark as operational just because it's resolved - if there was an issue, show appropriate severity
+      if (hasCritical) {
         dayStatus = 'critical';
       } else if (hasMajor) {
         dayStatus = 'major';
@@ -181,7 +181,24 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
         // For Slack, Datadog, AWS - default to major since any update likely indicates an issue
         dayStatus = 'major';
       } else {
-        dayStatus = 'minor'; // Default for other providers
+        // For other providers (like SendGrid), if there are updates but no specific severity keywords,
+        // it's likely an issue that occurred (even if resolved), so show as minor
+        dayStatus = 'minor';
+      }
+
+      // Additional debug logging for SendGrid after severity analysis
+      if (provider === 'SendGrid') {
+        console.log(`[ServiceTimeline] SendGrid severity analysis for ${date.toDateString()}:`, {
+          hasResolved,
+          hasCritical,
+          hasMajor,
+          hasMinor,
+          finalStatus: dayStatus,
+          updateTexts: dayUpdates.map(u => ({
+            title: u.title,
+            descriptionSnippet: (u.description || '').substring(0, 100) + '...'
+          }))
+        });
       }
     }
   }
