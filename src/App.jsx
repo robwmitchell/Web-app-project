@@ -4,6 +4,7 @@ import LivePulseCardContainer from './features/services/containers/LivePulseCard
 import ZscalerPulseCardContainer from './features/services/containers/ZscalerPulseCardContainer';
 import CustomServiceCard from './features/custom-services/components/CustomServiceCard';
 import Modal from './components/common/Modal';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import ReportImpactForm from './components/forms/ReportImpactForm';
 import NotificationChatbot from './components/notifications/NotificationChatbot';
 import SearchFeedButton from './components/feeds/LiveFeedButton';
@@ -20,6 +21,7 @@ import { optimizedFetch, CACHE_DURATIONS, RequestMonitor } from './utils/request
 const UnifiedLiveFeedPanel = lazy(() => import('./components/feeds/UnifiedLiveFeedPanel'));
 const ServiceSelectionSplash = lazy(() => import('./features/services/components/ServiceSelectionSplash'));
 const AddCustomService = lazy(() => import('./features/custom-services/components/AddCustomService'));
+const LeafletWorldMap = lazy(() => import('./components/maps/LeafletWorldMap'));
 
 // Memoized components to prevent unnecessary re-renders
 const MemoizedLivePulseCardContainer = React.memo(LivePulseCardContainer);
@@ -248,6 +250,8 @@ function App() {
   const [showBugModal, setShowBugModal] = useState(false);
   const [bugReportService, setBugReportService] = useState('');
   const [showFeedSearchPanel, setShowFeedSearchPanel] = useState(false);
+  const [showWorldMap, setShowWorldMap] = useState(false);
+  const [worldMapHistoric, setWorldMapHistoric] = useState(false);
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -1081,6 +1085,41 @@ const SPLASH_CONFIG = {
                 />
               </div>
 
+              {/* World Map Menu Item */}
+              <button
+                className="menu-item-btn world-map-menu-item"
+                onClick={() => setShowWorldMap(true)}
+                title="Global Service Status Map"
+                aria-label="View global service status map"
+                style={{
+                  background: showWorldMap ? 'rgba(34, 197, 94, 0.1)' : 'transparent',
+                  color: '#374151',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: '10px 14px',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  transition: 'all 0.2s ease',
+                  position: 'relative',
+                  minWidth: 'auto',
+                }}
+                onMouseEnter={e => {
+                  e.target.style.background = 'rgba(34, 197, 94, 0.08)';
+                  e.target.style.color = '#1f2937';
+                }}
+                onMouseLeave={e => {
+                  e.target.style.background = showWorldMap ? 'rgba(34, 197, 94, 0.1)' : 'transparent';
+                  e.target.style.color = '#374151';
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>🌍</span>
+                <span>World Map</span>
+              </button>
+
               {/* Add RSS Menu Item */}
               <button
                 className="menu-item-btn add-rss-menu-item"
@@ -1649,6 +1688,160 @@ const SPLASH_CONFIG = {
         />
         */}
         
+        {/* Bug Report Modal - temporarily disabled */}
+        {FEATURE_FLAGS.reportIssueEnabled && (
+          <Modal 
+            open={showBugModal} 
+            onClose={() => setShowBugModal(false)} 
+            title={`Report Issue - ${bugReportService}`}
+            enhanced={true}
+          >
+            <ReportImpactForm 
+              serviceName={bugReportService} 
+              onClose={() => setShowBugModal(false)} 
+            />
+          </Modal>
+        )}
+        
+        {/* World Map Modal */}
+        {showWorldMap && (
+          <div style={{
+            position: 'fixed', 
+            top: 0, 
+            left: 0, 
+            width: '100vw', 
+            height: '100vh',
+            background: 'rgba(0,0,0,0.7)', 
+            zIndex: 2000, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            padding: '20px',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{ 
+              background: 'transparent', 
+              borderRadius: 16, 
+              width: '95vw',
+              maxWidth: '1200px',
+              height: '85vh',
+              minHeight: '600px',
+              position: 'relative',
+              overflow: 'hidden',
+              animation: 'slideIn 0.3s ease-out'
+            }}>
+              {/* Close button */}
+              <button 
+                onClick={() => setShowWorldMap(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  left: '16px',
+                  zIndex: 15,
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '40px',
+                  height: '40px',
+                  color: 'white',
+                  fontSize: '20px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backdropFilter: 'blur(10px)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={e => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.3)';
+                }}
+                onMouseLeave={e => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                }}
+              >
+                ×
+              </button>
+
+              {/* Toggle for historic vs current */}
+              <div style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                zIndex: 10,
+                display: 'flex',
+                gap: '8px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '12px',
+                padding: '4px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <button
+                  onClick={() => setWorldMapHistoric(false)}
+                  style={{
+                    background: !worldMapHistoric ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Current Active
+                </button>
+                <button
+                  onClick={() => setWorldMapHistoric(true)}
+                  style={{
+                    background: worldMapHistoric ? 'rgba(255, 255, 255, 0.2)' : 'transparent',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Last 7 Days
+                </button>
+              </div>
+
+              <Suspense fallback={
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  height: '100%',
+                  color: 'white',
+                  fontSize: '18px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '16px'
+                }}>
+                  Loading world map...
+                </div>
+              }>
+                <ErrorBoundary>
+                <LeafletWorldMap
+                    cloudflareIncidents={cloudflare.incidents}
+                    zscalerUpdates={zscaler.updates}
+                    oktaUpdates={okta.updates}
+                    sendgridUpdates={sendgrid.updates}
+                    slackUpdates={slack.updates}
+                    datadogUpdates={datadog.updates}
+                    awsUpdates={aws.updates}
+                    selectedServices={selectedServices}
+                    showHistoric={worldMapHistoric}
+                  />
+                </ErrorBoundary>
+              </Suspense>
+            </div>
+          </div>
+        )}
+
         {/* Add Custom Service Modal */}
         {showAddCustomModal && (
           <AddCustomService 
@@ -1668,21 +1861,6 @@ const SPLASH_CONFIG = {
           />
         )}
         
-        
-        {/* Bug Report Modal - temporarily disabled */}
-        {FEATURE_FLAGS.reportIssueEnabled && (
-          <Modal 
-            open={showBugModal} 
-            onClose={() => setShowBugModal(false)} 
-            title={`Report Issue - ${bugReportService}`}
-            enhanced={true}
-          >
-            <ReportImpactForm 
-              serviceName={bugReportService} 
-              onClose={() => setShowBugModal(false)} 
-            />
-          </Modal>
-        )}
         
         <SpeedInsights />
         <Analytics />
