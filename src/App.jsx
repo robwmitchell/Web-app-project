@@ -8,6 +8,7 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import ReportImpactForm from './components/forms/ReportImpactForm';
 import NotificationChatbot from './components/notifications/NotificationChatbot';
 import SearchFeedButton from './components/feeds/LiveFeedButton';
+import SideDrawer from './components/SideDrawer';
 // import MiniHeatbarGrid from './components/charts/MiniHeatbarGrid';
 import './styles/globals/App.css';
 // import './components/charts/MiniHeatbarGrid.css';
@@ -252,6 +253,7 @@ function App() {
   const [showFeedSearchPanel, setShowFeedSearchPanel] = useState(false);
   const [showWorldMap, setShowWorldMap] = useState(false);
   const [worldMapHistoric, setWorldMapHistoric] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -937,10 +939,10 @@ const SPLASH_CONFIG = {
           background: #fafbff;
         }
       `}</style>
-      {/* Modern Menu-Based Header */}
-      <header className="site-header-menu" style={{
+      {/* Modern Header with Hamburger Menu */}
+      <header className="modern-header" style={{
         width: '100%',
-        background: 'rgba(255,255,255,0.90)',
+        background: 'rgba(255,255,255,0.95)',
         boxShadow: '0 2px 20px 0 rgba(30,41,59,0.08)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(148, 163, 184, 0.08)',
@@ -950,7 +952,7 @@ const SPLASH_CONFIG = {
         padding: 0,
         marginBottom: 18
       }}>
-        <div className="header-container-menu" style={{
+        <div className="header-container" style={{
           maxWidth: 1280,
           margin: '0 auto',
           display: 'flex',
@@ -960,14 +962,65 @@ const SPLASH_CONFIG = {
           minHeight: 70,
           position: 'relative',
         }}>
-          {/* Brand/Logo Section */}
-          <div className="header-brand-menu" style={{ 
+          {/* Hamburger Menu Button */}
+          <button 
+            className="hamburger-menu"
+            onClick={() => setIsDrawerOpen(true)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '12px',
+              borderRadius: '12px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '4px',
+              transition: 'all 0.2s ease',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            }}
+            onMouseEnter={e => {
+              e.target.style.backgroundColor = 'rgba(59, 130, 246, 0.15)';
+              e.target.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={e => {
+              e.target.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+              e.target.style.transform = 'scale(1)';
+            }}
+            aria-label="Open menu"
+          >
+            <span style={{
+              width: '20px',
+              height: '2px',
+              backgroundColor: '#374151',
+              borderRadius: '1px',
+              transition: 'all 0.2s ease'
+            }}></span>
+            <span style={{
+              width: '20px',
+              height: '2px',
+              backgroundColor: '#374151',
+              borderRadius: '1px',
+              transition: 'all 0.2s ease'
+            }}></span>
+            <span style={{
+              width: '20px',
+              height: '2px',
+              backgroundColor: '#374151',
+              borderRadius: '1px',
+              transition: 'all 0.2s ease'
+            }}></span>
+          </button>
+
+          {/* Brand/Logo Section - Centered */}
+          <div className="header-brand" style={{ 
             display: 'flex', 
             alignItems: 'center', 
             gap: 16,
-            flex: '0 0 auto'
+            position: 'absolute',
+            left: '50%',
+            transform: 'translateX(-50%)'
           }}>
-            <div className="logo-container-menu" style={{
+            <div className="logo-container" style={{
               background: 'linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.6) 100%)',
               borderRadius: 14,
               boxShadow: '0 3px 12px rgba(30,41,59,0.08)',
@@ -982,12 +1035,12 @@ const SPLASH_CONFIG = {
               <img 
                 src={logoImage} 
                 alt="Stack Status IO Logo" 
-                className="header-logo-menu"
+                className="header-logo"
                 style={{ width: 30, height: 30, borderRadius: 8 }}
               />
             </div>
-            <div className="brand-info-menu" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <h1 className="brand-title-menu" style={{
+            <div className="brand-info" style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <h1 className="brand-title" style={{
                 fontWeight: 800,
                 fontSize: '1.8em',
                 color: '#1e293b',
@@ -999,7 +1052,7 @@ const SPLASH_CONFIG = {
                 gap: 6
               }}>
                 Stack Status
-                <span className="brand-subtitle-menu" style={{
+                <span className="brand-subtitle" style={{
                   fontWeight: 600,
                   fontSize: '0.55em',
                   color: '#3b82f6',
@@ -1012,32 +1065,32 @@ const SPLASH_CONFIG = {
                   display: 'inline-block'
                 }}>IO</span>
               </h1>
-              <div className="status-compact-menu" style={{ 
+              <div className="status-compact" style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: 8
               }}>
-                <div className="status-dot-menu" style={{
+                <div className="status-dot" style={{
                   width: 8,
                   height: 8,
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
                   boxShadow: '0 0 6px 1px #10b98130',
                 }}></div>
-                <span className="status-text-menu" style={{ 
+                <span className="status-text" style={{ 
                   fontWeight: 600, 
                   color: '#64748b', 
                   fontSize: '0.85em' 
                 }}>
                   All Systems Operational
                 </span>
-                <div className="live-indicator-menu" style={{ 
+                <div className="live-indicator" style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
                   gap: 3, 
                   marginLeft: 6 
                 }}>
-                  <span className="live-pulse-menu" style={{
+                  <span className="live-pulse" style={{
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
@@ -1045,7 +1098,7 @@ const SPLASH_CONFIG = {
                     boxShadow: '0 0 0 0 #ef4444',
                     animation: 'pulseLive 1.5s infinite cubic-bezier(0.66,0,0,1)'
                   }}></span>
-                  <span className="live-text-menu" style={{ 
+                  <span className="live-text" style={{ 
                     fontWeight: 700, 
                     color: '#ef4444', 
                     fontSize: 10, 
@@ -1056,167 +1109,21 @@ const SPLASH_CONFIG = {
             </div>
           </div>
 
-          {/* Navigation Menu */}
-          <nav className="header-nav-menu" style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
+          {/* Quick Status Indicator - Right Side */}
+          <div className="quick-status" style={{
+            display: 'flex',
+            alignItems: 'center',
             gap: 8,
-            flex: '1 1 auto',
-            justifyContent: 'flex-end'
+            fontSize: '14px',
+            color: '#64748b'
           }}>
-            {/* Menu Items Container */}
-            <div className="menu-items-container" style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              background: 'rgba(248, 250, 252, 0.6)',
-              borderRadius: 12,
-              padding: '6px',
-              border: '1px solid rgba(148, 163, 184, 0.12)',
-              backdropFilter: 'blur(8px)',
-              boxShadow: '0 2px 8px rgba(30,41,59,0.06)'
-            }}>
-              {/* Feed Search Menu Item */}
-              <div className="menu-item search-feed-menu-item">
-                <SearchFeedButton
-                  onClick={() => setShowFeedSearchPanel(true)}
-                  itemCount={totalFeedItemsCount}
-                  isActive={showFeedSearchPanel}
-                />
-              </div>
-
-              {/* World Map Menu Item */}
-              <button
-                className="menu-item-btn world-map-menu-item"
-                onClick={() => setShowWorldMap(true)}
-                title="Global Service Status Map"
-                aria-label="View global service status map"
-                style={{
-                  background: showWorldMap ? 'rgba(34, 197, 94, 0.1)' : 'transparent',
-                  color: '#374151',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 14px',
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  transition: 'all 0.2s ease',
-                  position: 'relative',
-                  minWidth: 'auto',
-                }}
-                onMouseEnter={e => {
-                  e.target.style.background = 'rgba(34, 197, 94, 0.08)';
-                  e.target.style.color = '#1f2937';
-                }}
-                onMouseLeave={e => {
-                  e.target.style.background = showWorldMap ? 'rgba(34, 197, 94, 0.1)' : 'transparent';
-                  e.target.style.color = '#374151';
-                }}
-              >
-                <span style={{ fontSize: '16px' }}>🌍</span>
-                <span>World Map</span>
-              </button>
-
-              {/* Add RSS Menu Item */}
-              <button
-                className="menu-item-btn add-rss-menu-item"
-                onClick={() => setShowAddCustomModal(true)}
-                title="Add Custom RSS Service"
-                aria-label="Add custom RSS service monitoring"
-                style={{
-                  background: showAddCustomModal ? 'rgba(102, 126, 234, 0.1)' : 'transparent',
-                  color: '#374151',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 14px',
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  transition: 'all 0.2s ease',
-                  position: 'relative',
-                  minWidth: 'auto',
-                }}
-                onMouseEnter={e => {
-                  e.target.style.background = 'rgba(102, 126, 234, 0.08)';
-                  e.target.style.color = '#1f2937';
-                }}
-                onMouseLeave={e => {
-                  e.target.style.background = showAddCustomModal ? 'rgba(102, 126, 234, 0.1)' : 'transparent';
-                  e.target.style.color = '#374151';
-                }}
-              >
-                <span style={{ fontSize: '16px' }}>➕</span>
-                <span>Add RSS</span>
-              </button>
-
-              {/* Settings Menu Item */}
-              <button
-                className="menu-item-btn settings-menu-item"
-                onClick={() => setShowSplash(true)}
-                title="Configure Services"
-                aria-label="Configure service monitoring"
-                style={{
-                  background: showSplash ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                  color: '#374151',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '10px 14px',
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  transition: 'all 0.2s ease',
-                  position: 'relative',
-                  minWidth: 'auto',
-                }}
-                onMouseEnter={e => {
-                  e.target.style.background = 'rgba(59, 130, 246, 0.08)';
-                  e.target.style.color = '#1f2937';
-                }}
-                onMouseLeave={e => {
-                  e.target.style.background = showSplash ? 'rgba(59, 130, 246, 0.1)' : 'transparent';
-                  e.target.style.color = '#374151';
-                }}
-              >
-                <span style={{ fontSize: '16px' }}>⚙️</span>
-                <span>Settings</span>
-              </button>
-
-              {/* Notifications Menu Item */}
-              <div className="menu-item notification-menu-item" style={{
-                background: 'transparent',
-                borderRadius: 8,
-                padding: '6px',
-                transition: 'all 0.2s ease'
-              }}>
-                <NotificationChatbot
-                  selectedServices={selectedServices}
-                  cloudflareIncidents={cloudflare.incidents}
-                  zscalerUpdates={zscaler.updates}
-                  oktaUpdates={okta.updates}
-                  sendgridUpdates={sendgrid.updates}
-                  slackUpdates={slack.updates}
-                  datadogUpdates={datadog.updates}
-                  awsUpdates={aws.updates}
-                  headerMode={true}
-                  usePortal={true}
-                  modalZIndex={20000}
-                />
-              </div>
-            </div>
-          </nav>
+            <span style={{ fontSize: '16px' }}>🟢</span>
+            <span>All OK</span>
+          </div>
         </div>
 
-        {/* Subtle background effects for the menu header */}
-        <div className="header-bg-effects-menu" style={{
+        {/* Subtle background effects */}
+        <div className="header-bg-effects" style={{
           position: 'absolute',
           top: 0,
           left: 0,
@@ -1225,7 +1132,7 @@ const SPLASH_CONFIG = {
           zIndex: -1,
           pointerEvents: 'none',
         }}>
-          <div className="bg-gradient-menu-1" style={{
+          <div className="bg-gradient-1" style={{
             position: 'absolute',
             top: '-20px',
             left: '-40px',
@@ -1234,7 +1141,7 @@ const SPLASH_CONFIG = {
             background: 'radial-gradient(circle at 30% 30%, #3b82f620 0%, transparent 70%)',
             filter: 'blur(20px)',
           }}></div>
-          <div className="bg-gradient-menu-2" style={{
+          <div className="bg-gradient-2" style={{
             position: 'absolute',
             bottom: '-30px',
             right: '-60px',
@@ -1245,6 +1152,30 @@ const SPLASH_CONFIG = {
           }}></div>
         </div>
       </header>
+
+      {/* Side Drawer */}
+      <SideDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onWorldMapClick={() => setShowWorldMap(true)}
+        onAddRSSClick={() => setShowAddCustomModal(true)}
+        onSettingsClick={() => setShowSplash(true)}
+        onFeedSearchClick={() => setShowFeedSearchPanel(true)}
+        showWorldMap={showWorldMap}
+        showAddCustomModal={showAddCustomModal}
+        showSplash={showSplash}
+        showFeedSearchPanel={showFeedSearchPanel}
+        totalFeedItemsCount={totalFeedItemsCount}
+        selectedServices={selectedServices}
+        cloudflare={cloudflare}
+        zscaler={zscaler}
+        okta={okta}
+        sendgrid={sendgrid}
+        slack={slack}
+        datadog={datadog}
+        aws={aws}
+      />
+      
       <div style={{ 
         display: 'flex', 
         flexDirection: 'column', 
