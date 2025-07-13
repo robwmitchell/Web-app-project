@@ -1,7 +1,7 @@
 import React from 'react';
 import './ServiceTimeline.css';
 
-// Status type mapping for timeline visualization
+// Status type mapping for timeline
 const STATUS_TYPES = {
   operational: { color: '#10b981', label: 'Operational' },
   minor: { color: '#f59e0b', label: 'Minor Issues' },
@@ -49,7 +49,18 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
     for (const field of possibleDateFields) {
       if (item[field]) {
         const date = new Date(item[field]);
-        if (!isNaN(date)) return date;
+        if (!isNaN(date)) {
+          // Debug logging for SendGrid specifically
+          if (provider === 'SendGrid') {
+            console.log(`[ServiceTimeline] Parsed SendGrid date:`, {
+              field,
+              rawValue: item[field],
+              parsedDate: date,
+              isValid: !isNaN(date)
+            });
+          }
+          return date;
+        }
       }
     }
     
@@ -98,14 +109,36 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
       const updateDate = getItemDate(update);
       if (!updateDate) return false;
       
-      // Use calendar date comparison to handle timezone issues
-      const updateCalendarDate = new Date(updateDate.getFullYear(), updateDate.getMonth(), updateDate.getDate());
-      const dayCalendarDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      // Debug logging for SendGrid specifically
+      if (provider === 'SendGrid') {
+        const dayDateString = date.toISOString().split('T')[0];
+        const updateDateString = updateDate.toISOString().split('T')[0];
+        console.log(`[ServiceTimeline] SendGrid update check:`, {
+          title: update.title,
+          date: update.date,
+          updateDate,
+          dayDateString,
+          updateDateString,
+          matches: dayDateString === updateDateString
+        });
+      }
       
-      return updateCalendarDate.getTime() === dayCalendarDate.getTime();
+      // Use ISO date string comparison to handle timezone issues reliably
+      const dayDateString = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const updateDateString = updateDate.toISOString().split('T')[0]; // YYYY-MM-DD
+      
+      return dayDateString === updateDateString;
     });
 
     issueCount = dayUpdates.length;
+
+    if (provider === 'SendGrid') {
+      console.log(`[ServiceTimeline] SendGrid day analysis for ${date.toDateString()}:`, {
+        totalUpdates: validUpdates.length,
+        dayUpdates: dayUpdates.length,
+        dayUpdatesDetails: dayUpdates.map(u => ({ title: u.title, date: u.date }))
+      });
+    }
 
     if (dayUpdates.length > 0) {
       // Analyze update content for severity
