@@ -90,8 +90,8 @@ const CustomServiceCard = ({
 
     fetchCustomData();
     
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchCustomData, 5 * 60 * 1000);
+    // Refresh every 2 minutes to align with main app data fetching
+    const interval = setInterval(fetchCustomData, 2 * 60 * 1000);
     return () => clearInterval(interval);
   }, [service.feedUrl, service.name]);
 

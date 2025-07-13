@@ -241,10 +241,6 @@ function App() {
   const [showBugModal, setShowBugModal] = useState(false);
   const [bugReportService, setBugReportService] = useState('');
   const [showFeedSearchPanel, setShowFeedSearchPanel] = useState(false);
-  
-  // Alert banner throttling state
-  const [lastAlertFetchTime, setLastAlertFetchTime] = useState(0);
-  const [alertFetchInProgress, setAlertFetchInProgress] = useState(false);
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -361,25 +357,6 @@ const SPLASH_CONFIG = {
       console.warn('Unable to store Cloudflare incidents in localStorage:', error);
     }
   }
-
-  // Throttled fetch function specifically for alert banner
-  const fetchAlertsThrottled = React.useCallback(() => {
-    const now = Date.now();
-    const timeSinceLastFetch = now - lastAlertFetchTime;
-    
-    // Skip if we're already fetching or within throttle window
-    if (alertFetchInProgress || timeSinceLastFetch < ALERT_THROTTLE_CONFIG.minIntervalMs) {
-      return;
-    }
-    
-    setAlertFetchInProgress(true);
-    setLastAlertFetchTime(now);
-    
-    // Perform the actual fetch operation
-    fetchAllStatuses().finally(() => {
-      setAlertFetchInProgress(false);
-    });
-  }, [lastAlertFetchTime, alertFetchInProgress]);
 
   // Check if an issue/incident is actually active/unresolved and meets alert criteria
   const isIssueActive = (issue, provider) => {
@@ -807,22 +784,17 @@ const SPLASH_CONFIG = {
     // Initial load after a small delay to allow component to settle
     setTimeout(() => {
       fetchAllStatuses();
-      setLastAlertFetchTime(Date.now());
     }, ALERT_THROTTLE_CONFIG.onPageRefreshDelay);
     
-    // Set up throttled interval for alerts (but continue regular data fetching for live feed)
-    const alertInterval = setInterval(() => {
-      fetchAlertsThrottled();
-    }, ALERT_THROTTLE_CONFIG.minIntervalMs);
-    
-    // Regular interval for live feed data (not throttled for alert banner)
-    const dataInterval = setInterval(fetchAllStatuses, 2 * 60 * 1000); // 2 minutes
+    // Single unified interval for all data fetching (every 2 minutes)
+    const dataInterval = setInterval(() => {
+      fetchAllStatuses();
+    }, ALERT_THROTTLE_CONFIG.minIntervalMs); // 2 minutes
     
     return () => {
-      clearInterval(alertInterval);
       clearInterval(dataInterval);
     };
-  }, [fetchAllStatuses, fetchAlertsThrottled]);
+  }, [fetchAllStatuses]);
 
   // Ticker logic: cycle through issues every 10 seconds
   useEffect(() => {
@@ -1248,29 +1220,6 @@ const SPLASH_CONFIG = {
               boxShadow: '0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}>
-            
-            {/* Throttling indicator */}
-            {alertFetchInProgress && (
-              <div style={{
-                position: 'absolute',
-                top: 8,
-                left: 12,
-                fontSize: 10,
-                opacity: 0.8,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4
-              }}>
-                <div style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: '#fff',
-                  animation: 'pulse 1.5s infinite'
-                }}></div>
-                <span>Checking for updates...</span>
-              </div>
-            )}
             
             {/* Dismiss button */}
             <button
