@@ -23,6 +23,12 @@ const AddCustomService = lazy(() => import('./features/custom-services/component
 const MemoizedLivePulseCardContainer = React.memo(LivePulseCardContainer);
 const MemoizedZscalerPulseCardContainer = React.memo(ZscalerPulseCardContainer);
 
+// Alert banner throttling configuration
+const ALERT_THROTTLE_CONFIG = {
+  minIntervalMs: 2 * 60 * 1000, // 2 minutes minimum between API calls
+  onPageRefreshDelay: 1000, // 1 second delay after page refresh to allow initial load
+};
+
 function parseZscalerRSS(xmlText, maxItems = 25) {
   const parser = new window.DOMParser();
   const xml = parser.parseFromString(xmlText, 'text/xml');
@@ -237,6 +243,10 @@ function App() {
   const [showLiveFeedPanel, setShowLiveFeedPanel] = useState(false);
   const [liveFeedHasNewItems, setLiveFeedHasNewItems] = useState(false);
   const [previousDataSnapshot, setPreviousDataSnapshot] = useState(null);
+  
+  // Alert banner throttling state
+  const [lastAlertFetchTime, setLastAlertFetchTime] = useState(0);
+  const [alertFetchInProgress, setAlertFetchInProgress] = useState(false);
 
   // Manual navigation functions for alert banner
   const nextAlert = () => {
@@ -290,14 +300,33 @@ function App() {
   };
 
   const demoIssues = React.useMemo(() => [
-    // Only include demo issues for selected services
-    ...(isServiceSelected('cloudflare') ? [{ provider: 'Cloudflare', name: 'API Gateway Outage', status: 'critical', updated: new Date().toISOString(), url: 'https://www.cloudflarestatus.com/' }] : []),
-    ...(isServiceSelected('zscaler') ? [{ provider: 'Zscaler', name: 'Authentication Failure', status: 'major', updated: new Date().toISOString(), url: 'https://trust.zscaler.com/' }] : []),
-    ...(isServiceSelected('okta') ? [{ provider: 'Okta', name: 'Service Disruption', status: 'critical', updated: new Date().toISOString(), url: 'https://status.okta.com/' }] : []),
-    ...(isServiceSelected('sendgrid') ? [{ provider: 'SendGrid', name: 'Email Delivery Issues', status: 'major', updated: new Date().toISOString(), url: 'https://status.sendgrid.com/' }] : []),
-    ...(isServiceSelected('slack') ? [{ provider: 'Slack', name: 'Message Sync Issues', status: 'minor', updated: new Date().toISOString(), url: 'https://status.slack.com/' }] : []),
-    ...(isServiceSelected('datadog') ? [{ provider: 'Datadog', name: 'Monitoring Delays', status: 'major', updated: new Date().toISOString(), url: 'https://status.datadoghq.com/' }] : []),
-    ...(isServiceSelected('aws') ? [{ provider: 'AWS', name: 'EC2 Instance Issues', status: 'critical', updated: new Date().toISOString(), url: 'https://status.aws.amazon.com/' }] : []),
+    // Only include demo issues for selected services that would be considered "active"
+    // These simulate major issues with today's date for testing alert banner functionality
+    ...(isServiceSelected('cloudflare') ? [{ 
+      provider: 'Cloudflare', 
+      name: 'API Gateway Service Disruption', 
+      status: 'critical', 
+      updated: new Date().toISOString(), 
+      url: 'https://www.cloudflarestatus.com/',
+      impact: 'major'
+    }] : []),
+    ...(isServiceSelected('okta') ? [{ 
+      provider: 'Okta', 
+      name: 'Authentication Service Outage', 
+      status: 'critical', 
+      updated: new Date().toISOString(), 
+      url: 'https://status.okta.com/',
+      impact: 'critical'
+    }] : []),
+    ...(isServiceSelected('aws') ? [{ 
+      provider: 'AWS', 
+      name: 'EC2 Instance Connectivity Issues', 
+      status: 'major', 
+      updated: new Date().toISOString(), 
+      url: 'https://status.aws.amazon.com/',
+      impact: 'major'
+    }] : []),
+    // Note: Removed maintenance/minor demo issues to simulate major-only filtering
   ], [selectedServices]);
 
   // Configuration for splash screen behavior
@@ -334,6 +363,94 @@ const SPLASH_CONFIG = {
       console.warn('Unable to store Cloudflare incidents in localStorage:', error);
     }
   }
+
+  // Throttled fetch function specifically for alert banner
+  const fetchAlertsThrottled = React.useCallback(() => {
+    const now = Date.now();
+    const timeSinceLastFetch = now - lastAlertFetchTime;
+    
+    // Skip if we're already fetching or within throttle window
+    if (alertFetchInProgress || timeSinceLastFetch < ALERT_THROTTLE_CONFIG.minIntervalMs) {
+      return;
+    }
+    
+    setAlertFetchInProgress(true);
+    setLastAlertFetchTime(now);
+    
+    // Perform the actual fetch operation
+    fetchAllStatuses().finally(() => {
+      setAlertFetchInProgress(false);
+    });
+  }, [lastAlertFetchTime, alertFetchInProgress]);
+
+  // Check if an issue/incident is actually active/unresolved and meets alert criteria
+  const isIssueActive = (issue, provider) => {
+    if (!issue) return false;
+    
+    const issueText = `${issue.title || ''} ${issue.description || ''}`.toLowerCase();
+    const resolvedKeywords = ['resolved', 'closed', 'completed', 'fixed', 'restored'];
+    const maintenanceKeywords = ['maintenance', 'scheduled', 'planned', 'update', 'upgrade'];
+    
+    // For Cloudflare: check resolved_at field first
+    if (provider === 'cloudflare' && issue.resolved_at) {
+      return false;
+    }
+    
+    // For all providers: check for resolved keywords in text
+    const isTextuallyResolved = resolvedKeywords.some(keyword => issueText.includes(keyword));
+    if (isTextuallyResolved) {
+      return false;
+    }
+    
+    // Additional check for status field
+    if (issue.status) {
+      const statusText = issue.status.toLowerCase();
+      if (resolvedKeywords.some(keyword => statusText.includes(keyword))) {
+        return false;
+      }
+    }
+    
+    // Filter out maintenance and non-critical updates for alert banner
+    const isMaintenance = maintenanceKeywords.some(keyword => issueText.includes(keyword));
+    if (isMaintenance) {
+      return false;
+    }
+    
+    // Check if issue has been updated today (for alert banner relevance)
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1);
+    
+    let issueDate = null;
+    if (issue.updated_at || issue.updatedAt) {
+      issueDate = new Date(issue.updated_at || issue.updatedAt);
+    } else if (issue.date) {
+      issueDate = new Date(issue.date);
+    } else if (issue.reported_at) {
+      issueDate = new Date(issue.reported_at);
+    }
+    
+    // Only include issues that have been updated today
+    if (!issueDate || isNaN(issueDate) || issueDate < todayStart || issueDate > todayEnd) {
+      return false;
+    }
+    
+    // Only include major/critical issues for alert banner
+    const isMajorIssue = (
+      issueText.includes('outage') ||
+      issueText.includes('critical') ||
+      issueText.includes('major') ||
+      issueText.includes('incident') ||
+      issueText.includes('disruption') ||
+      issueText.includes('degraded') ||
+      issueText.includes('down') ||
+      issueText.includes('unavailable') ||
+      (issue.impact && ['critical', 'major'].includes(issue.impact.toLowerCase())) ||
+      (issue.status && ['critical', 'major', 'issues detected', 'degraded performance'].includes(issue.status.toLowerCase()))
+    );
+    
+    return isMajorIssue;
+  };
 
   // Fetch all statuses (extracted for reuse)
   const fetchAllStatuses = React.useCallback(() => {
@@ -567,64 +684,112 @@ const SPLASH_CONFIG = {
   // Check for any open/unresolved issue across selected providers only
   useEffect(() => {
     const openIssues = [];
-    // Only check for issues from selected services
-    // Cloudflare: all unresolved incidents (only if selected)
-    if (isServiceSelected('cloudflare') && cloudflare && cloudflare.incidents && cloudflare.incidents.length > 0) {
-      cloudflare.incidents.forEach(inc => {
-        if (!inc.resolved_at) {
-          openIssues.push({ provider: 'Cloudflare', name: inc.title || inc.name, status: inc.impact || inc.status, updated: inc.updated_at || inc.updatedAt, url: inc.shortlink || inc.url });
+    
+    // Cloudflare: only unresolved incidents (only if selected)
+    if (isServiceSelected('cloudflare') && cloudflare && cloudflare.incidents) {
+      cloudflare.incidents.forEach(incident => {
+        if (isIssueActive(incident, 'cloudflare')) {
+          openIssues.push({ 
+            provider: 'Cloudflare', 
+            name: incident.name || incident.title, 
+            status: incident.impact || incident.status || 'major', 
+            updated: incident.updated_at || incident.updatedAt, 
+            url: incident.shortlink || incident.url || 'https://www.cloudflarestatus.com/' 
+          });
         }
       });
     }
-    // Zscaler: all open issues (not resolved/closed/completed and not operational) (only if selected)
-    if (isServiceSelected('zscaler') && zscaler && zscaler.updates && zscaler.updates.length > 0) {
-      zscaler.updates.forEach(upd => {
-        const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
-        const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
-        const isOperational = (zscaler.status || '').toLowerCase() === 'operational';
-        if (!isResolved && !isOperational) {
-          openIssues.push({ provider: 'Zscaler', name: upd.title, status: zscaler.status, updated: upd.date, url: upd.link });
+    
+    // Zscaler: only active issues (only if selected)
+    if (isServiceSelected('zscaler') && zscaler && zscaler.updates) {
+      zscaler.updates.forEach(update => {
+        if (isIssueActive(update, 'zscaler')) {
+          openIssues.push({ 
+            provider: 'Zscaler', 
+            name: update.title, 
+            status: zscaler.status, 
+            updated: update.date, 
+            url: update.link || 'https://trust.zscaler.com/' 
+          });
         }
       });
     }
-    // Okta: all open issues (not resolved/closed/completed) (only if selected)
-    if (isServiceSelected('okta') && okta && okta.updates && okta.updates.length > 0) {
-      okta.updates.forEach(upd => {
-        const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
-        const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
-        if (!isResolved) {
-          openIssues.push({ provider: 'Okta', name: upd.title, status: okta.status, updated: upd.date, url: upd.link });
+    
+    // Okta: only active issues (only if selected)
+    if (isServiceSelected('okta') && okta && okta.updates) {
+      okta.updates.forEach(update => {
+        if (isIssueActive(update, 'okta')) {
+          openIssues.push({ 
+            provider: 'Okta', 
+            name: update.title, 
+            status: okta.status, 
+            updated: update.date, 
+            url: update.link || update.url || 'https://status.okta.com/' 
+          });
         }
       });
     }
-    // SendGrid: all open issues (not resolved/closed/completed) (only if selected)
-    if (isServiceSelected('sendgrid') && sendgrid && sendgrid.updates && sendgrid.updates.length > 0) {
-      sendgrid.updates.forEach(upd => {
-        const text = `${upd.title || ''} ${upd.description || ''}`.toLowerCase();
-        const isResolved = text.includes('resolved') || text.includes('closed') || text.includes('completed');
-        if (!isResolved) {
-          openIssues.push({ provider: 'SendGrid', name: upd.title, status: sendgrid.status, updated: upd.date, url: upd.link });
+    
+    // SendGrid: only active issues (only if selected)
+    if (isServiceSelected('sendgrid') && sendgrid && sendgrid.updates) {
+      sendgrid.updates.forEach(update => {
+        if (isIssueActive(update, 'sendgrid')) {
+          openIssues.push({ 
+            provider: 'SendGrid', 
+            name: update.title, 
+            status: sendgrid.status, 
+            updated: update.date, 
+            url: update.link || 'https://status.sendgrid.com/' 
+          });
         }
       });
     }
-    // Slack: all open issues (only if selected)
-    if (isServiceSelected('slack') && slack && slack.updates && slack.updates.length > 0) {
-      slack.updates.forEach(upd => {
-        openIssues.push({ provider: 'Slack', name: upd.title, status: slack.status, updated: upd.reported_at, url: upd.url });
+    
+    // Slack: only active issues (only if selected)
+    if (isServiceSelected('slack') && slack && slack.updates) {
+      slack.updates.forEach(update => {
+        if (isIssueActive(update, 'slack')) {
+          openIssues.push({ 
+            provider: 'Slack', 
+            name: update.title, 
+            status: slack.status, 
+            updated: update.reported_at, 
+            url: update.url || 'https://status.slack.com/' 
+          });
+        }
       });
     }
-    // Datadog: all open issues (only if selected)
-    if (isServiceSelected('datadog') && datadog && datadog.updates && datadog.updates.length > 0) {
-      datadog.updates.forEach(upd => {
-        openIssues.push({ provider: 'Datadog', name: upd.title, status: datadog.status, updated: upd.reported_at, url: upd.url });
+    
+    // Datadog: only active issues (only if selected)
+    if (isServiceSelected('datadog') && datadog && datadog.updates) {
+      datadog.updates.forEach(update => {
+        if (isIssueActive(update, 'datadog')) {
+          openIssues.push({ 
+            provider: 'Datadog', 
+            name: update.title, 
+            status: datadog.status, 
+            updated: update.reported_at, 
+            url: update.url || 'https://status.datadoghq.com/' 
+          });
+        }
       });
     }
-    // AWS: all open issues (only if selected)
-    if (isServiceSelected('aws') && aws && aws.updates && aws.updates.length > 0) {
-      aws.updates.forEach(upd => {
-        openIssues.push({ provider: 'AWS', name: upd.title, status: aws.status, updated: upd.reported_at, url: upd.url });
+    
+    // AWS: only active issues (only if selected)
+    if (isServiceSelected('aws') && aws && aws.updates) {
+      aws.updates.forEach(update => {
+        if (isIssueActive(update, 'aws')) {
+          openIssues.push({ 
+            provider: 'AWS', 
+            name: update.title, 
+            status: aws.status, 
+            updated: update.reported_at, 
+            url: update.url || 'https://status.aws.amazon.com/' 
+          });
+        }
       });
     }
+    
     setCriticalMode({ active: openIssues.length > 0, details: openIssues });
   }, [cloudflare, zscaler, okta, sendgrid, slack, datadog, aws, selectedServices]);
 
@@ -672,21 +837,43 @@ const SPLASH_CONFIG = {
 
   useEffect(() => {
     setToday(new Date()); // Update on mount (in case of SSR)
-    fetchAllStatuses();
-    const interval = setInterval(fetchAllStatuses, 2 * 60 * 1000); // 2 minutes
-    return () => clearInterval(interval);
-  }, [fetchAllStatuses]);
+    
+    // Initial load after a small delay to allow component to settle
+    setTimeout(() => {
+      fetchAllStatuses();
+      setLastAlertFetchTime(Date.now());
+    }, ALERT_THROTTLE_CONFIG.onPageRefreshDelay);
+    
+    // Set up throttled interval for alerts (but continue regular data fetching for live feed)
+    const alertInterval = setInterval(() => {
+      fetchAlertsThrottled();
+    }, ALERT_THROTTLE_CONFIG.minIntervalMs);
+    
+    // Regular interval for live feed data (not throttled for alert banner)
+    const dataInterval = setInterval(fetchAllStatuses, 2 * 60 * 1000); // 2 minutes
+    
+    return () => {
+      clearInterval(alertInterval);
+      clearInterval(dataInterval);
+    };
+  }, [fetchAllStatuses, fetchAlertsThrottled]);
 
-  // Ticker logic: cycle through issues when data refreshes (no separate interval)
-useEffect(() => {
-  const issues = criticalMode.active ? criticalMode.details : demoIssues;
-  if (issues.length > 1) {
-    // Cycle to next issue when data updates (every 2 minutes with main refresh)
-    setTickerIndex(prevIndex => (prevIndex + 1) % issues.length);
-  } else {
-    setTickerIndex(0);
-  }
-}, [criticalMode.active, criticalMode.details, demoIssues, cloudflare, zscaler, okta, sendgrid, slack, datadog, aws]);
+  // Ticker logic: cycle through issues every 10 seconds
+  useEffect(() => {
+    const issues = criticalMode.active ? criticalMode.details : demoIssues;
+    
+    if (issues.length <= 1) {
+      setTickerIndex(0);
+      return;
+    }
+    
+    // Start cycling through issues every 10 seconds
+    const tickerInterval = setInterval(() => {
+      setTickerIndex(prevIndex => (prevIndex + 1) % issues.length);
+    }, 10000); // 10 seconds
+    
+    return () => clearInterval(tickerInterval);
+  }, [criticalMode.active, criticalMode.details, demoIssues]);
 
   // Handle service selection
   function handleServiceSelect(services) {
@@ -1104,6 +1291,30 @@ useEffect(() => {
               boxShadow: '0 4px 20px rgba(255, 71, 87, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
               border: '1px solid rgba(255, 255, 255, 0.2)',
             }}>
+            
+            {/* Throttling indicator */}
+            {alertFetchInProgress && (
+              <div style={{
+                position: 'absolute',
+                top: 8,
+                left: 12,
+                fontSize: 10,
+                opacity: 0.8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4
+              }}>
+                <div style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: '50%',
+                  background: '#fff',
+                  animation: 'pulse 1.5s infinite'
+                }}></div>
+                <span>Checking for updates...</span>
+              </div>
+            )}
+            
             {/* Dismiss button */}
             <button
               aria-label="Dismiss alert banner"
