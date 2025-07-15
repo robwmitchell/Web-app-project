@@ -358,7 +358,6 @@ const processedIssues = useMemo(() => {
       'warsaw': { lat: 52.2297, lng: 21.0122, region: 'Warsaw, Poland' },
       'prague': { lat: 50.0755, lng: 14.4378, region: 'Prague, Czech Republic' },
       'budapest': { lat: 47.4979, lng: 19.0402, region: 'Budapest, Hungary' },
-      'mumbai': { lat: 19.0760, lng: 72.8777, region: 'Mumbai, India' },
       'delhi': { lat: 28.7041, lng: 77.1025, region: 'Delhi, India' },
       'hyderabad': { lat: 17.3850, lng: 78.4867, region: 'Hyderabad, India' },
       'pune': { lat: 18.5204, lng: 73.8567, region: 'Pune, India' },
