@@ -457,14 +457,32 @@
 /* Issue marker severity styles */
 .issue-marker-critical {
   filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.6));
+  transition: filter 0.2s ease;
+  cursor: pointer;
+}
+
+.issue-marker-critical:hover {
+  filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.9));
 }
 
 .issue-marker-major {
   filter: drop-shadow(0 0 6px rgba(234, 88, 12, 0.6));
+  transition: filter 0.2s ease;
+  cursor: pointer;
+}
+
+.issue-marker-major:hover {
+  filter: drop-shadow(0 0 12px rgba(234, 88, 12, 0.9));
 }
 
 .issue-marker-minor {
   filter: drop-shadow(0 0 4px rgba(217, 119, 6, 0.6));
+  transition: filter 0.2s ease;
+  cursor: pointer;
+}
+
+.issue-marker-minor:hover {
+  filter: drop-shadow(0 0 10px rgba(217, 119, 6, 0.9));
 }
 
 /* Side Panel Layout Styles */
@@ -487,10 +505,14 @@
   gap: 20px;
   flex: 1;
   min-height: 400px;
+  transition: all 0.3s ease;
 }
 
 .leaflet-map-wrapper {
   flex: 1;
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 /* Issue side panel */
@@ -670,6 +692,83 @@
   font-size: 12px;
 }
 
+/* PERFORMANCE OPTIMIZATIONS */
+
+/* Enable hardware acceleration for map tiles and markers */
+.leaflet-map-wrapper .leaflet-tile,
+.leaflet-map-wrapper .leaflet-marker-icon,
+.leaflet-map-wrapper .leaflet-interactive {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Optimize tooltip rendering */
+.single-issue-tooltip .leaflet-tooltip,
+.cluster-tooltip .leaflet-tooltip {
+  transform: translateZ(0);
+  will-change: opacity, transform;
+}
+
+/* Optimize marker hover states */
+.leaflet-interactive:hover {
+  transform: translateZ(0);
+  transition: filter 0.15s ease;
+}
+
+/* Reduce repaints during map interactions */
+.leaflet-container {
+  transform: translateZ(0);
+}
+
+/* Optimize cluster animations */
+.clustered {
+  transition: all 0.2s ease !important;
+  transform: translateZ(0);
+}
+
+/* Smooth scrolling for side panel */
+.side-panel-content {
+  contain: layout style paint;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize issue cards rendering */
+.issue-card {
+  contain: layout style;
+  transform: translateZ(0);
+}
+
+/* Reduce layout thrashing in lists */
+.issues-list-panel {
+  contain: layout;
+}
+
+/* GPU acceleration for animations */
+.issue-side-panel {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Optimize map legend rendering */
+.map-legend {
+  contain: layout style;
+}
+
+/* Improve text rendering performance */
+.tooltip-content,
+.issue-card-content,
+.side-panel-content {
+  text-rendering: optimizeSpeed;
+}
+
+/* Optimize hover interactions */
+.legend-item:hover,
+.issue-item:hover,
+.issue-card:hover {
+  transform: translateZ(0) translateY(-1px);
+}
+
 /* Responsive design for side panel */
 @media (max-width: 768px) {
   .map-content-layout {
@@ -680,10 +779,18 @@
   .issue-side-panel {
     width: 100%;
     order: -1;
+    max-height: 40vh;
+    overflow-y: auto;
   }
   
   .leaflet-map-wrapper {
     min-height: 300px;
+    order: 1;
+  }
+  
+  .side-panel-content {
+    max-height: 30vh;
+    overflow-y: auto;
   }
 }
 
@@ -1005,6 +1112,20 @@
 /* Clustered marker styles */
 .clustered {
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6) !important;
+  animation: pulseCluster 2s infinite;
+}
+
+.clustered:hover {
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.9) !important;
+}
+
+@keyframes pulseCluster {
+  0%, 100% { 
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6);
+  }
+  50% { 
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.8);
+  }
 }
 
 /* Cluster count tooltip */
