@@ -24,6 +24,7 @@ const UnifiedLiveFeedPanel = lazy(() => import('./components/feeds/UnifiedLiveFe
 const ServiceSelectionSplash = lazy(() => import('./features/services/components/ServiceSelectionSplash'));
 const AddCustomService = lazy(() => import('./features/custom-services/components/AddCustomService'));
 const LeafletWorldMap = lazy(() => import('./components/maps/LeafletWorldMap'));
+const ServiceRadar = lazy(() => import('./components/radar/ServiceRadar'));
 
 // Memoized components to prevent unnecessary re-renders
 const MemoizedLivePulseCardContainer = React.memo(LivePulseCardContainer);
@@ -253,6 +254,7 @@ function App() {
   const [bugReportService, setBugReportService] = useState('');
   const [showFeedSearchPanel, setShowFeedSearchPanel] = useState(false);
   const [showWorldMap, setShowWorldMap] = useState(false);
+  const [showRadar, setShowRadar] = useState(false);
   const [worldMapHistoric, setWorldMapHistoric] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -1161,10 +1163,12 @@ const SPLASH_CONFIG = {
         onAddRSSClick={() => setShowAddCustomModal(true)}
         onSettingsClick={() => setShowSplash(true)}
         onFeedSearchClick={() => setShowFeedSearchPanel(true)}
+        onRadarClick={() => setShowRadar(true)}
         showWorldMap={showWorldMap}
         showAddCustomModal={showAddCustomModal}
         showSplash={showSplash}
         showFeedSearchPanel={showFeedSearchPanel}
+        showRadar={showRadar}
         totalFeedItemsCount={totalFeedItemsCount}
         selectedServices={selectedServices}
         cloudflare={cloudflare}
@@ -1771,6 +1775,43 @@ const SPLASH_CONFIG = {
               </Suspense>
             </div>
           </div>
+        )}
+
+        {/* Service Radar Modal */}
+        {showRadar && (
+          <Suspense fallback={
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 10000,
+              color: 'white',
+              fontSize: '18px'
+            }}>
+              Loading radar...
+            </div>
+          }>
+            <ErrorBoundary>
+              <ServiceRadar
+                cloudflare={cloudflare}
+                zscaler={zscaler}
+                okta={okta}
+                sendgrid={sendgrid}
+                slack={slack}
+                datadog={datadog}
+                aws={aws}
+                customServices={customServices}
+                selectedServices={selectedServices}
+                onClose={() => setShowRadar(false)}
+              />
+            </ErrorBoundary>
+          </Suspense>
         )}
 
         {/* Add Custom Service Modal */}

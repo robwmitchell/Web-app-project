@@ -10,10 +10,12 @@ const SideDrawer = ({
   onAddRSSClick,
   onSettingsClick,
   onFeedSearchClick,
+  onRadarClick,
   showWorldMap,
   showAddCustomModal,
   showSplash,
   showFeedSearchPanel,
+  showRadar,
   totalFeedItemsCount,
   selectedServices,
   cloudflare,
@@ -89,6 +91,24 @@ const SideDrawer = ({
             </button>
             <p className="drawer-item-description">
               View global service issues on an interactive map
+            </p>
+          </div>
+
+          {/* Service Radar */}
+          <div className="drawer-item">
+            <button
+              className={`drawer-item-button ${showRadar ? 'active' : ''}`}
+              onClick={() => {
+                onRadarClick();
+                onClose();
+              }}
+            >
+              <span className="drawer-item-icon">📡</span>
+              <span className="drawer-item-title">Service Radar</span>
+              <span className="drawer-item-arrow">→</span>
+            </button>
+            <p className="drawer-item-description">
+              Real-time radar view of all service statuses
             </p>
           </div>
 
