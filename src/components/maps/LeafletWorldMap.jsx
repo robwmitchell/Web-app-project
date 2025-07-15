@@ -185,6 +185,23 @@ const formatTitle = (title) => {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 };
 
+const formatTitleForTooltip = (title, maxLength = 80) => {
+  if (!title) return 'Service Issue';
+  
+  const cleaned = cleanHtmlContent(title);
+  const capitalized = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  
+  if (capitalized.length <= maxLength) return capitalized;
+  
+  // Find the last complete word within the limit
+  const truncated = capitalized.substring(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  
+  return lastSpace > maxLength * 0.6 
+    ? truncated.substring(0, lastSpace) + '...' 
+    : truncated + '...';
+};
+
 const formatTime = (timeString) => {
   if (!timeString) return 'Unknown time';
   
@@ -782,10 +799,12 @@ return (
                   <span className="cluster-count">{group.issues.length}</span>
                 </Tooltip>
               ) : (
-                <Tooltip className="single-issue-tooltip" direction="top">
+                <Tooltip className="single-issue-tooltip" direction="top" sticky={true}>
                   <div className="tooltip-content">
-                    <strong>{group.issues[0].provider}</strong><br/>
-                    {formatTitle(group.issues[0].title)}<br/>
+                    <strong>{group.issues[0].provider}</strong>
+                    <div className="tooltip-title">
+                      {formatTitleForTooltip(group.issues[0].title)}
+                    </div>
                     <em>Click to view details</em>
                   </div>
                 </Tooltip>
