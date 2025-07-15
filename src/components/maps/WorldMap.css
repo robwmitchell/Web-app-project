@@ -98,6 +98,37 @@
   box-shadow: 0 0 12px rgba(217, 119, 6, 0.4);
 }
 
+/* Legend cluster info styles */
+.legend-cluster-info {
+  position: relative;
+}
+
+.legend-cluster-icon {
+  position: relative;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.legend-cluster-icon .legend-dot {
+  border: 2px solid rgba(255, 255, 255, 0.6) !important;
+}
+
+.cluster-count-example {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 4px;
+  border-radius: 6px;
+  border: 1px solid white;
+  line-height: 1;
+  min-width: 12px;
+  text-align: center;
+}
+
 /* Leaflet Map Container */
 .leaflet-map-container {
   position: relative;
@@ -319,6 +350,26 @@
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
   text-decoration: none;
   color: white !important;
+}
+
+/* Popup view details button */
+.popup-view-details-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.popup-view-details-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
 }
 
 /* Override default Leaflet popup styles for better positioning */
@@ -761,4 +812,447 @@
   .summary-value-compact {
     font-size: 14px;
   }
+}
+
+/* Multi-Issue Popup Styles */
+.multi-issue-popup .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  max-width: 400px !important;
+}
+
+.multi-issue-popup .leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 12px;
+}
+
+.popup-content {
+  padding: 16px;
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.severity-indicator {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.severity-indicator.severity-critical {
+  background: rgba(220, 38, 38, 0.2);
+  color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+}
+
+.severity-indicator.severity-major {
+  background: rgba(234, 88, 12, 0.2);
+  color: #ea580c;
+  border: 1px solid rgba(234, 88, 12, 0.3);
+}
+
+.severity-indicator.severity-minor {
+  background: rgba(217, 119, 6, 0.2);
+  color: #d97706;
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
+.issues-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.issue-item {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.issue-item:hover {
+  background: rgba(102, 126, 234, 0.05);
+  border-color: rgba(102, 126, 234, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.issue-item:last-child {
+  margin-bottom: 0;
+}
+
+.issue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.service-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.severity-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.severity-badge.severity-critical {
+  background: #dc2626;
+  color: white;
+}
+
+.severity-badge.severity-major {
+  background: #ea580c;
+  color: white;
+}
+
+.severity-badge.severity-minor {
+  background: #d97706;
+  color: white;
+}
+
+.issue-title {
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+
+.issue-time {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.issue-divider {
+  border: none;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 12px 0;
+}
+
+.single-issue .issue-description {
+  color: #4a5568;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 8px 0;
+}
+
+.issue-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.issue-region {
+  font-style: italic;
+}
+
+.view-details-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.view-details-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Clustered marker styles */
+.clustered {
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Cluster count tooltip */
+.cluster-tooltip {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.cluster-tooltip .leaflet-tooltip-content {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.cluster-count {
+  display: inline-block;
+  background: #1a1a1a;
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px 6px;
+  border-radius: 8px;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  line-height: 1;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Dark mode support for popup */
+[data-theme="dark"] .popup-content {
+  background: rgba(31, 41, 55, 0.98);
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .popup-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .popup-header h3 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .issue-item {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .issue-item:hover {
+  background: rgba(102, 126, 234, 0.15);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+[data-theme="dark"] .issue-title {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .issue-divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .single-issue .issue-description {
+  color: #d1d5db;
+}
+
+/* Single issue tooltip */
+.single-issue-tooltip .leaflet-tooltip {
+  background: rgba(0, 0, 0, 0.9) !important;
+  border: none !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+  color: white !important;
+  font-size: 0.85rem !important;
+  padding: 8px 12px !important;
+  max-width: 200px !important;
+}
+
+.single-issue-tooltip .leaflet-tooltip-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.tooltip-content {
+  line-height: 1.3;
+}
+
+.tooltip-content strong {
+  color: #f59e0b;
+}
+
+.tooltip-content em {
+  color: #d1d5db;
+  font-size: 0.8rem;
+}
+
+/* Multiple Issues View in Side Panel */
+.multiple-issues-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.issues-summary {
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.issues-summary h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.issues-count {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.issues-list-panel {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.issue-card {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+}
+
+.issue-card:hover {
+  background: rgba(102, 126, 234, 0.05);
+  border-color: rgba(102, 126, 234, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.issue-card:last-child {
+  margin-bottom: 0;
+}
+
+.issue-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.service-info {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.issue-card-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #1a1a1a;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.issue-card-description {
+  margin: 0 0 12px 0;
+  color: #4a5568;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.issue-card-meta {
+  margin-bottom: 12px;
+}
+
+.meta-region {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.issue-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.issue-card-link:hover {
+  color: #5a67d8;
+  text-decoration: underline;
+}
+
+.issue-card-divider {
+  border: none;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 16px 0;
+}
+
+/* Dark mode support for multiple issues view */
+[data-theme="dark"] .issues-summary h3 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .issue-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .issue-card:hover {
+  background: rgba(102, 126, 234, 0.15);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+[data-theme="dark"] .issue-card-content h4 {
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .issue-card-description {
+  color: #d1d5db;
+}
+
+[data-theme="dark"] .issue-card-divider {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Adjust side panel scrolling for multiple issues */
+.issue-side-panel .side-panel-content {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.single-issue-view {
+  overflow-y: auto;
+  flex: 1;
 }

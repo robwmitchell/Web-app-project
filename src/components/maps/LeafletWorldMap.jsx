@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './WorldMap.css';
 
@@ -47,6 +47,78 @@ function MapBoundsHandler({ issues }) {
   return null;
 }
 
+// Group issues by location to handle overlapping markers - moved outside component
+const groupIssuesByLocation = (issues) => {
+  const locationGroups = {};
+  const PROXIMITY_THRESHOLD = 0.5; // degrees (roughly 50km)
+  
+  issues.forEach(issue => {
+    const key = `${Math.round(issue.lat / PROXIMITY_THRESHOLD) * PROXIMITY_THRESHOLD}_${Math.round(issue.lng / PROXIMITY_THRESHOLD) * PROXIMITY_THRESHOLD}`;
+    
+    if (!locationGroups[key]) {
+      locationGroups[key] = {
+        lat: issue.lat,
+        lng: issue.lng,
+        issues: [],
+        maxSeverity: 'minor'
+      };
+    }
+    
+    locationGroups[key].issues.push(issue);
+    
+    // Update max severity for the group
+    const severityOrder = { 'critical': 3, 'major': 2, 'minor': 1 };
+    if (severityOrder[issue.severity] > severityOrder[locationGroups[key].maxSeverity]) {
+      locationGroups[key].maxSeverity = issue.severity;
+    }
+  });
+  
+  return Object.values(locationGroups);
+};
+
+// Helper functions for cluster visualization
+const getSeverityColor = (severity) => {
+  switch (severity) {
+    case 'critical': return '#dc2626';
+    case 'major': return '#ea580c';
+    case 'minor': return '#d97706';
+    default: return '#6b7280';
+  }
+};
+
+const getSeverityRadius = (severity) => {
+  switch (severity) {
+    case 'critical': return 15;
+    case 'major': return 12;
+    case 'minor': return 9;
+    default: return 6;
+  }
+};
+
+const getClusterRadius = (group) => {
+  const baseRadius = getSeverityRadius(group.maxSeverity);
+  const countMultiplier = Math.min(1 + (group.issues.length - 1) * 0.3, 2.5);
+  return baseRadius * countMultiplier;
+};
+
+const getClusterColor = (group) => {
+  const baseColor = getSeverityColor(group.maxSeverity);
+  return baseColor;
+};
+
+const getServiceColor = (service) => {
+  const colors = {
+    'Cloudflare': '#f48120',
+    'AWS': '#ff9900', 
+    'Zscaler': '#00bfff',
+    'Okta': '#007dc1',
+    'SendGrid': '#1a82e2',
+    'Slack': '#4a154b',
+    'Datadog': '#632ca6'
+  };
+  return colors[service] || '#6b7280';
+};
+
 // Main LeafletWorldMap component
 export default function LeafletWorldMap({ 
   cloudflareIncidents = [], 
@@ -60,6 +132,7 @@ export default function LeafletWorldMap({
   showHistoric = false
 }) {
   const [selectedIssue, setSelectedIssue] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null); // New state for issue groups
 
 // Utility functions for cleaning and formatting issue data
 const cleanHtmlContent = (htmlString) => {
@@ -110,6 +183,33 @@ const formatTitle = (title) => {
   const cleaned = cleanHtmlContent(title);
   // Capitalize first letter if needed
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+};
+
+const formatTime = (timeString) => {
+  if (!timeString) return 'Unknown time';
+  
+  try {
+    const date = new Date(timeString);
+    if (isNaN(date)) return 'Invalid date';
+    
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffMins < 60) {
+      return diffMins <= 1 ? 'Just now' : `${diffMins} mins ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  } catch (e) {
+    return 'Invalid date';
+  }
 };
 
 // Known service provider data center locations
@@ -270,23 +370,8 @@ const processedIssues = useMemo(() => {
   return issues;
 }, [cloudflareIncidents, zscalerUpdates, oktaUpdates, sendgridUpdates, slackUpdates, datadogUpdates, awsUpdates, selectedServices, showHistoric]);
 
-const getSeverityColor = (severity) => {
-  switch (severity) {
-    case 'critical': return '#dc2626';
-    case 'major': return '#ea580c';
-    case 'minor': return '#d97706';
-    default: return '#6b7280';
-  }
-};
-
-const getSeverityRadius = (severity) => {
-  switch (severity) {
-    case 'critical': return 15;
-    case 'major': return 12;
-    case 'minor': return 9;
-    default: return 6;
-  }
-};
+// Group issues by location after processing
+const groupedIssues = useMemo(() => groupIssuesByLocation(processedIssues), [processedIssues]);
 
 return (
   <div className="world-map-container">
@@ -305,6 +390,13 @@ return (
           <div className="legend-item">
             <div className="legend-dot" style={{ backgroundColor: '#d97706' }}></div>
             <span>Minor ({processedIssues.filter(i => i.severity === 'minor').length})</span>
+          </div>
+          <div className="legend-item legend-cluster-info">
+            <div className="legend-cluster-icon">
+              <div className="legend-dot clustered" style={{ backgroundColor: '#6b7280' }}></div>
+              <span className="cluster-count-example">3</span>
+            </div>
+            <span>Multiple issues ({groupedIssues.filter(g => g.issues.length > 1).length} areas)</span>
           </div>
         </div>
       </div>
@@ -328,46 +420,87 @@ return (
           
           <MapBoundsHandler issues={processedIssues} />
           
-          {processedIssues.map(issue => (
+          {groupedIssues.map((group, index) => (
             <CircleMarker
-              key={issue.id}
-              center={[issue.lat, issue.lng]}
-              radius={getSeverityRadius(issue.severity)}
-              fillColor={getSeverityColor(issue.severity)}
+              key={`group-${index}`}
+              center={[group.lat, group.lng]}
+              radius={getClusterRadius(group)}
+              fillColor={getClusterColor(group)}
               color="white"
-              weight={2}
+              weight={group.issues.length > 1 ? 3 : 2}
               opacity={1}
-              fillOpacity={0.8}
-              className={`issue-marker-${issue.severity}`}
+              fillOpacity={group.issues.length > 1 ? 0.9 : 0.8}
+              className={`issue-marker-${group.maxSeverity} ${group.issues.length > 1 ? 'clustered' : ''}`}
               eventHandlers={{
-                click: () => setSelectedIssue(issue)
+                click: () => {
+                  // Always open in side panel, pass the entire group
+                  setSelectedGroup(group);
+                  setSelectedIssue(null); // Clear single issue selection
+                }
               }}
-            />
+            >
+              {/* Tooltip for markers */}
+              {group.issues.length > 1 ? (
+                <Tooltip permanent className="cluster-tooltip" direction="center">
+                  <span className="cluster-count">{group.issues.length}</span>
+                </Tooltip>
+              ) : (
+                <Tooltip className="single-issue-tooltip" direction="top">
+                  <div className="tooltip-content">
+                    <strong>{group.issues[0].provider}</strong><br/>
+                    {formatTitle(group.issues[0].title)}<br/>
+                    <em>Click to view details</em>
+                  </div>
+                </Tooltip>
+              )}
+            </CircleMarker>
           ))}
         </MapContainer>
       </div>
 
       {/* Side Panel for Issue Details */}
-      {selectedIssue && (
+      {(selectedGroup || selectedIssue) && (
         <div className="issue-side-panel">
           <div className="side-panel-header">
             <div className="panel-title-section">
-              <div className="provider-badge">
-                <strong>{selectedIssue.provider}</strong>
-              </div>
-              <div 
-                className="severity-badge"
-                style={{ 
-                  backgroundColor: getSeverityColor(selectedIssue.severity),
-                  color: 'white'
-                }}
-              >
-                {selectedIssue.severity}
-              </div>
+              {selectedGroup ? (
+                <>
+                  <div className="provider-badge">
+                    <strong>{selectedGroup.issues.length} Issues in this Area</strong>
+                  </div>
+                  <div 
+                    className="severity-badge"
+                    style={{ 
+                      backgroundColor: getSeverityColor(selectedGroup.maxSeverity),
+                      color: 'white'
+                    }}
+                  >
+                    Highest: {selectedGroup.maxSeverity}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="provider-badge">
+                    <strong>{selectedIssue.provider}</strong>
+                  </div>
+                  <div 
+                    className="severity-badge"
+                    style={{ 
+                      backgroundColor: getSeverityColor(selectedIssue.severity),
+                      color: 'white'
+                    }}
+                  >
+                    {selectedIssue.severity}
+                  </div>
+                </>
+              )}
             </div>
             <button 
               className="close-side-panel"
-              onClick={() => setSelectedIssue(null)}
+              onClick={() => {
+                setSelectedGroup(null);
+                setSelectedIssue(null);
+              }}
               title="Close details"
             >
               ×
@@ -375,39 +508,102 @@ return (
           </div>
           
           <div className="side-panel-content">
-            <div className="issue-title-section">
-              <h3>{selectedIssue.title}</h3>
-            </div>
-            
-            <div className="issue-meta-section">
-              <div className="meta-item">
-                <span className="meta-label">Region:</span>
-                <span className="meta-value">{selectedIssue.region}</span>
+            {selectedGroup ? (
+              // Multiple issues view
+              <div className="multiple-issues-view">
+                <div className="issues-summary">
+                  <h3>Service Issues in this Region</h3>
+                  <p className="issues-count">{selectedGroup.issues.length} active issues detected</p>
+                </div>
+                
+                <div className="issues-list-panel">
+                  {selectedGroup.issues.map((issue, index) => (
+                    <div key={issue.id} className="issue-card">
+                      <div className="issue-card-header">
+                        <div className="service-info">
+                          <div className="service-badge" style={{ backgroundColor: getServiceColor(issue.provider) }}>
+                            {issue.provider}
+                          </div>
+                          <div className={`severity-badge severity-${issue.severity}`}>
+                            {issue.severity}
+                          </div>
+                        </div>
+                        <div className="issue-time">
+                          {formatTime(issue.date)}
+                        </div>
+                      </div>
+                      
+                      <div className="issue-card-content">
+                        <h4 className="issue-card-title">{formatTitle(issue.title)}</h4>
+                        {issue.description && (
+                          <p className="issue-card-description">
+                            {formatDescription(issue.description)}
+                          </p>
+                        )}
+                        
+                        <div className="issue-card-meta">
+                          {issue.region && (
+                            <span className="meta-region">Region: {issue.region}</span>
+                          )}
+                        </div>
+                        
+                        {issue.url && (
+                          <a 
+                            href={issue.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="issue-card-link"
+                          >
+                            View Details ↗
+                          </a>
+                        )}
+                      </div>
+                      
+                      {index < selectedGroup.issues.length - 1 && (
+                        <hr className="issue-card-divider" />
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="meta-item">
-                <span className="meta-label">Date:</span>
-                <span className="meta-value">{new Date(selectedIssue.date).toLocaleString()}</span>
-              </div>
-            </div>
+            ) : (
+              // Single issue view
+              <div className="single-issue-view">
+                <div className="issue-title-section">
+                  <h3>{selectedIssue.title}</h3>
+                </div>
+                
+                <div className="issue-meta-section">
+                  <div className="meta-item">
+                    <span className="meta-label">Region:</span>
+                    <span className="meta-value">{selectedIssue.region}</span>
+                  </div>
+                  <div className="meta-item">
+                    <span className="meta-label">Date:</span>
+                    <span className="meta-value">{new Date(selectedIssue.date).toLocaleString()}</span>
+                  </div>
+                </div>
 
-            {selectedIssue.description && (
-              <div className="issue-description-section">
-                <div className="section-label">Description</div>
-                <div className="description-content">{selectedIssue.description}</div>
-              </div>
-            )}
-            
-            {selectedIssue.url && (
-              <div className="issue-actions-section">
-                <a 
-                  href={selectedIssue.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="view-details-btn"
-                >
-                  <span>View Full Details</span>
-                  <span className="external-link-icon">↗</span>
-                </a>
+                {selectedIssue.description && (
+                  <div className="issue-description-section">
+                    <div className="section-label">Description</div>
+                    <div className="description-content">{selectedIssue.description}</div>
+                  </div>
+                )}
+                
+                {selectedIssue.url && (
+                  <div className="issue-actions-section">
+                    <a 
+                      href={selectedIssue.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="view-details-btn"
+                    >
+                      <span>View Full Details</span>
+                      <span className="external-link-icon">↗</span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
           </div>
