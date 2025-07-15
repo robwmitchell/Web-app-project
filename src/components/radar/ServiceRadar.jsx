@@ -2,6 +2,30 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import './ServiceRadar.css';
 
+// D3 radar configuration (moved outside component to prevent re-creation)
+const RADAR_CONFIG = {
+  width: 400,
+  height: 400,
+  radius: 180,
+  centerX: 200,
+  centerY: 200,
+  rings: [60, 100, 140, 180],
+  sweepSpeed: 15000, // 15 seconds for full rotation
+  pingDuration: 1500, // milliseconds
+  fadeTrailLength: 30 // degrees for sweep trail
+};
+
+// Service logo mapping (moved outside component to prevent re-creation)
+const SERVICE_LOGOS = {
+  cloudflare: '/logos/cloudflare-logo.svg',
+  zscaler: '/logos/Zscaler.svg',
+  okta: '/logos/Okta-logo.svg',
+  sendgrid: '/logos/SendGrid.svg',
+  slack: '/logos/slack-logo.png',
+  datadog: '/logos/datadog-logo.png',
+  aws: '/logos/aws-logo.png'
+};
+
 const ServiceRadar = ({ 
   cloudflare = { incidents: [], status: 'Operational' },
   zscaler = { updates: [], status: 'Operational' },
@@ -17,30 +41,7 @@ const ServiceRadar = ({
   const svgRef = useRef();
   const [selectedService, setSelectedService] = useState(null);
   const highlightedServiceRef = useRef(null);
-
-  // Service logo mapping
-  const serviceLogos = {
-    cloudflare: '/logos/cloudflare-logo.svg',
-    zscaler: '/logos/Zscaler.svg',
-    okta: '/logos/Okta-logo.svg',
-    sendgrid: '/logos/SendGrid.svg',
-    slack: '/logos/slack-logo.png',
-    datadog: '/logos/datadog-logo.png',
-    aws: '/logos/aws-logo.png'
-  };
-
-  // D3 radar configuration
-  const radarConfig = {
-    width: 400,
-    height: 400,
-    radius: 180,
-    centerX: 200,
-    centerY: 200,
-    rings: [60, 100, 140, 180],
-    sweepSpeed: 15000, // 15 seconds for full rotation
-    pingDuration: 1500, // milliseconds
-    fadeTrailLength: 30 // degrees for sweep trail
-  };
+  const timerRef = useRef(null); // Add timer ref to prevent multiple timers
 
   // Helper function to check if an issue is active/new (today only and unresolved)
   const isActiveIssue = (item) => {
@@ -121,7 +122,7 @@ const ServiceRadar = ({
           activeIssues: activeIssues,
           hasActiveIssues: activeIssues.length > 0,
           color: service.color,
-          logo: serviceLogos[service.id],
+          logo: SERVICE_LOGOS[service.id],
           angle: service.angle,
           distance: getDistanceByStatus(service.data.status),
           severity: getStatusSeverity(service.data.status)
@@ -160,7 +161,7 @@ const ServiceRadar = ({
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
-    const { width, height, centerX, centerY, rings } = radarConfig;
+    const { width, height, centerX, centerY, rings } = RADAR_CONFIG;
 
     svg.attr("width", width).attr("height", height);
 
@@ -340,7 +341,7 @@ const ServiceRadar = ({
 
     // Update sweep trail
     const updateSweepTrail = (angle) => {
-      const startAngle = (angle - radarConfig.fadeTrailLength) * (Math.PI / 180);
+      const startAngle = (angle - RADAR_CONFIG.fadeTrailLength) * (Math.PI / 180);
       const endAngle = angle * (Math.PI / 180);
       
       const trailPath = d3.arc()
@@ -357,7 +358,12 @@ const ServiceRadar = ({
     const rotationDuration = 15000; // 15 seconds for full rotation
     let startTime = null;
     
-    const timer = d3.timer(function(elapsed) {
+    // Stop any existing timer before creating new one
+    if (timerRef.current) {
+      timerRef.current.stop();
+    }
+    
+    timerRef.current = d3.timer(function(elapsed) {
       if (!startTime) startTime = elapsed;
       
       const progress = ((elapsed - startTime) % rotationDuration) / rotationDuration;
@@ -414,11 +420,11 @@ const ServiceRadar = ({
           if (service.hasActiveIssues) {
             service.elements.pingCircle
               .transition()
-              .duration(radarConfig.pingDuration)
+              .duration(RADAR_CONFIG.pingDuration)
               .attr("r", 30)
               .attr("opacity", 0.8)
               .transition()
-              .duration(radarConfig.pingDuration / 2)
+              .duration(RADAR_CONFIG.pingDuration / 2)
               .attr("r", 40)
               .attr("opacity", 0);
           }
@@ -468,10 +474,13 @@ const ServiceRadar = ({
 
     // Cleanup function
     return () => {
-      timer.stop();
+      if (timerRef.current) {
+        timerRef.current.stop();
+        timerRef.current = null;
+      }
       svg.selectAll("*").remove();
     };
-  }, [radarServices, radarConfig]);
+  }, [radarServices]); // Removed radarConfig from dependencies since it's now constant
 
   const overallStatus = useMemo(() => {
     const criticalCount = radarServices.filter(s => s.severity === 'critical').length;
