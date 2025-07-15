@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './AddCustomService.css';
-import { parseCustomRSS } from '../../../utils/rssParser';
+import { parseCustomRSS, determineStatusFromItems } from '../../../utils/rssParser';
 
 const AddCustomService = ({ onAddService, onCancel, existingServices = [] }) => {
   const [formData, setFormData] = useState({
