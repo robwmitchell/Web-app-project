@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect, useCallback, memo } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, Tooltip, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Popup, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './WorldMap.css';
+import { getCountryFromCoordinates, getCountryFromRegion, COUNTRY_MAPPING } from './countryMapping.js';
 
 // Fix for default markers in Leaflet with React
 import L from 'leaflet';
@@ -48,36 +49,6 @@ const GEOGRAPHICAL_DATABASE = {
     'lima': { lat: -12.0464, lng: -77.0428, region: 'Lima, Peru' },
     'lagos': { lat: 6.5244, lng: 3.3792, region: 'Lagos, Nigeria' },
     'nairobi': { lat: -1.2921, lng: 36.8219, region: 'Nairobi, Kenya' },
-    'boston': { lat: 42.3601, lng: -71.0589, region: 'Boston, USA' },
-    'atlanta': { lat: 33.7490, lng: -84.3880, region: 'Atlanta, USA' },
-    'miami': { lat: 25.7617, lng: -80.1918, region: 'Miami, USA' },
-    'seattle': { lat: 47.6062, lng: -122.3321, region: 'Seattle, USA' },
-    'dallas': { lat: 32.7767, lng: -96.7970, region: 'Dallas, USA' },
-    'denver': { lat: 39.7392, lng: -104.9903, region: 'Denver, USA' },
-    'phoenix': { lat: 33.4484, lng: -112.0740, region: 'Phoenix, USA' },
-    'las vegas': { lat: 36.1699, lng: -115.1398, region: 'Las Vegas, USA' },
-    'montreal': { lat: 45.5017, lng: -73.5673, region: 'Montreal, Canada' },
-    'vancouver': { lat: 49.2827, lng: -123.1207, region: 'Vancouver, Canada' },
-    'berlin': { lat: 52.5200, lng: 13.4050, region: 'Berlin, Germany' },
-    'zurich': { lat: 47.3769, lng: 8.5417, region: 'Zurich, Switzerland' },
-    'vienna': { lat: 48.2082, lng: 16.3738, region: 'Vienna, Austria' },
-    'oslo': { lat: 59.9139, lng: 10.7522, region: 'Oslo, Norway' },
-    'copenhagen': { lat: 55.6761, lng: 12.5683, region: 'Copenhagen, Denmark' },
-    'helsinki': { lat: 60.1699, lng: 24.9384, region: 'Helsinki, Finland' },
-    'warsaw': { lat: 52.2297, lng: 21.0122, region: 'Warsaw, Poland' },
-    'prague': { lat: 50.0755, lng: 14.4378, region: 'Prague, Czech Republic' },
-    'budapest': { lat: 47.4979, lng: 19.0402, region: 'Budapest, Hungary' },
-    'delhi': { lat: 28.7041, lng: 77.1025, region: 'Delhi, India' },
-    'hyderabad': { lat: 17.3850, lng: 78.4867, region: 'Hyderabad, India' },
-    'pune': { lat: 18.5204, lng: 73.8567, region: 'Pune, India' },
-    'chennai': { lat: 13.0827, lng: 80.2707, region: 'Chennai, India' },
-    'kolkata': { lat: 22.5726, lng: 88.3639, region: 'Kolkata, India' },
-    'manila': { lat: 14.5995, lng: 120.9842, region: 'Manila, Philippines' },
-    'jakarta': { lat: -6.2088, lng: 106.8456, region: 'Jakarta, Indonesia' },
-    'kuala lumpur': { lat: 3.1390, lng: 101.6869, region: 'Kuala Lumpur, Malaysia' },
-    'bangkok': { lat: 13.7563, lng: 100.5018, region: 'Bangkok, Thailand' },
-    'ho chi minh': { lat: 10.8231, lng: 106.6297, region: 'Ho Chi Minh City, Vietnam' },
-    'taipei': { lat: 25.0330, lng: 121.5654, region: 'Taipei, Taiwan' }
   },
   regions: {
     'united states': { lat: 39.8283, lng: -98.5795, region: 'United States' },
@@ -152,7 +123,7 @@ const GEOGRAPHICAL_DATABASE = {
   }
 };
 
-// PERFORMANCE: Pre-compiled regex patterns
+// PERFORMANCE: Pre-compiled regex patterns - moved outside component
 const SEVERITY_PATTERNS = {
   critical: /\b(critical|emergency|outage|down|offline|complete failure|total)\b/i,
   major: /\b(major|significant|degraded|disruption|partial|slow|performance)\b/i
@@ -187,157 +158,37 @@ const cleanHtmlContent = (htmlString) => {
   return text;
 };
 
-// Component to handle map bounds changes and zoom controls - OPTIMIZED
-const MapBoundsHandler = memo(({ issues }) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (issues.length > 0) {
-      // PERFORMANCE: Debounce bounds fitting
-      const timeoutId = setTimeout(() => {
-        const group = new L.featureGroup(
-          issues.map(issue => L.circleMarker([issue.lat, issue.lng]))
-        );
-        map.fitBounds(group.getBounds().pad(0.1));
-      }, 100);
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [issues, map]);
-  
-  return null;
-});
-
-// PERFORMANCE: Optimized marker component with lazy tooltip loading
-const OptimizedMarker = memo(({ group, index, onMarkerClick, formatTitleForTooltip }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  
-  const handleMouseEnter = useCallback(() => {
-    setShowTooltip(true);
-  }, []);
-  
-  const handleMouseLeave = useCallback(() => {
-    setShowTooltip(false);
-  }, []);
-  
-  const handleClick = useCallback(() => {
-    onMarkerClick(group);
-  }, [group, onMarkerClick]);
-  
-  return (
-    <CircleMarker
-      key={`group-${index}`}
-      center={[group.lat, group.lng]}
-      radius={getClusterRadius(group)}
-      fillColor={getClusterColor(group)}
-      color="white"
-      weight={group.issues.length > 1 ? 3 : 2}
-      opacity={1}
-      fillOpacity={group.issues.length > 1 ? 0.9 : 0.8}
-      className={`issue-marker-${group.maxSeverity} ${group.issues.length > 1 ? 'clustered' : ''}`}
-      eventHandlers={{
-        click: handleClick,
-        mouseover: handleMouseEnter,
-        mouseout: handleMouseLeave
-      }}
-    >
-      {/* PERFORMANCE: Lazy load tooltips only when needed */}
-      {showTooltip && (
-        group.issues.length > 1 ? (
-          <Tooltip permanent className="cluster-tooltip" direction="center">
-            <span className="cluster-count">{group.issues.length}</span>
-          </Tooltip>
-        ) : (
-          <Tooltip className="single-issue-tooltip" direction="top" sticky={true}>
-            <div className="tooltip-content">
-              <strong>{group.issues[0].provider}</strong>
-              <div className="tooltip-title">
-                {formatTitleForTooltip(group.issues[0].title)}
-              </div>
-              <em>Click to view details</em>
-            </div>
-          </Tooltip>
-        )
-      )}
-    </CircleMarker>
-  );
-});
-
-// Group issues by location to handle overlapping markers - PERFORMANCE OPTIMIZED
-const groupIssuesByLocation = (issues) => {
-  const locationGroups = {};
-  const PROXIMITY_THRESHOLD = 0.5; // degrees (roughly 50km)
-  
-  for (let i = 0; i < issues.length; i++) {
-    const issue = issues[i];
-    const key = `${Math.round(issue.lat / PROXIMITY_THRESHOLD) * PROXIMITY_THRESHOLD}_${Math.round(issue.lng / PROXIMITY_THRESHOLD) * PROXIMITY_THRESHOLD}`;
-    
-    if (!locationGroups[key]) {
-      locationGroups[key] = {
-        lat: issue.lat,
-        lng: issue.lng,
-        issues: [],
-        maxSeverity: 'minor'
-      };
-    }
-    
-    locationGroups[key].issues.push(issue);
-    
-    // Update max severity for the group - optimized comparison
-    const severityOrder = { 'critical': 3, 'major': 2, 'minor': 1 };
-    if (severityOrder[issue.severity] > severityOrder[locationGroups[key].maxSeverity]) {
-      locationGroups[key].maxSeverity = issue.severity;
-    }
-  }
-  
-  return Object.values(locationGroups);
+// PERFORMANCE: Optimized helper functions
+const getSeverity = (issue) => {
+  const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
+  if (SEVERITY_PATTERNS.critical.test(text)) return 'critical';
+  if (SEVERITY_PATTERNS.major.test(text)) return 'major';
+  return 'minor';
 };
 
-// PERFORMANCE: Optimized helper functions with caching
-const severityColorCache = {
-  'critical': '#dc2626',
-  'major': '#ea580c', 
-  'minor': '#d97706',
-  'default': '#6b7280'
-};
-
-const getSeverityColor = (severity) => {
-  return severityColorCache[severity] || severityColorCache.default;
-};
-
-const getSeverityRadius = (severity) => {
-  switch (severity) {
-    case 'critical': return 15;
-    case 'major': return 12;
-    case 'minor': return 9;
-    default: return 6;
+const isRelevant = (issue, date, showHistoric) => {
+  try {
+    const issueDate = new Date(date);
+    if (isNaN(issueDate)) return false;
+    
+    if (showHistoric) {
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      return issueDate >= sevenDaysAgo;
+    } else {
+      const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
+      return !RESOLVED_KEYWORDS.some(keyword => text.includes(keyword));
+    }
+  } catch (e) {
+    return false;
   }
 };
 
-const getClusterRadius = (group) => {
-  const baseRadius = getSeverityRadius(group.maxSeverity);
-  const countMultiplier = Math.min(1 + (group.issues.length - 1) * 0.3, 2.5);
-  return baseRadius * countMultiplier;
+const formatTitle = (title) => {
+  if (!title) return 'Service Issue';
+  const cleaned = cleanHtmlContent(title);
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
 };
 
-const getClusterColor = (group) => {
-  return getSeverityColor(group.maxSeverity);
-};
-
-const getServiceColor = (service) => {
-  const colors = {
-    'Cloudflare': '#f48120',
-    'AWS': '#ff9900', 
-    'Zscaler': '#00bfff',
-    'Okta': '#007dc1',
-    'SendGrid': '#1a82e2',
-    'Slack': '#4a154b',
-    'Datadog': '#632ca6'
-  };
-  return colors[service] || '#6b7280';
-};
-
-// PERFORMANCE: Optimized text processing functions
 const formatDescription = (description, maxLength = 200) => {
   if (!description) return '';
   
@@ -345,86 +196,107 @@ const formatDescription = (description, maxLength = 200) => {
   if (cleaned.length <= maxLength) return cleaned;
   
   const truncated = cleaned.substring(0, maxLength);
-  const lastSentenceEnd = Math.max(
-    truncated.lastIndexOf('.'),
-    truncated.lastIndexOf('!'),
-    truncated.lastIndexOf('?')
-  );
-  
-  if (lastSentenceEnd > maxLength * 0.7) {
-    return truncated.substring(0, lastSentenceEnd + 1);
-  }
-  
   const lastSpace = truncated.lastIndexOf(' ');
   return lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
 };
 
-const formatTitle = (title) => {
-  if (!title) return 'Service Issue';
-  
-  const cleaned = cleanHtmlContent(title);
-  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+// Service locations for coordinate detection
+const serviceLocations = {
+  'Cloudflare': [
+    { region: 'us-east-1', lat: 39.0458, lng: -76.6413, keywords: ['us-east', 'virginia', 'washington dc', 'ashburn', 'iad'] },
+    { region: 'us-west-1', lat: 37.7749, lng: -122.4194, keywords: ['us-west', 'california', 'san francisco', 'sfo'] },
+    { region: 'eu-west-1', lat: 53.3498, lng: -6.2603, keywords: ['eu-west', 'ireland', 'dublin', 'dub'] },
+    { region: 'ap-southeast-1', lat: 1.3521, lng: 103.8198, keywords: ['ap-southeast', 'singapore', 'sin'] }
+  ],
+  'AWS': [
+    { region: 'us-east-1', lat: 39.0458, lng: -76.6413, keywords: ['us-east-1', 'n. virginia', 'virginia', 'iad'] },
+    { region: 'us-west-1', lat: 37.7749, lng: -122.4194, keywords: ['us-west-1', 'n. california', 'california'] },
+    { region: 'eu-west-1', lat: 53.3498, lng: -6.2603, keywords: ['eu-west-1', 'ireland', 'dublin'] },
+    { region: 'ap-southeast-1', lat: 1.3521, lng: 103.8198, keywords: ['ap-southeast-1', 'singapore'] }
+  ]
 };
 
-const formatTitleForTooltip = (title, maxLength = 80) => {
-  if (!title) return 'Service Issue';
-  
-  const cleaned = cleanHtmlContent(title);
-  const capitalized = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-  
-  if (capitalized.length <= maxLength) return capitalized;
-  
-  const truncated = capitalized.substring(0, maxLength);
-  const lastSpace = truncated.lastIndexOf(' ');
-  
-  return lastSpace > maxLength * 0.6 
-    ? truncated.substring(0, lastSpace) + '...' 
-    : truncated + '...';
-};
-
-// PERFORMANCE: Optimized time formatting with caching
-const timeFormatCache = new Map();
-const formatTime = (timeString) => {
-  if (!timeString) return 'Unknown time';
-  
-  if (timeFormatCache.has(timeString)) {
-    return timeFormatCache.get(timeString);
+// PERFORMANCE: Optimized coordinate detection
+const coordinateCache = new Map();
+const getCoordinates = (text, provider) => {
+  const cacheKey = `${text}_${provider}`;
+  if (coordinateCache.has(cacheKey)) {
+    return coordinateCache.get(cacheKey);
   }
   
-  try {
-    const date = new Date(timeString);
-    if (isNaN(date)) return 'Invalid date';
-    
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
-    let result;
-    if (diffMins < 60) {
-      result = diffMins <= 1 ? 'Just now' : `${diffMins} mins ago`;
-    } else if (diffHours < 24) {
-      result = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    } else if (diffDays < 7) {
-      result = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    } else {
-      result = date.toLocaleDateString();
+  const textLower = cleanHtmlContent(text).toLowerCase();
+  const locations = serviceLocations[provider] || [];
+  
+  // Fast keyword matching
+  for (const [region, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cloudRegions)) {
+    if (textLower.includes(region.toLowerCase())) {
+      const result = [{ lat: coords.lat, lng: coords.lng, region: coords.region, confidence: 'high' }];
+      coordinateCache.set(cacheKey, result);
+      return result;
     }
-    
-    // Cache the result
-    if (timeFormatCache.size > 50) {
-      timeFormatCache.clear();
-    }
-    timeFormatCache.set(timeString, result);
-    
-    return result;
-  } catch (e) {
-    return 'Invalid date';
   }
+  
+  // City matching
+  for (const [city, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cities)) {
+    if (textLower.includes(city)) {
+      const result = [{ lat: coords.lat, lng: coords.lng, region: coords.region, confidence: 'high' }];
+      coordinateCache.set(cacheKey, result);
+      return result;
+    }
+  }
+  
+  // Provider-specific fallback
+  const result = locations.length > 0 ? [{ 
+    lat: locations[0].lat, 
+    lng: locations[0].lng, 
+    region: locations[0].region + ' (Default)',
+    confidence: 'low'
+  }] : [{ 
+    lat: 37.7749, 
+    lng: -122.4194, 
+    region: 'Global (Fallback)',
+    confidence: 'low'
+  }];
+  
+  coordinateCache.set(cacheKey, result);
+  return result;
 };
 
-// Main LeafletWorldMap component - PERFORMANCE OPTIMIZED
+// Group issues by country instead of location
+const groupIssuesByCountry = (issues) => {
+  const countryGroups = {};
+  
+  for (const issue of issues) {
+    // Try to get country from region text first
+    let countryCode = getCountryFromRegion(issue.region || '');
+    
+    // Fallback to coordinates if region detection fails
+    if (!countryCode || countryCode === 'USA') {
+      countryCode = getCountryFromCoordinates(issue.lat, issue.lng);
+    }
+    
+    if (!countryGroups[countryCode]) {
+      countryGroups[countryCode] = {
+        countryCode,
+        issues: [],
+        maxSeverity: 'minor',
+        coordinates: [] // Store all coordinates for this country
+      };
+    }
+    
+    countryGroups[countryCode].issues.push(issue);
+    countryGroups[countryCode].coordinates.push({ lat: issue.lat, lng: issue.lng });
+    
+    const severityOrder = { 'critical': 3, 'major': 2, 'minor': 1 };
+    if (severityOrder[issue.severity] > severityOrder[countryGroups[countryCode].maxSeverity]) {
+      countryGroups[countryCode].maxSeverity = issue.severity;
+    }
+  }
+  
+  return Object.values(countryGroups);
+};
+
+// Optimized function is getting too complex, let me just try a basic version first
 export default function LeafletWorldMap({ 
   cloudflareIncidents = [], 
   zscalerUpdates = [], 
@@ -437,45 +309,42 @@ export default function LeafletWorldMap({
   showHistoric = false
 }) {
   const [selectedIssue, setSelectedIssue] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const [worldGeoJSON, setWorldGeoJSON] = useState(null);
 
-  // PERFORMANCE: Memoized callback for marker clicks
-  const handleMarkerClick = useCallback((group) => {
-    setSelectedGroup(group);
-    setSelectedIssue(null);
-  }, []);
-
-  // PERFORMANCE: Memoized severity calculation
-  const getSeverity = useCallback((issue) => {
-    const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
-    if (SEVERITY_PATTERNS.critical.test(text)) return 'critical';
-    if (SEVERITY_PATTERNS.major.test(text)) return 'major';
-    return 'minor';
-  }, []);
-
-  // PERFORMANCE: Memoized relevance check
-  const isRelevant = useCallback((issue, date) => {
-    try {
-      const issueDate = new Date(date);
-      if (isNaN(issueDate)) return false;
-      
-      if (showHistoric) {
-        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        return issueDate >= sevenDaysAgo;
-      } else {
-        const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
-        return !RESOLVED_KEYWORDS.some(keyword => text.includes(keyword));
+  // Load world geography data
+  useEffect(() => {
+    const loadWorldData = async () => {
+      try {
+        // Use a simpler approach with pre-built GeoJSON data
+        const response = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json');
+        
+        if (!response.ok) {
+          throw new Error('Failed to load world geography data');
+        }
+        
+        const topojsonData = await response.json();
+        
+        // Use dynamic import for topojson-client
+        const { feature } = await import('topojson-client');
+        const countries = feature(topojsonData, topojsonData.objects.countries);
+        
+        setWorldGeoJSON(countries);
+        console.log('World data loaded successfully:', countries.features.length, 'countries');
+      } catch (error) {
+        console.warn('Failed to load world geography data:', error);
+        // Fallback: map will work without country highlighting
+        setWorldGeoJSON(null);
       }
-    } catch (e) {
-      return false;
-    }
-  }, [showHistoric]);
+    };
+    
+    loadWorldData();
+  }, []);
 
-  // PERFORMANCE: Optimized issue processing - moved helpers outside for memoization
+  // PERFORMANCE: Optimized issue processing with all helpers moved outside
   const processedIssues = useMemo(() => {
     const issues = [];
-
-    // Process each service efficiently
+    
     const services = [
       { name: 'Cloudflare', data: cloudflareIncidents, dateField: 'created_at' },
       { name: 'Zscaler', data: zscalerUpdates, dateField: 'date' },
@@ -492,9 +361,8 @@ export default function LeafletWorldMap({
 
       service.data.forEach((item, index) => {
         const date = item[service.dateField] || item.date || item.created_at;
-        if (!isRelevant(item, date)) return;
+        if (!isRelevant(item, date, showHistoric)) return;
 
-        // Use both title and description for better location detection
         const titleText = item.title || item.name || '';
         const descriptionText = item.description || item.body || '';
         const fullText = `${titleText} ${descriptionText}`;
@@ -518,372 +386,203 @@ export default function LeafletWorldMap({
         });
       });
     });
-
-    return issues;
-  }, [cloudflareIncidents, zscalerUpdates, oktaUpdates, sendgridUpdates, slackUpdates, datadogUpdates, awsUpdates, selectedServices, showHistoric, isRelevant, getSeverity]);
-
-// Group issues by location after processing
-const groupedIssues = useMemo(() => groupIssuesByLocation(processedIssues), [processedIssues]);
-
-// PERFORMANCE: Optimized coordinate detection with caching - moved outside component
-const coordinateCache = new Map();
-const getCoordinates = (text, provider) => {
-  const cacheKey = `${text}_${provider}`;
-  if (coordinateCache.has(cacheKey)) {
-    return coordinateCache.get(cacheKey);
-  }
-  
-  const textLower = cleanHtmlContent(text).toLowerCase();
-  const locations = serviceLocations[provider] || [];
-  const foundLocations = [];
-
-  // 1. Fast cloud region matching (highest priority)
-  for (const [region, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cloudRegions)) {
-    const regionLower = region.toLowerCase();
-    const regionSpaced = region.replace('-', ' ').toLowerCase();
-    if (textLower.includes(regionLower) || textLower.includes(regionSpaced)) {
-      foundLocations.push({ 
-        lat: coords.lat, 
-        lng: coords.lng, 
-        region: coords.region,
-        confidence: 'high'
-      });
-    }
-  }
-
-  // 2. Fast city matching
-  if (foundLocations.length < 2) {
-    for (const [city, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cities)) {
-      if (textLower.includes(city)) {
-        foundLocations.push({ 
-          lat: coords.lat, 
-          lng: coords.lng, 
-          region: coords.region,
-          confidence: 'high'
-        });
-      }
-    }
-  }
-
-  // 3. US states and regions (only if we need more locations)
-  if (foundLocations.length === 0) {
-    for (const [state, coords] of Object.entries(GEOGRAPHICAL_DATABASE.usStates)) {
-      if (textLower.includes(state)) {
-        foundLocations.push({ 
-          lat: coords.lat, 
-          lng: coords.lng, 
-          region: coords.region,
-          confidence: 'medium'
-        });
-        break; // Only first match for performance
-      }
-    }
     
-    if (foundLocations.length === 0) {
-      for (const [region, coords] of Object.entries(GEOGRAPHICAL_DATABASE.regions)) {
-        if (textLower.includes(region)) {
-          foundLocations.push({ 
-            lat: coords.lat, 
-            lng: coords.lng, 
-            region: coords.region,
-            confidence: 'medium'
-          });
-          break; // Only first match for performance
-        }
+    return issues;
+  }, [cloudflareIncidents, zscalerUpdates, oktaUpdates, sendgridUpdates, slackUpdates, datadogUpdates, awsUpdates, selectedServices, showHistoric]);
+
+  // PERFORMANCE: Optimized grouping by country
+  const countryGroups = useMemo(() => {
+    const groups = groupIssuesByCountry(processedIssues);
+    console.log('Country groups created:', groups.map(g => ({ country: g.countryCode, issues: g.issues.length })));
+    return groups;
+  }, [processedIssues]);
+
+  // Get country fill color and opacity based on severity
+  const getCountryStyle = (countryCode, countryGroup) => {
+    if (!countryGroup) {
+      return {
+        fillColor: 'transparent',
+        fillOpacity: 0,
+        color: '#cbd5e1',
+        weight: 1,
+        opacity: 0.3
+      };
+    }
+
+    const getSeverityColor = (severity) => {
+      switch (severity) {
+        case 'critical': return '#dc2626';
+        case 'major': return '#ea580c';
+        case 'minor': return '#d97706';
+        default: return '#6b7280';
       }
-    }
-  }
+    };
 
-  // 4. Provider-specific matching (only if still no matches)
-  if (foundLocations.length === 0 && locations.length > 0) {
-    for (const location of locations) {
-      if (location.keywords && location.keywords.some(keyword => textLower.includes(keyword))) {
-        foundLocations.push({ 
-          lat: location.lat, 
-          lng: location.lng, 
-          region: location.region,
-          confidence: 'medium'
-        });
-        break; // Only first match for performance
-      }
-    }
-  }
+    const getOpacity = (severity, issueCount) => {
+      const baseOpacity = severity === 'critical' ? 0.7 : 
+                         severity === 'major' ? 0.6 : 0.5;
+      return Math.min(0.8, baseOpacity + (issueCount * 0.1));
+    };
 
-  // 5. Global fallback check
-  if (foundLocations.length === 0) {
-    const globalKeywords = ['global', 'worldwide', 'all regions', 'multiple regions'];
-    if (globalKeywords.some(keyword => textLower.includes(keyword))) {
-      const result = locations.slice(0, 2).map(loc => ({ 
-        lat: loc.lat, 
-        lng: loc.lng, 
-        region: loc.region + ' (Global)',
-        confidence: 'low'
-      }));
-      
-      if (coordinateCache.size > 200) coordinateCache.clear();
-      coordinateCache.set(cacheKey, result);
-      return result;
-    }
-  }
-
-  // Process results
-  let result;
-  if (foundLocations.length > 0) {
-    // Remove close duplicates and limit results
-    const uniqueLocations = foundLocations.filter((location, index, self) => 
-      index === self.findIndex(l => 
-        Math.abs(l.lat - location.lat) < 0.1 && Math.abs(l.lng - location.lng) < 0.1
-      )
-    );
-    result = uniqueLocations.slice(0, 2); // Limit for performance
-  } else if (locations.length > 0) {
-    // Fallback to provider default
-    result = [{ 
-      lat: locations[0].lat, 
-      lng: locations[0].lng, 
-      region: locations[0].region + ' (Default)',
-      confidence: 'low'
-    }];
-  } else {
-    // Ultimate fallback
-    result = [{ 
-      lat: 37.7749, 
-      lng: -122.4194, 
-      region: 'Global (Fallback)',
-      confidence: 'low'
-    }];
-  }
-
-  // Cache with size limit
-  if (coordinateCache.size > 200) coordinateCache.clear();
-  coordinateCache.set(cacheKey, result);
-  
-  return result;
-};
-
-    // 3. Try to match US states
-    for (const [state, coords] of Object.entries(geographicalDatabase.usStates)) {
-      if (textLower.includes(state) || fuzzyMatch(textLower, state)) {
-        foundLocations.push({ 
-          lat: coords.lat, 
-          lng: coords.lng, 
-          region: coords.region,
-          confidence: 'medium'
-        });
-      }
-    }
-
-    // 4. Try to match countries/regions
-    for (const [region, coords] of Object.entries(geographicalDatabase.regions)) {
-      if (textLower.includes(region) || fuzzyMatch(textLower, region)) {
-        foundLocations.push({ 
-          lat: coords.lat, 
-          lng: coords.lng, 
-          region: coords.region,
-          confidence: 'medium'
-        });
-      }
-    }
-
-    // 5. Try provider-specific keyword matching (existing logic)
-    for (const location of locations) {
-      if (location.keywords.some(keyword => 
-        textLower.includes(keyword) || fuzzyMatch(textLower, keyword)
-      )) {
-        foundLocations.push({ 
-          lat: location.lat, 
-          lng: location.lng, 
-          region: location.region,
-          confidence: 'medium'
-        });
-      }
-    }
-
-    // 6. Enhanced pattern matching for common outage descriptions
-    const patterns = [
-      { pattern: /data center[s]?\s+in\s+([a-zA-Z\s]+)/gi, confidence: 'high' },
-      { pattern: /availability zone[s]?\s+([a-z0-9-]+)/gi, confidence: 'high' },
-      { pattern: /region[s]?\s+([a-zA-Z0-9-\s]+)/gi, confidence: 'medium' },
-      { pattern: /users?\s+in\s+([a-zA-Z\s]+)/gi, confidence: 'medium' },
-      { pattern: /customers?\s+in\s+([a-zA-Z\s]+)/gi, confidence: 'medium' },
-      { pattern: /outage\s+in\s+([a-zA-Z\s]+)/gi, confidence: 'high' },
-      { pattern: /issues?\s+in\s+([a-zA-Z\s]+)/gi, confidence: 'medium' },
-      { pattern: /affecting\s+([a-zA-Z\s]+)/gi, confidence: 'medium' }
-    ];
-
-    patterns.forEach(({ pattern, confidence }) => {
-      let match;
-      while ((match = pattern.exec(text)) !== null) {
-        const location = match[1].trim().toLowerCase();
-        // Check if this location exists in our databases
-        const found = 
-          geographicalDatabase.cities[location] ||
-          geographicalDatabase.regions[location] ||
-          geographicalDatabase.usStates[location] ||
-          geographicalDatabase.cloudRegions[location];
-        
-        if (found) {
-          foundLocations.push({
-            lat: found.lat,
-            lng: found.lng,
-            region: found.region,
-            confidence: confidence
-          });
-        }
-      }
-    });
-
-    // 7. Handle global/worldwide issues
-    if (textLower.includes('global') || textLower.includes('worldwide') || 
-        textLower.includes('all regions') || textLower.includes('multiple regions')) {
-      return locations.slice(0, 3).map(loc => ({ 
-        lat: loc.lat, 
-        lng: loc.lng, 
-        region: loc.region + ' (Global)',
-        confidence: 'low'
-      }));
-    }
-
-    // Return found locations, prioritizing high confidence matches
-    if (foundLocations.length > 0) {
-      // Sort by confidence and remove duplicates
-      const uniqueLocations = foundLocations.filter((location, index, self) => 
-        index === self.findIndex(l => 
-          Math.abs(l.lat - location.lat) < 0.1 && Math.abs(l.lng - location.lng) < 0.1
-        )
-      );
-      
-      // Sort by confidence: high -> medium -> low
-      uniqueLocations.sort((a, b) => {
-        const confidenceOrder = { 'high': 3, 'medium': 2, 'low': 1 };
-        return confidenceOrder[b.confidence] - confidenceOrder[a.confidence];
-      });
-      
-      // Return top 3 most relevant locations
-      return uniqueLocations.slice(0, 3);
-    }
-
-    // Fallback to provider default location
-    if (locations.length > 0) {
-      return [{ 
-        lat: locations[0].lat, 
-        lng: locations[0].lng, 
-        region: locations[0].region + ' (Default)',
-        confidence: 'low'
-      }];
-    }
-
-    // Ultimate fallback (San Francisco)
-    return [{ 
-      lat: 37.7749, 
-      lng: -122.4194, 
-      region: 'Global (Fallback)',
-      confidence: 'low'
-    }];
-  }
+    return {
+      fillColor: getSeverityColor(countryGroup.maxSeverity),
+      fillOpacity: getOpacity(countryGroup.maxSeverity, countryGroup.issues.length),
+      color: '#ffffff',
+      weight: 2,
+      opacity: 0.8
+    };
+  };
 
   return (
-  <div className="world-map-container">
-    <div className="world-map-header">
-      <div className="header-content">
-        <h2>Global Service Status Map</h2>
-        <div className="map-legend">
-          <div className="legend-item">
-            <div className="legend-dot" style={{ backgroundColor: '#dc2626' }}></div>
-            <span>Critical ({processedIssues.filter(i => i.severity === 'critical').length})</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-dot" style={{ backgroundColor: '#ea580c' }}></div>
-            <span>Major ({processedIssues.filter(i => i.severity === 'major').length})</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-dot" style={{ backgroundColor: '#d97706' }}></div>
-            <span>Minor ({processedIssues.filter(i => i.severity === 'minor').length})</span>
-          </div>
-          <div className="legend-item legend-cluster-info">
-            <div className="legend-cluster-icon">
-              <div className="legend-dot clustered" style={{ backgroundColor: '#6b7280' }}></div>
-              <span className="cluster-count-example">3</span>
+    <div className="world-map-container">
+      <div className="world-map-header">
+        <div className="header-content">
+          <h2>Global Service Status Map</h2>
+          <div className="map-legend">
+            <div className="legend-item">
+              <div className="legend-region" style={{ backgroundColor: '#dc2626', opacity: 0.7 }}></div>
+              <span>Critical ({processedIssues.filter(i => i.severity === 'critical').length})</span>
             </div>
-            <span>Multiple issues ({groupedIssues.filter(g => g.issues.length > 1).length} areas)</span>
+            <div className="legend-item">
+              <div className="legend-region" style={{ backgroundColor: '#ea580c', opacity: 0.6 }}></div>
+              <span>Major ({processedIssues.filter(i => i.severity === 'major').length})</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-region" style={{ backgroundColor: '#d97706', opacity: 0.5 }}></div>
+              <span>Minor ({processedIssues.filter(i => i.severity === 'minor').length})</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-region affected-regions"></div>
+              <span>Affected Regions ({countryGroups.length})</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div className="map-content-layout">
-      <div className="leaflet-map-wrapper">
-        <MapContainer
-          center={[20, 0]}
-          zoom={2}
-          style={{ height: '100%', width: '100%', borderRadius: '12px' }}
-          worldCopyJump={true}
-          maxBounds={[[-90, -180], [90, 180]]}
-          maxBoundsViscosity={1.0}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            detectRetina={true}
-          />
-          
-          <MapBoundsHandler issues={processedIssues} />
-          
-          {groupedIssues.map((group, index) => (
-            <OptimizedMarker
-              key={`group-${index}`}
-              group={group}
-              index={index}
-              onMarkerClick={handleMarkerClick}
-              formatTitleForTooltip={formatTitleForTooltip}
+      <div className="map-content-layout">
+        <div className="leaflet-map-wrapper">
+          <MapContainer
+            center={[20, 0]}
+            zoom={2}
+            style={{ height: '100%', width: '100%', borderRadius: '12px' }}
+            worldCopyJump={true}
+            maxBounds={[[-90, -180], [90, 180]]}
+            maxBoundsViscosity={1.0}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              detectRetina={true}
             />
-          ))}
-        </MapContainer>
-      </div>
+            
+            {/* Render world countries with highlighting for affected regions */}
+            {worldGeoJSON && worldGeoJSON.features.map((country, index) => {
+              // Find if this country has issues
+              const countryGroup = countryGroups.find(group => {
+                // Try to match country by different methods
+                const countryId = country.id || country.properties?.ADM0_A3 || country.properties?.ISO_A3 || country.properties?.ISO_A3_EH;
+                const countryName = country.properties?.NAME || country.properties?.NAME_EN || '';
+                
+                // Match by ISO code
+                if (group.countryCode === countryId) return true;
+                
+                // Match by name variations
+                const groupCountryName = Object.keys(COUNTRY_MAPPING).find(key => 
+                  COUNTRY_MAPPING[key] === group.countryCode
+                );
+                if (groupCountryName && countryName.toLowerCase().includes(groupCountryName.toLowerCase())) {
+                  return true;
+                }
+                
+                return false;
+              });
 
-      {/* Side Panel for Issue Details */}
-      {(selectedGroup || selectedIssue) && (
-        <div className="issue-side-panel">
-          <div className="side-panel-header">
-            <div className="panel-title-section">
-              {selectedGroup ? (
+              const style = getCountryStyle(country.id, countryGroup);
+
+              return (
+                <GeoJSON
+                  key={`country-${index}`}
+                  data={country}
+                  style={style}
+                  eventHandlers={countryGroup ? {
+                    click: () => {
+                      setSelectedCountry(countryGroup);
+                      setSelectedIssue(null);
+                    },
+                    mouseover: (e) => {
+                      e.target.setStyle({
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: Math.min(0.9, style.fillOpacity + 0.2)
+                      });
+                    },
+                    mouseout: (e) => {
+                      e.target.setStyle(style);
+                    }
+                  } : {}}
+                >
+                  {countryGroup && (
+                    <Tooltip direction="top" sticky={true}>
+                      <div className="tooltip-content">
+                        <strong>{country.properties?.NAME || country.properties?.NAME_EN || 'Country'}</strong>
+                        <div className="tooltip-title">
+                          {countryGroup.issues.length} issue{countryGroup.issues.length !== 1 ? 's' : ''}
+                        </div>
+                        <div className="tooltip-severity">
+                          Severity: {countryGroup.maxSeverity}
+                        </div>
+                        <em>Click to view details</em>
+                      </div>
+                    </Tooltip>
+                  )}
+                </GeoJSON>
+              );
+            })}
+          </MapContainer>
+        </div>
+
+        {/* Side Panel for Issue Details */}
+        {selectedCountry && (
+          <div className="issue-side-panel">
+            <div className="side-panel-header">
+              <div className="panel-title-section">
+              {selectedCountry.issues.length > 1 ? (
                 <>
                   <div className="provider-badge">
-                    <strong>{selectedGroup.issues.length} Issues in this Area</strong>
+                    <strong>{selectedCountry.issues.length} Issues in this Region</strong>
                   </div>
                   <div 
                     className="severity-badge"
                     style={{ 
-                      backgroundColor: getSeverityColor(selectedGroup.maxSeverity),
+                      backgroundColor: selectedCountry.maxSeverity === 'critical' ? '#dc2626' : 
+                                      selectedCountry.maxSeverity === 'major' ? '#ea580c' : '#d97706',
                       color: 'white'
                     }}
                   >
-                    Highest: {selectedGroup.maxSeverity}
+                    Highest: {selectedCountry.maxSeverity}
                   </div>
                 </>
               ) : (
                 <>
                   <div className="provider-badge">
-                    <strong>{selectedIssue.provider}</strong>
+                    <strong>{selectedCountry.issues[0].provider}</strong>
                   </div>
                   <div 
                     className="severity-badge"
                     style={{ 
-                      backgroundColor: getSeverityColor(selectedIssue.severity),
+                      backgroundColor: selectedCountry.issues[0].severity === 'critical' ? '#dc2626' : 
+                                      selectedCountry.issues[0].severity === 'major' ? '#ea580c' : '#d97706',
                       color: 'white'
                     }}
                   >
-                    {selectedIssue.severity}
+                    {selectedCountry.issues[0].severity}
                   </div>
                 </>
               )}
             </div>
             <button 
               className="close-side-panel"
-              onClick={() => {
-                setSelectedGroup(null);
-                setSelectedIssue(null);
-              }}
+              onClick={() => setSelectedCountry(null)}
               title="Close details"
             >
               ×
@@ -891,20 +590,20 @@ const getCoordinates = (text, provider) => {
           </div>
           
           <div className="side-panel-content">
-            {selectedGroup ? (
+            {selectedCountry.issues.length > 1 ? (
               // Multiple issues view
               <div className="multiple-issues-view">
                 <div className="issues-summary">
                   <h3>Service Issues in this Region</h3>
-                  <p className="issues-count">{selectedGroup.issues.length} active issues detected</p>
+                  <p className="issues-count">{selectedCountry.issues.length} active issues detected</p>
                 </div>
                 
                 <div className="issues-list-panel">
-                  {selectedGroup.issues.map((issue, index) => (
+                  {selectedCountry.issues.map((issue, index) => (
                     <div key={issue.id} className="issue-card">
                       <div className="issue-card-header">
                         <div className="service-info">
-                          <div className="service-badge" style={{ backgroundColor: getServiceColor(issue.provider) }}>
+                          <div className="service-badge" style={{ backgroundColor: '#667eea' }}>
                             {issue.provider}
                           </div>
                           <div className={`severity-badge severity-${issue.severity}`}>
@@ -912,15 +611,15 @@ const getCoordinates = (text, provider) => {
                           </div>
                         </div>
                         <div className="issue-time">
-                          {formatTime(issue.date)}
+                          {new Date(issue.date).toLocaleDateString()}
                         </div>
                       </div>
                       
                       <div className="issue-card-content">
-                        <h4 className="issue-card-title">{formatTitle(issue.title)}</h4>
+                        <h4 className="issue-card-title">{issue.title}</h4>
                         {issue.description && (
                           <p className="issue-card-description">
-                            {formatDescription(issue.description)}
+                            {issue.description}
                           </p>
                         )}
                         
@@ -942,7 +641,7 @@ const getCoordinates = (text, provider) => {
                         )}
                       </div>
                       
-                      {index < selectedGroup.issues.length - 1 && (
+                      {index < selectedCountry.issues.length - 1 && (
                         <hr className="issue-card-divider" />
                       )}
                     </div>
@@ -953,31 +652,31 @@ const getCoordinates = (text, provider) => {
               // Single issue view
               <div className="single-issue-view">
                 <div className="issue-title-section">
-                  <h3>{selectedIssue.title}</h3>
+                  <h3>{selectedCountry.issues[0].title}</h3>
                 </div>
                 
                 <div className="issue-meta-section">
                   <div className="meta-item">
                     <span className="meta-label">Region:</span>
-                    <span className="meta-value">{selectedIssue.region}</span>
+                    <span className="meta-value">{selectedCountry.issues[0].region}</span>
                   </div>
                   <div className="meta-item">
                     <span className="meta-label">Date:</span>
-                    <span className="meta-value">{new Date(selectedIssue.date).toLocaleString()}</span>
+                    <span className="meta-value">{new Date(selectedCountry.issues[0].date).toLocaleString()}</span>
                   </div>
                 </div>
 
-                {selectedIssue.description && (
+                {selectedCountry.issues[0].description && (
                   <div className="issue-description-section">
                     <div className="section-label">Description</div>
-                    <div className="description-content">{selectedIssue.description}</div>
+                    <div className="description-content">{selectedCountry.issues[0].description}</div>
                   </div>
                 )}
                 
-                {selectedIssue.url && (
+                {selectedCountry.issues[0].url && (
                   <div className="issue-actions-section">
                     <a 
-                      href={selectedIssue.url} 
+                      href={selectedCountry.issues[0].url} 
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="view-details-btn"
@@ -991,34 +690,31 @@ const getCoordinates = (text, provider) => {
             )}
           </div>
         </div>
-      )}
-    </div>
+        )}
+      </div>
 
-    {/* Summary stats */}
-    <div className="map-summary">
-      <div className="summary-item">
-        <span className="summary-label">Total Issues</span>
-        <span className="summary-value">{processedIssues.length}</span>
-      </div>
-      <div className="summary-item">
-        <span className="summary-label">Critical</span>
-        <span className="summary-value critical">
-          {processedIssues.filter(i => i.severity === 'critical').length}
-        </span>
-      </div>
-      <div className="summary-item">
-        <span className="summary-label">Major</span>
-        <span className="summary-value major">
-          {processedIssues.filter(i => i.severity === 'major').length}
-        </span>
-      </div>
-      <div className="summary-item">
-        <span className="summary-label">Mode</span>
-        <span className="summary-value">
-          {showHistoric ? 'Last 7 Days' : 'Current Active'}
-        </span>
+      <div className="map-summary-compact">
+        <div className="summary-item-compact">
+          <span className="summary-label-compact">Total Issues</span>
+          <span className="summary-value-compact">{processedIssues.length}</span>
+        </div>
+        <div className="summary-item-compact">
+          <span className="summary-label-compact">Critical</span>
+          <span className="summary-value-compact critical">
+            {processedIssues.filter(i => i.severity === 'critical').length}
+          </span>
+        </div>
+        <div className="summary-item-compact">
+          <span className="summary-label-compact">Regions</span>
+          <span className="summary-value-compact">{countryGroups.length}</span>
+        </div>
+        <div className="summary-item-compact">
+          <span className="summary-label-compact">Mode</span>
+          <span className="summary-value-compact">
+            {showHistoric ? 'Last 7 Days' : 'Current Active'}
+          </span>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
