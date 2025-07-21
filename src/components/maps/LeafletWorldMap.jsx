@@ -176,19 +176,6 @@ export default function LeafletWorldMap({
         }
         
         const countries = await response.json();
-        
-        // Debug: log all country codes to see what's available
-        console.log('Available country codes in GeoJSON:');
-        countries.features.slice(0, 20).forEach(feature => {
-          console.log({
-            name: feature.properties.NAME || feature.properties.name,
-            iso_a3: feature.properties.ISO_A3 || feature.properties.iso_a3,
-            iso_a2: feature.properties.ISO_A2 || feature.properties.iso_a2,
-            id: feature.id,
-            allProps: Object.keys(feature.properties)
-          });
-        });
-        
         setWorldGeoJSON(countries);
       } catch (error) {
         console.error('Error loading world data:', error);
@@ -259,40 +246,8 @@ export default function LeafletWorldMap({
   const countryGroups = useMemo(() => {
     const groups = {};
     
-    // Add some test data to see if highlighting works
-    groups['USA'] = {
-      countryCode: 'USA',
-      countryName: 'United States',
-      issues: [{
-        id: 'test-1',
-        provider: 'Test',
-        title: 'Test Issue',
-        severity: 'critical'
-      }],
-      maxSeverity: 'critical'
-    };
-    
-    groups['GBR'] = {
-      countryCode: 'GBR',
-      countryName: 'United Kingdom',
-      issues: [{
-        id: 'test-2',
-        provider: 'Test',
-        title: 'Test Issue 2',
-        severity: 'major'
-      }],
-      maxSeverity: 'major'
-    };
-    
     processedIssues.forEach(issue => {
       const countryCode = issue.countryCode;
-      console.log('Processing issue for country:', {
-        countryCode,
-        lat: issue.lat,
-        lng: issue.lng,
-        region: issue.region,
-        provider: issue.provider
-      });
       
       if (!groups[countryCode]) {
         groups[countryCode] = {
@@ -310,8 +265,6 @@ export default function LeafletWorldMap({
         groups[countryCode].maxSeverity = issue.severity;
       }
     });
-    
-    console.log('Final country groups:', Object.values(groups));
     
     return Object.values(groups);
   }, [processedIssues]);
@@ -331,17 +284,6 @@ export default function LeafletWorldMap({
     }
     
     const group = countryGroups.find(g => g.countryCode === countryCode);
-    
-    // Debug logging
-    if (group && group.issues.length > 0) {
-      console.log('🎯 Found country with issues:', {
-        featureCountryCode: countryCode,
-        groupCountryCode: group.countryCode,
-        countryName: group.countryName,
-        issueCount: group.issues.length,
-        severity: group.maxSeverity
-      });
-    }
     
     if (!group || group.issues.length === 0) {
       return {
@@ -388,17 +330,6 @@ export default function LeafletWorldMap({
     }
     
     const group = countryGroups.find(g => g.countryCode === countryCode);
-    
-    // Debug: log the first few features to see the property structure
-    if (Math.random() < 0.02) { // Log ~2% of features
-      console.log('🗺️ GeoJSON feature properties:', {
-        name: feature.properties.NAME || feature.properties.name,
-        properties: feature.properties,
-        id: feature.id,
-        calculatedCode: countryCode,
-        hasGroup: !!group
-      });
-    }
     
     if (group && group.issues.length > 0) {
       layer.on({
