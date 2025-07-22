@@ -442,7 +442,7 @@ const getCoordinates = (text, provider) => {
   const seenCoords = new Set();
   
   foundLocations.forEach(location => {
-    const coordKey = \`\${Math.round(location.lat * 100)}_\${Math.round(location.lng * 100)}\`;
+    const coordKey = `${Math.round(location.lat * 100)}_${Math.round(location.lng * 100)}`;
     if (!seenCoords.has(coordKey)) {
       seenCoords.add(coordKey);
       uniqueLocations.push(location);
