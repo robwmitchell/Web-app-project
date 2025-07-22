@@ -524,6 +524,18 @@ const getCoordinates = (text, provider) => {
 // AI-powered location extraction using local inference
 const extractLocationsWithAI = async (text, provider) => {
   try {
+    // Create a simple cache key to avoid re-processing identical text
+    const cacheKey = `${provider}-${text.slice(0, 100)}`;
+    
+    // Simple in-memory cache (could be expanded to localStorage)
+    if (!window.locationExtractionCache) {
+      window.locationExtractionCache = new Map();
+    }
+    
+    if (window.locationExtractionCache.has(cacheKey)) {
+      return window.locationExtractionCache.get(cacheKey);
+    }
+
     // Simple prompt engineering approach for location extraction
     const prompt = `Extract geographical locations from this service update text. Return only city names, datacenter locations, or regions mentioned. Be specific and accurate.
 
@@ -542,7 +554,16 @@ Ignore generic terms like "customers", "users", "service", "network".`;
 
     // For now, we'll use a simple AI-like pattern matching with enhanced intelligence
     // This can be replaced with actual AI API calls (OpenAI, Claude, etc.) later
-    return await smartLocationExtraction(text, provider, prompt);
+    const result = await smartLocationExtraction(text, provider, prompt);
+    
+    // Cache the result (limit cache size to prevent memory issues)
+    if (window.locationExtractionCache.size > 100) {
+      const firstKey = window.locationExtractionCache.keys().next().value;
+      window.locationExtractionCache.delete(firstKey);
+    }
+    window.locationExtractionCache.set(cacheKey, result);
+    
+    return result;
     
   } catch (error) {
     console.warn('AI location extraction failed, falling back to pattern matching:', error);
@@ -552,10 +573,15 @@ Ignore generic terms like "customers", "users", "service", "network".`;
 
 // Enhanced smart location extraction (simulating AI behavior)
 const smartLocationExtraction = async (text, provider, prompt) => {
+  // Early return for empty or very short text
+  if (!text || text.trim().length < 10) {
+    return getCoordinates(text, provider);
+  }
+
   const textLower = text.toLowerCase();
   const locations = [];
   
-  // AI-like contextual analysis patterns
+  // AI-like contextual analysis patterns (optimized)
   const contextualPatterns = [
     // Datacenter with location format
     {
@@ -589,10 +615,14 @@ const smartLocationExtraction = async (text, provider, prompt) => {
     }
   ];
   
-  // Process each pattern with AI-like intelligence
+  // Process each pattern with AI-like intelligence (limit iterations)
   contextualPatterns.forEach(({ pattern, confidence, context }) => {
     let match;
-    while ((match = pattern.exec(textLower)) !== null) {
+    let matchCount = 0;
+    const maxMatches = 5; // Prevent excessive processing
+    
+    while ((match = pattern.exec(textLower)) !== null && matchCount < maxMatches) {
+      matchCount++;
       for (let i = 1; i < match.length; i++) {
         if (match[i]) {
           const extracted = match[i].trim();
@@ -617,21 +647,28 @@ const smartLocationExtraction = async (text, provider, prompt) => {
     }
   });
   
-  // AI-like location resolution and coordinate mapping
+  // AI-like location resolution and coordinate mapping (limit processing)
   const resolvedLocations = [];
+  const maxLocations = 3; // Limit to prevent excessive processing
   
-  for (const loc of locations) {
-    const coordinates = await intelligentLocationMapping(loc.location, provider);
-    if (coordinates && coordinates.length > 0) {
-      coordinates.forEach(coord => {
-        resolvedLocations.push({
-          ...coord,
-          aiConfidence: loc.confidence,
-          aiContext: loc.context,
-          originalMatch: loc.originalMatch,
-          source: 'ai-enhanced'
+  for (let i = 0; i < Math.min(locations.length, maxLocations); i++) {
+    const loc = locations[i];
+    try {
+      const coordinates = await intelligentLocationMapping(loc.location, provider);
+      if (coordinates && coordinates.length > 0) {
+        coordinates.forEach(coord => {
+          resolvedLocations.push({
+            ...coord,
+            aiConfidence: loc.confidence,
+            aiContext: loc.context,
+            originalMatch: loc.originalMatch,
+            source: 'ai-enhanced'
+          });
         });
-      });
+      }
+    } catch (error) {
+      console.warn('Location mapping failed for:', loc.location, error);
+      continue;
     }
   }
   
@@ -640,7 +677,7 @@ const smartLocationExtraction = async (text, provider, prompt) => {
     return getCoordinates(text, provider);
   }
   
-  return resolvedLocations;
+  return resolvedLocations.slice(0, 3); // Limit final results
 };
 
 // Check if term is too generic to be a location
@@ -799,10 +836,34 @@ export default function LeafletWorldMap({
   // Process issues with AI-enhanced location detection
   const [processedIssues, setProcessedIssues] = useState([]);
   const [isProcessingLocations, setIsProcessingLocations] = useState(false);
+  const [lastProcessedHash, setLastProcessedHash] = useState('');
+
+  // Create a stable hash of the input data to prevent unnecessary re-processing
+  const dataHash = useMemo(() => {
+    const dataString = JSON.stringify({
+      cloudflare: cloudflareIncidents?.length || 0,
+      zscaler: zscalerUpdates?.length || 0,
+      okta: oktaUpdates?.length || 0,
+      sendgrid: sendgridUpdates?.length || 0,
+      slack: slackUpdates?.length || 0,
+      datadog: datadogUpdates?.length || 0,
+      aws: awsUpdates?.length || 0,
+      selectedServices: selectedServices?.sort() || [],
+      showHistoric
+    });
+    return btoa(dataString).slice(0, 16); // Short hash
+  }, [cloudflareIncidents?.length, zscalerUpdates?.length, oktaUpdates?.length, sendgridUpdates?.length, slackUpdates?.length, datadogUpdates?.length, awsUpdates?.length, selectedServices, showHistoric]);
 
   useEffect(() => {
+    // Prevent unnecessary re-processing if data hasn't changed
+    if (dataHash === lastProcessedHash || isProcessingLocations) {
+      return;
+    }
+
     const processIssuesWithAI = async () => {
       setIsProcessingLocations(true);
+      setLastProcessedHash(dataHash);
+      
       const issues = [];
       
       const services = [
@@ -816,7 +877,7 @@ export default function LeafletWorldMap({
       ];
 
       for (const service of services) {
-        if (!selectedServices.includes(service.name.toLowerCase())) continue;
+        if (!selectedServices?.includes(service.name.toLowerCase())) continue;
         if (!Array.isArray(service.data)) continue;
 
         for (const [index, item] of service.data.entries()) {
@@ -881,8 +942,13 @@ export default function LeafletWorldMap({
       setIsProcessingLocations(false);
     };
 
-    processIssuesWithAI();
-  }, [cloudflareIncidents, zscalerUpdates, oktaUpdates, sendgridUpdates, slackUpdates, datadogUpdates, awsUpdates, selectedServices, showHistoric]);
+    // Add a small delay to debounce rapid changes
+    const timer = setTimeout(() => {
+      processIssuesWithAI();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [dataHash, lastProcessedHash, isProcessingLocations]);
 
   // Group issues by country
   const countryGroups = useMemo(() => {
