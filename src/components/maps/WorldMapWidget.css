@@ -1,0 +1,408 @@
+/* World Map Widget Styles */
+
+.world-map-widget {
+  width: 100%;
+  max-width: 1200px;
+  margin: 20px auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-title {
+  margin: 0;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.widget-stats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.stat-item {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  backdrop-filter: blur(5px);
+}
+
+.widget-content {
+  position: relative;
+  height: 500px; /* Increased from 350px for better map visibility */
+  background: #f8fafc;
+}
+
+/* Map loading state */
+.map-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #64748b;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.map-loading p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .widget-content {
+    height: 450px; /* Slightly smaller on tablets */
+  }
+}
+
+@media (max-width: 768px) {
+  .widget-content {
+    height: 400px; /* Smaller on mobile */
+  }
+  
+  .world-map-widget {
+    margin: 10px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .widget-content {
+    height: 300px; /* Compact on small mobile */
+  }
+  
+  .widget-header {
+    padding: 12px 16px;
+  }
+  
+  .widget-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* Override map styles for widget view */
+.world-map-widget .world-map-container {
+  height: 100%;
+  border-radius: 0;
+}
+
+.world-map-widget .world-map-header {
+  display: none; /* Hide the map's own header in widget mode */
+}
+
+.world-map-widget .map-content-layout {
+  height: 100%;
+}
+
+.world-map-widget .leaflet-map-wrapper {
+  height: 100%;
+  border-radius: 0;
+}
+
+.world-map-widget .map-summary-compact {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-around;
+  font-size: 0.8rem;
+}
+
+.world-map-widget .summary-item-compact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.world-map-widget .summary-label-compact {
+  font-weight: 500;
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.world-map-widget .summary-value-compact {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.world-map-widget .summary-value-compact.critical {
+  color: #dc2626;
+}
+
+/* Adjust the side panel for widget mode */
+.world-map-widget .issue-side-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 300px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .widget-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .widget-stats {
+    gap: 8px;
+  }
+  
+  .stat-item {
+    font-size: 0.8rem;
+    padding: 3px 6px;
+  }
+  
+  .service-checkboxes {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .widget-content {
+    height: 400px;
+  }
+  
+  .issue-side-panel.widget-side-panel {
+    width: 100%;
+    max-width: 100%;
+    position: absolute;
+    bottom: 0;
+    height: 60%;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .map-content-layout.widget-with-panel {
+    flex-direction: column;
+  }
+  
+  .filter-toggle {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Service Filter Panel Styles */
+.widget-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.widget-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.filter-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.filter-toggle.active {
+  background: rgba(255, 255, 255, 0.4);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.service-filter-panel {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 16px 20px;
+  color: #374151;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.filter-action {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.filter-action:hover {
+  background: #4f46e5;
+}
+
+.service-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.service-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.service-checkbox:hover {
+  background: rgba(99, 102, 241, 0.1);
+}
+
+.service-checkbox input[type="checkbox"] {
+  margin: 0;
+}
+
+.checkbox-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.service-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.service-name {
+  font-weight: 500;
+  flex: 1;
+}
+
+.service-count {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+/* Widget Map Container */
+.widget-map-container {
+  position: relative;
+  height: 100%;
+}
+
+/* Widget Mode Specific Styles */
+.world-map-container.widget-mode {
+  height: 100%;
+}
+
+.map-content-layout.widget-with-panel {
+  display: flex;
+  height: 100%;
+}
+
+.map-content-layout.widget-with-panel .leaflet-map-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.issue-side-panel.widget-side-panel {
+  width: 380px;
+  max-width: 40%;
+  height: 100%;
+  position: relative;
+  right: 0;
+  top: 0;
+  transform: none;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.issues-list-panel.widget-issues-list {
+  max-height: 420px;
+}
+
+.widget-ai-indicator {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(139, 92, 246, 0.9);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.widget-ai-indicator .processing-spinner {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-top: 1.5px solid white;
+}

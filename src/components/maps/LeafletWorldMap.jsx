@@ -753,6 +753,8 @@ const intelligentLocationMapping = async (locationText, provider) => {
   
   return results.length > 0 ? results.slice(0, 3) : []; // Limit to top 3 matches
 };
+
+// Main component
 export default function LeafletWorldMap({ 
   cloudflareIncidents = [], 
   zscalerUpdates = [], 
@@ -762,7 +764,8 @@ export default function LeafletWorldMap({
   datadogUpdates = [], 
   awsUpdates = [],
   selectedServices = [],
-  showHistoric = false
+  showHistoric = false,
+  isWidget = false
 }) {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [worldGeoJSON, setWorldGeoJSON] = useState(null);
@@ -999,43 +1002,51 @@ export default function LeafletWorldMap({
   }, [countryGroups, getCountryStyle]);
 
   return (
-    <div className="world-map-container">
-      <div className="world-map-header">
-        <div className="header-content">
-          <h2>Global Service Status Map</h2>
-          {isProcessingLocations && (
-            <div className="ai-processing-indicator">
-              <div className="processing-spinner"></div>
-              <span>AI-enhanced location detection in progress...</span>
-            </div>
-          )}
-          <div className="map-legend">
-            <div className="legend-item">
-              <div className="legend-region affected-regions"></div>
-              <span>Regions with Issues ({countryGroups.length})</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-dot" style={{ backgroundColor: '#dc2626' }}></div>
-              <span>Critical ({processedIssues.filter(i => i.severity === 'critical').length})</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-dot" style={{ backgroundColor: '#ea580c' }}></div>
-              <span>Major ({processedIssues.filter(i => i.severity === 'major').length})</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-dot" style={{ backgroundColor: '#d97706' }}></div>
-              <span>Minor ({processedIssues.filter(i => i.severity === 'minor').length})</span>
-            </div>
-            <div className="legend-item ai-indicator">
-              <div className="legend-dot" style={{ backgroundColor: '#8b5cf6' }}></div>
-              <span>AI-Enhanced ({processedIssues.filter(i => i.extractionSource === 'ai-enhanced').length})</span>
+    <div className={`world-map-container ${isWidget ? 'widget-mode' : ''}`}>
+      {!isWidget && (
+        <div className="world-map-header">
+          <div className="header-content">
+            <h2>Global Service Status Map</h2>
+            {isProcessingLocations && (
+              <div className="ai-processing-indicator">
+                <div className="processing-spinner"></div>
+                <span>AI-enhanced location detection in progress...</span>
+              </div>
+            )}
+            <div className="map-legend">
+              <div className="legend-item">
+                <div className="legend-region affected-regions"></div>
+                <span>Regions with Issues ({countryGroups.length})</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-dot" style={{ backgroundColor: '#dc2626' }}></div>
+                <span>Critical ({processedIssues.filter(i => i.severity === 'critical').length})</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-dot" style={{ backgroundColor: '#ea580c' }}></div>
+                <span>Major ({processedIssues.filter(i => i.severity === 'major').length})</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-dot" style={{ backgroundColor: '#d97706' }}></div>
+                <span>Minor ({processedIssues.filter(i => i.severity === 'minor').length})</span>
+              </div>
+              <div className="legend-item ai-indicator">
+                <div className="legend-dot" style={{ backgroundColor: '#8b5cf6' }}></div>
+                <span>AI-Enhanced ({processedIssues.filter(i => i.extractionSource === 'ai-enhanced').length})</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="map-content-layout">
+      <div className={`map-content-layout ${selectedCountry && isWidget ? 'widget-with-panel' : ''}`}>
         <div className="leaflet-map-wrapper">
+          {isWidget && isProcessingLocations && (
+            <div className="widget-ai-indicator">
+              <div className="processing-spinner"></div>
+              <span>AI processing locations...</span>
+            </div>
+          )}
           <MapContainer
             center={[20, 0]}
             zoom={2}
@@ -1062,7 +1073,7 @@ export default function LeafletWorldMap({
         </div>
 
         {selectedCountry && (
-          <div className="issue-side-panel">
+          <div className={`issue-side-panel ${isWidget ? 'widget-side-panel' : ''}`}>
             <div className="side-panel-header">
               <div className="panel-title-section">
                 <div className="provider-badge">
@@ -1082,6 +1093,7 @@ export default function LeafletWorldMap({
               <button 
                 className="close-side-panel"
                 onClick={() => setSelectedCountry(null)}
+                title={isWidget ? 'Close details' : 'Close side panel'}
               >
                 ×
               </button>
@@ -1090,11 +1102,11 @@ export default function LeafletWorldMap({
             <div className="side-panel-content">
               <div className="multiple-issues-view">
                 <div className="issues-summary">
-                  <h3>Service Issues in {selectedCountry.countryName}</h3>
+                  <h3>{isWidget ? 'Issues in' : 'Service Issues in'} {selectedCountry.countryName}</h3>
                   <p className="issues-count">{selectedCountry.issues.length} active issue{selectedCountry.issues.length !== 1 ? 's' : ''}</p>
                 </div>
                 
-                <div className="issues-list-panel">
+                <div className={`issues-list-panel ${isWidget ? 'widget-issues-list' : ''}`}>
                   {selectedCountry.issues.map((issue, index) => (
                     <div key={issue.id} className="issue-card">
                       <div className="issue-card-header">

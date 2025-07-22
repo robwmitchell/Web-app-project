@@ -24,6 +24,7 @@ const UnifiedLiveFeedPanel = lazy(() => import('./components/feeds/UnifiedLiveFe
 const ServiceSelectionSplash = lazy(() => import('./features/services/components/ServiceSelectionSplash'));
 const AddCustomService = lazy(() => import('./features/custom-services/components/AddCustomService'));
 const LeafletWorldMap = lazy(() => import('./components/maps/LeafletWorldMap'));
+const WorldMapWidget = lazy(() => import('./components/maps/WorldMapWidget'));
 const ServiceRadar = lazy(() => import('./components/radar/ServiceRadar'));
 
 // Memoized components to prevent unnecessary re-renders
@@ -1529,6 +1530,36 @@ const SPLASH_CONFIG = {
                   Restore All Cards ({closedCards.length})
                 </button>
               </div>
+            )}
+            
+            {/* World Map Widget */}
+            {selectedServices.length > 0 && (
+              <Suspense fallback={
+                <div style={{
+                  width: '100%',
+                  height: '350px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '16px',
+                  color: 'white'
+                }}>
+                  <div>Loading world map...</div>
+                </div>
+              }>
+                <WorldMapWidget
+                  cloudflareIncidents={cloudflare.incidents}
+                  zscalerUpdates={zscaler.updates}
+                  oktaUpdates={okta.updates}
+                  sendgridUpdates={sendgrid.updates}
+                  slackUpdates={slack.updates}
+                  datadogUpdates={datadog.updates}
+                  awsUpdates={aws.updates}
+                  selectedServices={selectedServices}
+                  showHistoric={false}
+                />
+              </Suspense>
             )}
             
             {isServiceSelected('cloudflare') && !isCardClosed('cloudflare') && (
