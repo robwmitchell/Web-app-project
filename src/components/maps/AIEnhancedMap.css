@@ -1,0 +1,133 @@
+/* AI-Enhanced Map Styles */
+
+.ai-processing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  color: white;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin: 8px 0;
+  animation: pulse 2s infinite;
+}
+
+.processing-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.ai-indicator {
+  border-left: 2px solid #8b5cf6;
+  padding-left: 8px;
+  margin-left: 8px;
+}
+
+.meta-ai-enhanced {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-right: 8px;
+  position: relative;
+}
+
+.ai-context-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  margin-top: 2px;
+}
+
+.meta-ai-enhanced:hover .ai-context-tooltip {
+  opacity: 1;
+}
+
+.meta-confidence {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.confidence-high {
+  background: #10b981;
+  color: white;
+}
+
+.confidence-medium {
+  background: #f59e0b;
+  color: white;
+}
+
+.confidence-low {
+  background: #6b7280;
+  color: white;
+}
+
+/* Enhanced map legend */
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ai-processing-indicator {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+  
+  .map-legend {
+    gap: 12px;
+  }
+  
+  .legend-item {
+    font-size: 0.8rem;
+  }
+}

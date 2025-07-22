@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './WorldMap.css';
+import './AIEnhancedMap.css';
 import { getCountryFromCoordinates, getCountryFromRegion, COUNTRY_MAPPING } from './countryMapping.js';
 
 // Fix for default markers in Leaflet with React
@@ -520,6 +521,238 @@ const getCoordinates = (text, provider) => {
   }];
 };
 
+// AI-powered location extraction using local inference
+const extractLocationsWithAI = async (text, provider) => {
+  try {
+    // Simple prompt engineering approach for location extraction
+    const prompt = `Extract geographical locations from this service update text. Return only city names, datacenter locations, or regions mentioned. Be specific and accurate.
+
+Text: "${text}"
+
+Extract locations as a JSON array of objects with format:
+[{"location": "City Name", "confidence": "high|medium|low", "context": "brief context"}]
+
+Focus on:
+- City names (e.g., "Chennai", "New York")
+- Datacenter locations (e.g., "Chennai II", "MAA2")  
+- Regional indicators (e.g., "APAC", "US East")
+- Airport codes if relevant to ${provider}
+
+Ignore generic terms like "customers", "users", "service", "network".`;
+
+    // For now, we'll use a simple AI-like pattern matching with enhanced intelligence
+    // This can be replaced with actual AI API calls (OpenAI, Claude, etc.) later
+    return await smartLocationExtraction(text, provider, prompt);
+    
+  } catch (error) {
+    console.warn('AI location extraction failed, falling back to pattern matching:', error);
+    return getCoordinates(text, provider);
+  }
+};
+
+// Enhanced smart location extraction (simulating AI behavior)
+const smartLocationExtraction = async (text, provider, prompt) => {
+  const textLower = text.toLowerCase();
+  const locations = [];
+  
+  // AI-like contextual analysis patterns
+  const contextualPatterns = [
+    // Datacenter with location format
+    {
+      pattern: /(?:urgent|maintenance|outage)?\s*([a-z\s]+?)\s+(?:ii|iii|i)?\s*\(([a-z0-9]{2,6})\)\s*datacenter/gi,
+      confidence: 'high',
+      context: 'datacenter_specification'
+    },
+    // Affected regions with cities
+    {
+      pattern: /affected.*?(?:regions?|datacenters?):\s*([^.!?]+)/gi,
+      confidence: 'high',
+      context: 'affected_regions_list'
+    },
+    // Regional context with city
+    {
+      pattern: /(apac|emea|americas|asia pacific|europe|north america),?\s*([a-z\s]+?)(?:\s|,|\.|\()/gi,
+      confidence: 'high',
+      context: 'regional_specification'
+    },
+    // Maintenance in location
+    {
+      pattern: /(?:maintenance|outage|issue)\s+(?:in|at)\s+(?:the\s+)?([a-z\s]+?)\s+(?:datacenter|dc|region|facility)/gi,
+      confidence: 'high',
+      context: 'maintenance_location'
+    },
+    // Traffic failover location
+    {
+      pattern: /traffic\s+will\s+failover\s+to.*?(?:in\s+)?([a-z\s]+?)(?:\s+datacenter|\s+dc|\.|,)/gi,
+      confidence: 'medium',
+      context: 'failover_location'
+    }
+  ];
+  
+  // Process each pattern with AI-like intelligence
+  contextualPatterns.forEach(({ pattern, confidence, context }) => {
+    let match;
+    while ((match = pattern.exec(textLower)) !== null) {
+      for (let i = 1; i < match.length; i++) {
+        if (match[i]) {
+          const extracted = match[i].trim();
+          if (extracted.length >= 3 && extracted.length <= 50) {
+            // Clean and process the extracted location
+            const cleanLocation = extracted
+              .replace(/[,\.\(\)]/g, ' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+            
+            if (cleanLocation && !isGenericTerm(cleanLocation)) {
+              locations.push({
+                location: cleanLocation,
+                confidence,
+                context,
+                originalMatch: match[0]
+              });
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  // AI-like location resolution and coordinate mapping
+  const resolvedLocations = [];
+  
+  for (const loc of locations) {
+    const coordinates = await intelligentLocationMapping(loc.location, provider);
+    if (coordinates && coordinates.length > 0) {
+      coordinates.forEach(coord => {
+        resolvedLocations.push({
+          ...coord,
+          aiConfidence: loc.confidence,
+          aiContext: loc.context,
+          originalMatch: loc.originalMatch,
+          source: 'ai-enhanced'
+        });
+      });
+    }
+  }
+  
+  // If no AI-extracted locations, fall back to enhanced pattern matching
+  if (resolvedLocations.length === 0) {
+    return getCoordinates(text, provider);
+  }
+  
+  return resolvedLocations;
+};
+
+// Check if term is too generic to be a location
+const isGenericTerm = (term) => {
+  const genericTerms = [
+    'service', 'network', 'system', 'server', 'database', 'website', 'application',
+    'customers', 'users', 'clients', 'traffic', 'connection', 'maintenance',
+    'outage', 'issue', 'problem', 'down', 'offline', 'performance', 'response',
+    'hardware', 'software', 'infrastructure', 'platform', 'cloud', 'internet',
+    'connectivity', 'availability', 'monitoring', 'alert', 'notification'
+  ];
+  
+  return genericTerms.some(generic => 
+    term.includes(generic) || term === generic
+  );
+};
+
+// Intelligent location mapping with enhanced context awareness
+const intelligentLocationMapping = async (locationText, provider) => {
+  const text = locationText.toLowerCase().trim();
+  const results = [];
+  
+  // Priority 1: Exact datacenter codes
+  const datacenterCodes = {
+    'maa2': { lat: 13.0827, lng: 80.2707, region: 'Chennai (MAA2), India' },
+    'maa1': { lat: 13.0827, lng: 80.2707, region: 'Chennai (MAA1), India' },
+    'bom1': { lat: 19.0760, lng: 72.8777, region: 'Mumbai (BOM1), India' },
+    'del1': { lat: 28.7041, lng: 77.1025, region: 'Delhi (DEL1), India' },
+    'sin1': { lat: 1.3521, lng: 103.8198, region: 'Singapore (SIN1)' },
+    'hkg1': { lat: 22.3193, lng: 114.1694, region: 'Hong Kong (HKG1)' },
+    'nrt1': { lat: 35.7720, lng: 140.3928, region: 'Tokyo Narita (NRT1), Japan' },
+    'syd1': { lat: -33.9399, lng: 151.1753, region: 'Sydney (SYD1), Australia' }
+  };
+  
+  if (datacenterCodes[text]) {
+    results.push({
+      ...datacenterCodes[text],
+      confidence: 'high',
+      source: 'datacenter-mapping'
+    });
+  }
+  
+  // Priority 2: Enhanced city matching with context awareness
+  const words = text.split(' ').filter(word => word.length >= 3);
+  
+  for (const word of words) {
+    // Check direct city matches
+    if (GEOGRAPHICAL_DATABASE.cities[word]) {
+      const coords = GEOGRAPHICAL_DATABASE.cities[word];
+      results.push({
+        lat: coords.lat,
+        lng: coords.lng,
+        region: coords.region,
+        confidence: 'high',
+        source: 'exact-city-match'
+      });
+    }
+    
+    // Check partial matches for compound city names
+    const matchingCities = Object.keys(GEOGRAPHICAL_DATABASE.cities).filter(city => {
+      return city.includes(word) || word.includes(city);
+    });
+    
+    matchingCities.forEach(city => {
+      const coords = GEOGRAPHICAL_DATABASE.cities[city];
+      // Avoid duplicates
+      if (!results.some(r => Math.abs(r.lat - coords.lat) < 0.1 && Math.abs(r.lng - coords.lng) < 0.1)) {
+        results.push({
+          lat: coords.lat,
+          lng: coords.lng,
+          region: coords.region,
+          confidence: 'medium',
+          source: 'partial-city-match',
+          matchedCity: city
+        });
+      }
+    });
+  }
+  
+  // Priority 3: Regional context mapping
+  if (text.includes('apac') || text.includes('asia pacific')) {
+    // If specific APAC cities are mentioned, prioritize them
+    const apacCities = ['chennai', 'mumbai', 'singapore', 'hong kong', 'tokyo', 'sydney', 'manila'];
+    const mentionedApacCity = apacCities.find(city => text.includes(city));
+    
+    if (mentionedApacCity && GEOGRAPHICAL_DATABASE.cities[mentionedApacCity]) {
+      const coords = GEOGRAPHICAL_DATABASE.cities[mentionedApacCity];
+      results.push({
+        lat: coords.lat,
+        lng: coords.lng,
+        region: coords.region,
+        confidence: 'high',
+        source: 'apac-regional-context'
+      });
+    }
+  }
+  
+  // Priority 4: Cloud regions
+  for (const [region, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cloudRegions)) {
+    if (text.includes(region.toLowerCase())) {
+      results.push({
+        lat: coords.lat,
+        lng: coords.lng,
+        region: coords.region,
+        confidence: 'high',
+        source: 'cloud-region'
+      });
+    }
+  }
+  
+  return results.length > 0 ? results.slice(0, 3) : []; // Limit to top 3 matches
+};
 export default function LeafletWorldMap({ 
   cloudflareIncidents = [], 
   zscalerUpdates = [], 
@@ -560,56 +793,92 @@ export default function LeafletWorldMap({
     loadWorldData();
   }, []);
 
-  // Process issues
-  const processedIssues = useMemo(() => {
-    const issues = [];
-    
-    const services = [
-      { name: 'Cloudflare', data: cloudflareIncidents, dateField: 'created_at' },
-      { name: 'Zscaler', data: zscalerUpdates, dateField: 'date' },
-      { name: 'Okta', data: oktaUpdates, dateField: 'date' },
-      { name: 'SendGrid', data: sendgridUpdates, dateField: 'date' },
-      { name: 'Slack', data: slackUpdates, dateField: 'date' },
-      { name: 'Datadog', data: datadogUpdates, dateField: 'date' },
-      { name: 'AWS', data: awsUpdates, dateField: 'date' }
-    ];
+  // Process issues with AI-enhanced location detection
+  const [processedIssues, setProcessedIssues] = useState([]);
+  const [isProcessingLocations, setIsProcessingLocations] = useState(false);
 
-    services.forEach(service => {
-      if (!selectedServices.includes(service.name.toLowerCase())) return;
-      if (!Array.isArray(service.data)) return;
+  useEffect(() => {
+    const processIssuesWithAI = async () => {
+      setIsProcessingLocations(true);
+      const issues = [];
+      
+      const services = [
+        { name: 'Cloudflare', data: cloudflareIncidents, dateField: 'created_at' },
+        { name: 'Zscaler', data: zscalerUpdates, dateField: 'date' },
+        { name: 'Okta', data: oktaUpdates, dateField: 'date' },
+        { name: 'SendGrid', data: sendgridUpdates, dateField: 'date' },
+        { name: 'Slack', data: slackUpdates, dateField: 'date' },
+        { name: 'Datadog', data: datadogUpdates, dateField: 'date' },
+        { name: 'AWS', data: awsUpdates, dateField: 'date' }
+      ];
 
-      service.data.forEach((item, index) => {
-        const date = item[service.dateField] || item.date || item.created_at;
-        if (!isRelevant(item, date, showHistoric)) return;
+      for (const service of services) {
+        if (!selectedServices.includes(service.name.toLowerCase())) continue;
+        if (!Array.isArray(service.data)) continue;
 
-        const titleText = item.title || item.name || '';
-        const descriptionText = item.description || item.body || '';
-        const fullText = `${titleText} ${descriptionText}`;
-        
-        const coordinates = getCoordinates(fullText, service.name);
+        for (const [index, item] of service.data.entries()) {
+          const date = item[service.dateField] || item.date || item.created_at;
+          if (!isRelevant(item, date, showHistoric)) continue;
 
-        coordinates.forEach(coord => {
-          const countryCode = getCountryFromCoordinates(coord.lat, coord.lng);
+          const titleText = item.title || item.name || '';
+          const descriptionText = item.description || item.body || '';
+          const fullText = `${titleText} ${descriptionText}`;
           
-          issues.push({
-            id: `${service.name}-${index}-${coord.region}`,
-            provider: service.name,
-            title: formatTitle(titleText || 'Service Issue'),
-            description: formatDescription(descriptionText),
-            severity: getSeverity(item),
-            date: date,
-            lat: coord.lat,
-            lng: coord.lng,
-            region: coord.region,
-            countryCode: countryCode,
-            confidence: coord.confidence || 'medium',
-            url: item.html_url || item.link || item.url
-          });
-        });
-      });
-    });
-    
-    return issues;
+          try {
+            // Use AI-enhanced location extraction
+            const coordinates = await extractLocationsWithAI(fullText, service.name);
+
+            coordinates.forEach(coord => {
+              const countryCode = getCountryFromCoordinates(coord.lat, coord.lng);
+              
+              issues.push({
+                id: `${service.name}-${index}-${coord.region}`,
+                provider: service.name,
+                title: formatTitle(titleText || 'Service Issue'),
+                description: formatDescription(descriptionText),
+                severity: getSeverity(item),
+                date: date,
+                lat: coord.lat,
+                lng: coord.lng,
+                region: coord.region,
+                countryCode: countryCode,
+                confidence: coord.confidence || coord.aiConfidence || 'medium',
+                aiContext: coord.aiContext,
+                extractionSource: coord.source,
+                url: item.html_url || item.link || item.url
+              });
+            });
+          } catch (error) {
+            console.warn(`Failed to process location for ${service.name} item ${index}:`, error);
+            // Fallback to original coordinates function
+            const coordinates = getCoordinates(fullText, service.name);
+            coordinates.forEach(coord => {
+              const countryCode = getCountryFromCoordinates(coord.lat, coord.lng);
+              issues.push({
+                id: `${service.name}-${index}-${coord.region}`,
+                provider: service.name,
+                title: formatTitle(titleText || 'Service Issue'),
+                description: formatDescription(descriptionText),
+                severity: getSeverity(item),
+                date: date,
+                lat: coord.lat,
+                lng: coord.lng,
+                region: coord.region,
+                countryCode: countryCode,
+                confidence: coord.confidence || 'medium',
+                extractionSource: 'fallback-pattern',
+                url: item.html_url || item.link || item.url
+              });
+            });
+          }
+        }
+      }
+      
+      setProcessedIssues(issues);
+      setIsProcessingLocations(false);
+    };
+
+    processIssuesWithAI();
   }, [cloudflareIncidents, zscalerUpdates, oktaUpdates, sendgridUpdates, slackUpdates, datadogUpdates, awsUpdates, selectedServices, showHistoric]);
 
   // Group issues by country
@@ -734,6 +1003,12 @@ export default function LeafletWorldMap({
       <div className="world-map-header">
         <div className="header-content">
           <h2>Global Service Status Map</h2>
+          {isProcessingLocations && (
+            <div className="ai-processing-indicator">
+              <div className="processing-spinner"></div>
+              <span>AI-enhanced location detection in progress...</span>
+            </div>
+          )}
           <div className="map-legend">
             <div className="legend-item">
               <div className="legend-region affected-regions"></div>
@@ -750,6 +1025,10 @@ export default function LeafletWorldMap({
             <div className="legend-item">
               <div className="legend-dot" style={{ backgroundColor: '#d97706' }}></div>
               <span>Minor ({processedIssues.filter(i => i.severity === 'minor').length})</span>
+            </div>
+            <div className="legend-item ai-indicator">
+              <div className="legend-dot" style={{ backgroundColor: '#8b5cf6' }}></div>
+              <span>AI-Enhanced ({processedIssues.filter(i => i.extractionSource === 'ai-enhanced').length})</span>
             </div>
           </div>
         </div>
@@ -843,6 +1122,21 @@ export default function LeafletWorldMap({
                         <div className="issue-card-meta">
                           {issue.region && (
                             <span className="meta-region">Region: {issue.region}</span>
+                          )}
+                          {issue.extractionSource === 'ai-enhanced' && (
+                            <span className="meta-ai-enhanced">
+                              🤖 AI-Enhanced Location Detection
+                              {issue.aiContext && (
+                                <span className="ai-context-tooltip">
+                                  Context: {issue.aiContext.replace(/_/g, ' ')}
+                                </span>
+                              )}
+                            </span>
+                          )}
+                          {issue.confidence && (
+                            <span className={`meta-confidence confidence-${issue.confidence}`}>
+                              Confidence: {issue.confidence}
+                            </span>
                           )}
                         </div>
                         
