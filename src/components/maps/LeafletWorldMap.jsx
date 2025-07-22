@@ -14,41 +14,182 @@ L.Icon.Default.mergeOptions({
 });
 
 // PERFORMANCE OPTIMIZATION: Move constants and databases outside component
-// Enhanced geographical location database
+// Enhanced geographical location database with extensive city coverage
 const GEOGRAPHICAL_DATABASE = {
   cities: {
+    // Major US Cities
     'new york': { lat: 40.7128, lng: -74.0060, region: 'New York, USA' },
     'nyc': { lat: 40.7128, lng: -74.0060, region: 'New York, USA' },
     'manhattan': { lat: 40.7831, lng: -73.9712, region: 'Manhattan, NY' },
     'san francisco': { lat: 37.7749, lng: -122.4194, region: 'San Francisco, USA' },
+    'san jose': { lat: 37.3382, lng: -121.8863, region: 'San Jose, USA' },
     'los angeles': { lat: 34.0522, lng: -118.2437, region: 'Los Angeles, USA' },
     'chicago': { lat: 41.8781, lng: -87.6298, region: 'Chicago, USA' },
+    'houston': { lat: 29.7604, lng: -95.3698, region: 'Houston, USA' },
+    'phoenix': { lat: 33.4484, lng: -112.0740, region: 'Phoenix, USA' },
+    'philadelphia': { lat: 39.9526, lng: -75.1652, region: 'Philadelphia, USA' },
+    'san antonio': { lat: 29.4241, lng: -98.4936, region: 'San Antonio, USA' },
+    'san diego': { lat: 32.7157, lng: -117.1611, region: 'San Diego, USA' },
+    'dallas': { lat: 32.7767, lng: -96.7970, region: 'Dallas, USA' },
+    'austin': { lat: 30.2672, lng: -97.7431, region: 'Austin, USA' },
+    'fort worth': { lat: 32.7555, lng: -97.3308, region: 'Fort Worth, USA' },
+    'columbus': { lat: 39.9612, lng: -82.9988, region: 'Columbus, USA' },
+    'charlotte': { lat: 35.2271, lng: -80.8431, region: 'Charlotte, USA' },
+    'indianapolis': { lat: 39.7684, lng: -86.1581, region: 'Indianapolis, USA' },
+    'seattle': { lat: 47.6062, lng: -122.3321, region: 'Seattle, USA' },
+    'denver': { lat: 39.7392, lng: -104.9903, region: 'Denver, USA' },
+    'boston': { lat: 42.3601, lng: -71.0589, region: 'Boston, USA' },
+    'el paso': { lat: 31.7619, lng: -106.4850, region: 'El Paso, USA' },
+    'detroit': { lat: 42.3314, lng: -83.0458, region: 'Detroit, USA' },
+    'nashville': { lat: 36.1627, lng: -86.7816, region: 'Nashville, USA' },
+    'portland': { lat: 45.5152, lng: -122.6784, region: 'Portland, USA' },
+    'memphis': { lat: 35.1495, lng: -90.0490, region: 'Memphis, USA' },
+    'oklahoma city': { lat: 35.4676, lng: -97.5164, region: 'Oklahoma City, USA' },
+    'las vegas': { lat: 36.1699, lng: -115.1398, region: 'Las Vegas, USA' },
+    'louisville': { lat: 38.2527, lng: -85.7585, region: 'Louisville, USA' },
+    'baltimore': { lat: 39.2904, lng: -76.6122, region: 'Baltimore, USA' },
+    'milwaukee': { lat: 43.0389, lng: -87.9065, region: 'Milwaukee, USA' },
+    'albuquerque': { lat: 35.0844, lng: -106.6504, region: 'Albuquerque, USA' },
+    'fresno': { lat: 36.7378, lng: -119.7871, region: 'Fresno, USA' },
+    'tucson': { lat: 32.2226, lng: -110.9747, region: 'Tucson, USA' },
+    'sacramento': { lat: 38.5816, lng: -121.4944, region: 'Sacramento, USA' },
+    'kansas city': { lat: 39.0997, lng: -94.5786, region: 'Kansas City, USA' },
+    'mesa': { lat: 33.4152, lng: -111.8315, region: 'Mesa, USA' },
+    'atlanta': { lat: 33.7490, lng: -84.3880, region: 'Atlanta, USA' },
+    'omaha': { lat: 41.2565, lng: -95.9345, region: 'Omaha, USA' },
+    'colorado springs': { lat: 38.8339, lng: -104.8214, region: 'Colorado Springs, USA' },
+    'raleigh': { lat: 35.7796, lng: -78.6382, region: 'Raleigh, USA' },
+    'virginia beach': { lat: 36.8529, lng: -75.9780, region: 'Virginia Beach, USA' },
+    'miami': { lat: 25.7617, lng: -80.1918, region: 'Miami, USA' },
+    'tampa': { lat: 27.9506, lng: -82.4572, region: 'Tampa, USA' },
+    'orlando': { lat: 28.5383, lng: -81.3792, region: 'Orlando, USA' },
+    'pittsburgh': { lat: 40.4406, lng: -79.9959, region: 'Pittsburgh, USA' },
+    'cincinnati': { lat: 39.1031, lng: -84.5120, region: 'Cincinnati, USA' },
+    'cleveland': { lat: 41.4993, lng: -81.6944, region: 'Cleveland, USA' },
+    
+    // Canadian Cities
+    'toronto': { lat: 43.6532, lng: -79.3832, region: 'Toronto, Canada' },
+    'montreal': { lat: 45.5017, lng: -73.5673, region: 'Montreal, Canada' },
+    'vancouver': { lat: 49.2827, lng: -123.1207, region: 'Vancouver, Canada' },
+    'ottawa': { lat: 45.4215, lng: -75.7981, region: 'Ottawa, Canada' },
+    'calgary': { lat: 51.0447, lng: -114.0719, region: 'Calgary, Canada' },
+    'edmonton': { lat: 53.5461, lng: -113.4938, region: 'Edmonton, Canada' },
+    'winnipeg': { lat: 49.8951, lng: -97.1384, region: 'Winnipeg, Canada' },
+    'quebec city': { lat: 46.8139, lng: -71.2080, region: 'Quebec City, Canada' },
+    
+    // European Cities
     'london': { lat: 51.5074, lng: -0.1278, region: 'London, UK' },
     'paris': { lat: 48.8566, lng: 2.3522, region: 'Paris, France' },
-    'tokyo': { lat: 35.6762, lng: 139.6503, region: 'Tokyo, Japan' },
-    'sydney': { lat: -33.8688, lng: 151.2093, region: 'Sydney, Australia' },
-    'singapore': { lat: 1.3521, lng: 103.8198, region: 'Singapore' },
-    'mumbai': { lat: 19.0760, lng: 72.8777, region: 'Mumbai, India' },
-    'bangalore': { lat: 12.9716, lng: 77.5946, region: 'Bangalore, India' },
-    'sao paulo': { lat: -23.5505, lng: -46.6333, region: 'São Paulo, Brazil' },
-    'toronto': { lat: 43.6532, lng: -79.3832, region: 'Toronto, Canada' },
+    'berlin': { lat: 52.5200, lng: 13.4050, region: 'Berlin, Germany' },
+    'madrid': { lat: 40.4168, lng: -3.7038, region: 'Madrid, Spain' },
+    'rome': { lat: 41.9028, lng: 12.4964, region: 'Rome, Italy' },
+    'barcelona': { lat: 41.3851, lng: 2.1734, region: 'Barcelona, Spain' },
+    'munich': { lat: 48.1351, lng: 11.5820, region: 'Munich, Germany' },
+    'milan': { lat: 45.4642, lng: 9.1900, region: 'Milan, Italy' },
     'amsterdam': { lat: 52.3676, lng: 4.9041, region: 'Amsterdam, Netherlands' },
+    'brussels': { lat: 50.8503, lng: 4.3517, region: 'Brussels, Belgium' },
+    'vienna': { lat: 48.2082, lng: 16.3738, region: 'Vienna, Austria' },
+    'zurich': { lat: 47.3769, lng: 8.5417, region: 'Zurich, Switzerland' },
     'frankfurt': { lat: 50.1109, lng: 8.6821, region: 'Frankfurt, Germany' },
     'dublin': { lat: 53.3498, lng: -6.2603, region: 'Dublin, Ireland' },
     'stockholm': { lat: 59.3293, lng: 18.0686, region: 'Stockholm, Sweden' },
+    'oslo': { lat: 59.9139, lng: 10.7522, region: 'Oslo, Norway' },
+    'copenhagen': { lat: 55.6761, lng: 12.5683, region: 'Copenhagen, Denmark' },
+    'helsinki': { lat: 60.1699, lng: 24.9384, region: 'Helsinki, Finland' },
+    'warsaw': { lat: 52.2297, lng: 21.0122, region: 'Warsaw, Poland' },
+    'prague': { lat: 50.0755, lng: 14.4378, region: 'Prague, Czech Republic' },
+    'budapest': { lat: 47.4979, lng: 19.0402, region: 'Budapest, Hungary' },
+    'bucharest': { lat: 44.4268, lng: 26.1025, region: 'Bucharest, Romania' },
+    'athens': { lat: 37.9838, lng: 23.7275, region: 'Athens, Greece' },
+    'lisbon': { lat: 38.7223, lng: -9.1393, region: 'Lisbon, Portugal' },
+    'manchester': { lat: 53.4808, lng: -2.2426, region: 'Manchester, UK' },
+    'birmingham': { lat: 52.4862, lng: -1.8904, region: 'Birmingham, UK' },
+    'glasgow': { lat: 55.8642, lng: -4.2518, region: 'Glasgow, UK' },
+    'edinburgh': { lat: 55.9533, lng: -3.1883, region: 'Edinburgh, UK' },
+    
+    // Asian Cities
+    'tokyo': { lat: 35.6762, lng: 139.6503, region: 'Tokyo, Japan' },
+    'osaka': { lat: 34.6937, lng: 135.5023, region: 'Osaka, Japan' },
     'seoul': { lat: 37.5665, lng: 126.9780, region: 'Seoul, South Korea' },
-    'hong kong': { lat: 22.3193, lng: 114.1694, region: 'Hong Kong' },
-    'cape town': { lat: -33.9249, lng: 18.4241, region: 'Cape Town, South Africa' },
-    'cairo': { lat: 30.0444, lng: 31.2357, region: 'Cairo, Egypt' },
-    'istanbul': { lat: 41.0082, lng: 28.9784, region: 'Istanbul, Turkey' },
-    'moscow': { lat: 55.7558, lng: 37.6176, region: 'Moscow, Russia' },
     'beijing': { lat: 39.9042, lng: 116.4074, region: 'Beijing, China' },
     'shanghai': { lat: 31.2304, lng: 121.4737, region: 'Shanghai, China' },
-    'mexico city': { lat: 19.4326, lng: -99.1332, region: 'Mexico City, Mexico' },
+    'guangzhou': { lat: 23.1291, lng: 113.2644, region: 'Guangzhou, China' },
+    'shenzhen': { lat: 22.5431, lng: 114.0579, region: 'Shenzhen, China' },
+    'hong kong': { lat: 22.3193, lng: 114.1694, region: 'Hong Kong' },
+    'singapore': { lat: 1.3521, lng: 103.8198, region: 'Singapore' },
+    'bangkok': { lat: 13.7563, lng: 100.5018, region: 'Bangkok, Thailand' },
+    'jakarta': { lat: -6.2088, lng: 106.8456, region: 'Jakarta, Indonesia' },
+    'kuala lumpur': { lat: 3.1390, lng: 101.6869, region: 'Kuala Lumpur, Malaysia' },
+    'manila': { lat: 14.5995, lng: 120.9842, region: 'Manila, Philippines' },
+    'ho chi minh city': { lat: 10.8231, lng: 106.6297, region: 'Ho Chi Minh City, Vietnam' },
+    'mumbai': { lat: 19.0760, lng: 72.8777, region: 'Mumbai, India' },
+    'delhi': { lat: 28.7041, lng: 77.1025, region: 'Delhi, India' },
+    'bangalore': { lat: 12.9716, lng: 77.5946, region: 'Bangalore, India' },
+    'hyderabad': { lat: 17.3850, lng: 78.4867, region: 'Hyderabad, India' },
+    'chennai': { lat: 13.0827, lng: 80.2707, region: 'Chennai, India' },
+    'kolkata': { lat: 22.5726, lng: 88.3639, region: 'Kolkata, India' },
+    'pune': { lat: 18.5204, lng: 73.8567, region: 'Pune, India' },
+    'ahmedabad': { lat: 23.0225, lng: 72.5714, region: 'Ahmedabad, India' },
+    
+    // Australian & Oceania Cities
+    'sydney': { lat: -33.8688, lng: 151.2093, region: 'Sydney, Australia' },
+    'melbourne': { lat: -37.8136, lng: 144.9631, region: 'Melbourne, Australia' },
+    'brisbane': { lat: -27.4698, lng: 153.0251, region: 'Brisbane, Australia' },
+    'perth': { lat: -31.9505, lng: 115.8605, region: 'Perth, Australia' },
+    'adelaide': { lat: -34.9285, lng: 138.6007, region: 'Adelaide, Australia' },
+    'auckland': { lat: -36.8485, lng: 174.7633, region: 'Auckland, New Zealand' },
+    'wellington': { lat: -41.2865, lng: 174.7762, region: 'Wellington, New Zealand' },
+    
+    // South American Cities
+    'sao paulo': { lat: -23.5505, lng: -46.6333, region: 'São Paulo, Brazil' },
+    'rio de janeiro': { lat: -22.9068, lng: -43.1729, region: 'Rio de Janeiro, Brazil' },
     'buenos aires': { lat: -34.6118, lng: -58.3960, region: 'Buenos Aires, Argentina' },
     'lima': { lat: -12.0464, lng: -77.0428, region: 'Lima, Peru' },
+    'bogota': { lat: 4.7110, lng: -74.0721, region: 'Bogotá, Colombia' },
+    'santiago': { lat: -33.4489, lng: -70.6693, region: 'Santiago, Chile' },
+    'caracas': { lat: 10.4806, lng: -66.9036, region: 'Caracas, Venezuela' },
+    'montevideo': { lat: -34.9011, lng: -56.1645, region: 'Montevideo, Uruguay' },
+    
+    // African Cities
+    'cairo': { lat: 30.0444, lng: 31.2357, region: 'Cairo, Egypt' },
     'lagos': { lat: 6.5244, lng: 3.3792, region: 'Lagos, Nigeria' },
     'nairobi': { lat: -1.2921, lng: 36.8219, region: 'Nairobi, Kenya' },
+    'cape town': { lat: -33.9249, lng: 18.4241, region: 'Cape Town, South Africa' },
+    'johannesburg': { lat: -26.2041, lng: 28.0473, region: 'Johannesburg, South Africa' },
+    'casablanca': { lat: 33.5731, lng: -7.5898, region: 'Casablanca, Morocco' },
+    'tunis': { lat: 36.8065, lng: 10.1815, region: 'Tunis, Tunisia' },
+    'addis ababa': { lat: 9.1450, lng: 38.7451, region: 'Addis Ababa, Ethiopia' },
+    'algiers': { lat: 36.7378, lng: 3.0875, region: 'Algiers, Algeria' },
+    
+    // Middle Eastern Cities
+    'istanbul': { lat: 41.0082, lng: 28.9784, region: 'Istanbul, Turkey' },
+    'dubai': { lat: 25.2048, lng: 55.2708, region: 'Dubai, UAE' },
+    'riyadh': { lat: 24.7136, lng: 46.6753, region: 'Riyadh, Saudi Arabia' },
+    'tel aviv': { lat: 32.0853, lng: 34.7818, region: 'Tel Aviv, Israel' },
+    'jerusalem': { lat: 31.7683, lng: 35.2137, region: 'Jerusalem, Israel' },
+    'tehran': { lat: 35.6892, lng: 51.3890, region: 'Tehran, Iran' },
+    'baghdad': { lat: 33.3152, lng: 44.3661, region: 'Baghdad, Iraq' },
+    'kuwait city': { lat: 29.3759, lng: 47.9774, region: 'Kuwait City, Kuwait' },
+    'doha': { lat: 25.2854, lng: 51.5310, region: 'Doha, Qatar' },
+    'abu dhabi': { lat: 24.2539, lng: 54.3773, region: 'Abu Dhabi, UAE' },
+    'manama': { lat: 26.0667, lng: 50.5577, region: 'Manama, Bahrain' },
+    'muscat': { lat: 23.5859, lng: 58.4059, region: 'Muscat, Oman' },
+    'ankara': { lat: 39.9334, lng: 32.8597, region: 'Ankara, Turkey' },
+    
+    // Russian Cities
+    'moscow': { lat: 55.7558, lng: 37.6176, region: 'Moscow, Russia' },
+    'saint petersburg': { lat: 59.9311, lng: 30.3609, region: 'Saint Petersburg, Russia' },
+    'novosibirsk': { lat: 55.0084, lng: 82.9357, region: 'Novosibirsk, Russia' },
+    'yekaterinburg': { lat: 56.8431, lng: 60.6454, region: 'Yekaterinburg, Russia' },
+    'nizhny novgorod': { lat: 56.2965, lng: 43.9361, region: 'Nizhny Novgorod, Russia' },
+    
+    // Mexican Cities
+    'mexico city': { lat: 19.4326, lng: -99.1332, region: 'Mexico City, Mexico' },
+    'guadalajara': { lat: 20.6597, lng: -103.3496, region: 'Guadalajara, Mexico' },
+    'monterrey': { lat: 25.6866, lng: -100.3161, region: 'Monterrey, Mexico' },
+    'puebla': { lat: 19.0414, lng: -98.2063, region: 'Puebla, Mexico' },
+    'tijuana': { lat: 32.5149, lng: -117.0382, region: 'Tijuana, Mexico' },
+    'cancun': { lat: 21.1619, lng: -86.8515, region: 'Cancún, Mexico' },
   },
   cloudRegions: {
     'us-east-1': { lat: 39.0458, lng: -76.6413, region: 'US East (N. Virginia)' },
@@ -128,26 +269,200 @@ const formatDescription = (description, maxLength = 200) => {
   return lastSpace > 0 ? truncated.substring(0, lastSpace) + '...' : truncated + '...';
 };
 
-// Coordinate detection
+// Enhanced coordinate detection with intelligent text parsing
 const getCoordinates = (text, provider) => {
   const textLower = cleanHtmlContent(text).toLowerCase();
+  const foundLocations = [];
   
-  // Cloud regions
-  for (const [region, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cloudRegions)) {
-    if (textLower.includes(region.toLowerCase())) {
-      return [{ lat: coords.lat, lng: coords.lng, region: coords.region, confidence: 'high' }];
+  // Location extraction patterns for common service update formats
+  const locationPatterns = [
+    // "Issue in [City]" or "Affecting [City]" - improved to capture city names better
+    /(?:issue|outage|problem|failure|disruption|degraded|down|offline)\s+(?:in|at|for|affecting)\s+([a-z\s\-]{2,25})(?:\s+(?:region|datacenter|data center|dc|zone|area|customers|users)|,|\.|$|\s+and|\s+or)/gi,
+    // "Affecting users in [City]" or "Customers in [City]"
+    /(?:affecting|impacting|customers|users|clients|subscribers)\s+(?:in|at|from|located in)\s+([a-z\s\-]{2,25})(?:\s+(?:region|area|zone|datacenter)|,|\.|$|\s+and|\s+or)/gi,
+    // "[City] experiencing issues" or "[City] is down"
+    /([a-z\s\-]{2,25})\s+(?:is\s+|are\s+)?(?:experiencing|having|reporting|down|offline|degraded|affected|unavailable|slow)(?:\s|,|\.|\(|$)/gi,
+    // "[City] region" or "[City] datacenter"
+    /([a-z\s\-]{2,25})\s+(?:region|datacenter|data center|dc|zone|pop|facility|node|server|area)(?:\s|,|\.|\(|$)/gi,
+    // Parenthetical city mentions: "(City)" or "(City, Country)"
+    /\(([a-z\s,\-]{2,35})\)/gi,
+    // Location after colon: "Location: City" or "Region: City"
+    /(?:location|region|area|city|datacenter|data center|affected area|affected region):\s*([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
+    // "Service issues near [City]" or "Problems around [City]"
+    /(?:issues|problems|outage|connectivity)\s+(?:near|around|in|at)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
+    // "[City]-based" or "[City] based"
+    /([a-z\s\-]{2,25})(?:\-based|\s+based)(?:\s|,|\.|\(|$)/gi,
+    // Service-specific patterns
+    /(?:reported|detected|identified)\s+(?:in|at|from)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
+    // Regional patterns with better capture
+    /(east coast|west coast|northeast|northwest|southeast|southwest|midwest|northern|southern|eastern|western|central)\s*([a-z\s\-]*?)(?:\s+(?:region|area|coast))?(?:\s|,|\.|\(|$)/gi,
+    // Cloud region patterns like "us-east-1", "eu-west-2"
+    /(us|eu|ap|ca|sa|me|af)[\-_](east|west|north|south|central|southeast|northeast|southwest|northwest)[\-_]?(\d+)?/gi,
+  ];
+  
+  // Extract potential locations using patterns
+  const extractedTerms = new Set();
+  
+  locationPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(textLower)) !== null) {
+      if (match[1]) {
+        // Clean up the extracted term
+        let term = match[1].trim().replace(/[,\.\(\)]/g, '');
+        if (term.length >= 2 && term.length <= 30) {
+          extractedTerms.add(term);
+        }
+      }
+      // Also check match[2] for regional patterns
+      if (match[2]) {
+        let term = match[2].trim().replace(/[,\.\(\)]/g, '');
+        if (term.length >= 2 && term.length <= 30) {
+          extractedTerms.add(term);
+        }
+      }
+    }
+  });
+  
+  // Also split text into words and check for city names
+  const words = textLower.split(/\s+/);
+  for (let i = 0; i < words.length; i++) {
+    // Check single words (minimum 3 characters for meaningful cities)
+    if (words[i] && words[i].length >= 3 && words[i].length <= 20) {
+      // Filter out common non-location words
+      const nonLocationWords = ['the', 'and', 'for', 'are', 'was', 'were', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should', 'this', 'that', 'with', 'from', 'they', 'them', 'their', 'there', 'where', 'when', 'what', 'which', 'who', 'how', 'can', 'may', 'might', 'must', 'shall', 'service', 'issue', 'problem', 'outage', 'down', 'offline', 'experiencing', 'affecting', 'customers', 'users', 'clients'];
+      if (!nonLocationWords.includes(words[i])) {
+        extractedTerms.add(words[i]);
+      }
+    }
+    
+    // Check 2-word combinations (like "New York", "San Francisco")
+    if (i < words.length - 1) {
+      const twoWord = `${words[i]} ${words[i + 1]}`;
+      if (twoWord.length >= 4 && twoWord.length <= 25) {
+        extractedTerms.add(twoWord);
+      }
+    }
+    
+    // Check 3-word combinations (like "New York City")
+    if (i < words.length - 2) {
+      const threeWord = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
+      if (threeWord.length >= 6 && threeWord.length <= 35) {
+        extractedTerms.add(threeWord);
+      }
     }
   }
   
-  // Cities
+  // Priority 1: Cloud regions (exact matches)
+  for (const [region, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cloudRegions)) {
+    if (textLower.includes(region.toLowerCase())) {
+      foundLocations.push({ 
+        lat: coords.lat, 
+        lng: coords.lng, 
+        region: coords.region, 
+        confidence: 'high',
+        source: 'cloud-region'
+      });
+    }
+  }
+  
+  // Priority 2: Exact city matches
   for (const [city, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cities)) {
     if (textLower.includes(city)) {
-      return [{ lat: coords.lat, lng: coords.lng, region: coords.region, confidence: 'high' }];
+      foundLocations.push({ 
+        lat: coords.lat, 
+        lng: coords.lng, 
+        region: coords.region, 
+        confidence: 'high',
+        source: 'exact-city'
+      });
     }
+  }
+  
+  // Priority 3: Fuzzy matching on extracted terms
+  const cityKeys = Object.keys(GEOGRAPHICAL_DATABASE.cities);
+  extractedTerms.forEach(term => {
+    // Look for cities that start with the term or contain it
+    const matchingCities = cityKeys.filter(city => {
+      return city.startsWith(term) || 
+             city.includes(term) || 
+             (term.length >= 4 && city.includes(term.substring(0, Math.floor(term.length * 0.8))));
+    });
+    
+    matchingCities.forEach(city => {
+      const coords = GEOGRAPHICAL_DATABASE.cities[city];
+      // Avoid duplicates
+      if (!foundLocations.some(loc => loc.lat === coords.lat && loc.lng === coords.lng)) {
+        foundLocations.push({ 
+          lat: coords.lat, 
+          lng: coords.lng, 
+          region: coords.region, 
+          confidence: 'medium',
+          source: 'fuzzy-match',
+          matchedTerm: term,
+          cityKey: city
+        });
+      }
+    });
+  });
+  
+  // Priority 4: Provider-specific location patterns
+  if (provider === 'Cloudflare') {
+    // Cloudflare often mentions airport codes or POP locations
+    const airportCodes = {
+      'lhr': { lat: 51.4700, lng: -0.4543, region: 'London Heathrow, UK' },
+      'jfk': { lat: 40.6413, lng: -73.7781, region: 'New York JFK, USA' },
+      'lax': { lat: 33.9425, lng: -118.4081, region: 'Los Angeles, USA' },
+      'nrt': { lat: 35.7720, lng: 140.3928, region: 'Tokyo Narita, Japan' },
+      'fra': { lat: 50.0379, lng: 8.5622, region: 'Frankfurt, Germany' },
+      'sin': { lat: 1.3644, lng: 103.9915, region: 'Singapore Changi' },
+      'syd': { lat: -33.9399, lng: 151.1753, region: 'Sydney, Australia' },
+      'dxb': { lat: 25.2532, lng: 55.3657, region: 'Dubai, UAE' },
+    };
+    
+    for (const [code, coords] of Object.entries(airportCodes)) {
+      if (textLower.includes(code)) {
+        foundLocations.push({ 
+          lat: coords.lat, 
+          lng: coords.lng, 
+          region: coords.region, 
+          confidence: 'medium',
+          source: 'airport-code'
+        });
+      }
+    }
+  }
+  
+  // Remove duplicates and sort by confidence
+  const uniqueLocations = [];
+  const seenCoords = new Set();
+  
+  foundLocations.forEach(location => {
+    const coordKey = `${location.lat}_${location.lng}`;
+    if (!seenCoords.has(coordKey)) {
+      seenCoords.add(coordKey);
+      uniqueLocations.push(location);
+    }
+  });
+  
+  // Sort by confidence (high > medium > low)
+  uniqueLocations.sort((a, b) => {
+    const confidenceOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+    return confidenceOrder[b.confidence] - confidenceOrder[a.confidence];
+  });
+  
+  // Return the best matches (limit to 3 to avoid too many points)
+  if (uniqueLocations.length > 0) {
+    return uniqueLocations.slice(0, 3);
   }
   
   // Default fallback
-  return [{ lat: 37.7749, lng: -122.4194, region: 'Global (Fallback)', confidence: 'low' }];
+  return [{ 
+    lat: 37.7749, 
+    lng: -122.4194, 
+    region: 'Global (Fallback)', 
+    confidence: 'low',
+    source: 'fallback'
+  }];
 };
 
 export default function LeafletWorldMap({ 
