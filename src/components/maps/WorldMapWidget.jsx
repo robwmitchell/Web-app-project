@@ -14,9 +14,14 @@ export default function WorldMapWidget({
   awsUpdates = [],
   selectedServices: initialSelectedServices = [],
   showHistoric = false 
-}) {
+}}) {
   // Local state for widget-specific service selection
-  const [selectedServices, setSelectedServices] = useState(initialSelectedServices);
+  // Default to all services if none initially selected
+  const [selectedServices, setSelectedServices] = useState(
+    initialSelectedServices?.length > 0 
+      ? initialSelectedServices 
+      : ['cloudflare', 'zscaler', 'okta', 'sendgrid', 'slack', 'datadog', 'aws']
+  );
   const [showServiceFilter, setShowServiceFilter] = useState(false);
   
   const serviceOptions = [

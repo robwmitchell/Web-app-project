@@ -858,24 +858,12 @@ export default function LeafletWorldMap({
   }, [cloudflareIncidents?.length, zscalerUpdates?.length, oktaUpdates?.length, sendgridUpdates?.length, slackUpdates?.length, datadogUpdates?.length, awsUpdates?.length, selectedServices, showHistoric]);
 
   useEffect(() => {
-    // Add debug logging
-    console.log('Map processing effect triggered:', {
-      dataHash,
-      lastProcessedHash,
-      isProcessingLocations,
-      selectedServicesLength: selectedServices?.length,
-      cloudflareLength: cloudflareIncidents?.length,
-      zscalerLength: zscalerUpdates?.length
-    });
-
-    // TEMPORARILY BYPASS hash check for debugging
-    // if (dataHash === lastProcessedHash || isProcessingLocations) {
-    //   console.log('Skipping processing due to:', dataHash === lastProcessedHash ? 'same hash' : 'already processing');
-    //   return;
-    // }
+    // Prevent unnecessary re-processing if data hasn't changed
+    if (dataHash === lastProcessedHash || isProcessingLocations) {
+      return;
+    }
 
     const processIssuesWithAI = async () => {
-      console.log('Starting AI processing with services:', selectedServices);
       setIsProcessingLocations(true);
       setLastProcessedHash(dataHash);
       
@@ -895,24 +883,16 @@ export default function LeafletWorldMap({
         // If no services are selected, process all services, otherwise only process selected ones
         const shouldProcessService = selectedServices?.length === 0 || selectedServices?.includes(service.name.toLowerCase());
         
-        console.log(`Processing service: ${service.name}, selected: ${shouldProcessService}, data length: ${service.data?.length}`);
-        
         if (!shouldProcessService) continue;
         if (!Array.isArray(service.data)) continue;
 
         for (const [index, item] of service.data.entries()) {
           const date = item[service.dateField] || item.date || item.created_at;
-          const relevant = isRelevant(item, date, showHistoric);
-          
-          console.log(`Item ${index} for ${service.name}: relevant=${relevant}, date=${date}, title=${item.title || item.name}`);
-          
-          if (!relevant) continue;
+          if (!isRelevant(item, date, showHistoric)) continue;
 
           const titleText = item.title || item.name || '';
           const descriptionText = item.description || item.body || '';
           const fullText = `${titleText} ${descriptionText}`;
-          
-          console.log(`Processing item ${index} for ${service.name}:`, titleText);
           
           try {
             // Use AI-enhanced location extraction
@@ -964,54 +944,20 @@ export default function LeafletWorldMap({
         }
       }
       
-      console.log('Processed issues:', issues.length, issues);
-      
-      // FALLBACK: If no issues were processed, add some test data for debugging
-      if (issues.length === 0) {
-        console.log('No issues found, adding test data for debugging');
-        issues.push({
-          id: 'test-1',
-          provider: 'Test Service',
-          title: 'Test Issue in US',
-          description: 'This is a test issue to verify map highlighting works',
-          severity: 'major',
-          date: new Date().toISOString(),
-          lat: 39.8283,
-          lng: -98.5795,
-          region: 'United States',
-          countryCode: 'USA',
-          confidence: 'high',
-          extractionSource: 'test-data'
-        });
-        
-        issues.push({
-          id: 'test-2',
-          provider: 'Test Service',
-          title: 'Test Issue in UK',
-          description: 'Another test issue to verify map highlighting',
-          severity: 'critical',
-          date: new Date().toISOString(),
-          lat: 51.5074,
-          lng: -0.1278,
-          region: 'United Kingdom',
-          countryCode: 'GBR',
-          confidence: 'high',
-          extractionSource: 'test-data'
-        });
-      }
-      
       setProcessedIssues(issues);
       setIsProcessingLocations(false);
     };
 
-    // Remove debounce for debugging
-    processIssuesWithAI();
+    // Add a small delay to debounce rapid changes
+    const timer = setTimeout(() => {
+      processIssuesWithAI();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [dataHash, lastProcessedHash, isProcessingLocations]);
 
   // Group issues by country
   const countryGroups = useMemo(() => {
-    console.log('Grouping issues by country, processedIssues:', processedIssues.length, processedIssues);
-    
     const groups = {};
     
     processedIssues.forEach(issue => {
@@ -1034,9 +980,7 @@ export default function LeafletWorldMap({
       }
     });
     
-    const result = Object.values(groups);
-    console.log('Country groups created:', result.length, result);
-    return result;
+    return Object.values(groups);
   }, [processedIssues]);
 
   // Style countries based on issues  
