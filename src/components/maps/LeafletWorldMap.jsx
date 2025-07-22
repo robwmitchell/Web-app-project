@@ -276,6 +276,13 @@ const getCoordinates = (text, provider) => {
   
   // Improved location extraction patterns for common service update formats
   const locationPatterns = [
+    // Datacenter patterns - high priority for provider-specific formats
+    /([a-z\s\-]{3,25})\s+(?:ii|iii|iv|v|\d+)?\s*\([a-z0-9]{3,5}\)\s*datacenter/gi,
+    /([a-z\s\-]{3,25})\s+datacenter/gi,
+    /datacenter[:\s]*([a-z\s\-]{3,25})/gi,
+    // Zscaler-specific patterns
+    /affected\s+datacenters?\s+or\s+regions?:\s*([a-z\s,\-]{3,50})/gi,
+    /regions?:\s*([a-z\s,\-]{3,50})/gi,
     // Direct city mentions with context
     /(?:in|at|from|affecting)\s+([a-z\s\-]{2,25})(?:\s+(?:region|area|datacenter|data center|dc|zone|customers|users|clients)|,|\.|$)/gi,
     // City experiencing issues
@@ -286,7 +293,7 @@ const getCoordinates = (text, provider) => {
     /(?:outage|issue|problem|down|offline|disruption)\s+(?:in|at|affecting)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
     // User/customer patterns
     /(?:customers|users|clients|subscribers)\s+(?:in|at|from|located)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
-    // Parenthetical mentions
+    // Parenthetical mentions with airport codes
     /\(([a-z\s,\-]{3,35})\)/gi,
     // Cloud regions
     /((?:us|eu|ap|ca|sa|me|af)[\-_](?:east|west|north|south|central|southeast|northeast|southwest|northwest)[\-_]?\d*)/gi,
@@ -305,14 +312,26 @@ const getCoordinates = (text, provider) => {
       for (let i = 1; i < match.length; i++) {
         if (match[i]) {
           let term = match[i].trim().replace(/[,\.\(\)]/g, '').replace(/\s+/g, ' ');
-          // Filter terms that are likely to be city names
-          if (term.length >= 2 && term.length <= 30 && !term.match(/^\d+$/)) {
-            // Skip common non-location words
-            const skipWords = ['service', 'issue', 'problem', 'outage', 'down', 'offline', 'customers', 'users', 'clients', 'experiencing', 'affecting', 'system', 'network', 'server', 'database', 'website', 'application', 'connectivity', 'performance', 'response', 'timeout', 'error', 'failure', 'maintenance'];
-            if (!skipWords.some(word => term.includes(word))) {
-              extractedTerms.add(term);
+          
+          // Handle multiple locations separated by commas or "and"
+          const multipleLocations = term.split(/,|\sand\s/).map(loc => loc.trim());
+          
+          multipleLocations.forEach(location => {
+            // Filter terms that are likely to be city names
+            if (location.length >= 2 && location.length <= 30 && !location.match(/^\d+$/)) {
+              // Skip common non-location words but be more selective
+              const skipWords = ['service', 'issue', 'problem', 'outage', 'down', 'offline', 'customers', 'users', 'clients', 'experiencing', 'affecting', 'system', 'network', 'server', 'database', 'website', 'application', 'connectivity', 'performance', 'response', 'timeout', 'error', 'failure'];
+              if (!skipWords.some(word => location.includes(word))) {
+                // Clean up region references that might be confusing
+                let cleanLocation = location.replace(/\b(region|area|datacenter|data center|dc|zone)\b/gi, '').trim();
+                if (cleanLocation.length >= 2) {
+                  extractedTerms.add(cleanLocation);
+                }
+                // Also add the original term
+                extractedTerms.add(location);
+              }
             }
-          }
+          });
         }
       }
     }
@@ -361,15 +380,20 @@ const getCoordinates = (text, provider) => {
     }
   }
   
-  // Priority 2: Exact city matches from database
+  // Priority 2: Exact city matches from database (highest priority for known cities)
   for (const [city, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cities)) {
     if (textLower.includes(city) || allTerms.has(city)) {
+      // Check if this is a direct mention
+      const directMentions = [`${city} datacenter`, `${city} ii`, `${city}ii`, city];
+      const isDirectMention = directMentions.some(mention => textLower.includes(mention));
+      
       foundLocations.push({ 
         lat: coords.lat, 
         lng: coords.lng, 
         region: coords.region, 
-        confidence: 'high',
-        source: 'exact-city'
+        confidence: isDirectMention ? 'high' : 'medium',
+        source: 'exact-city',
+        cityKey: city
       });
     }
   }

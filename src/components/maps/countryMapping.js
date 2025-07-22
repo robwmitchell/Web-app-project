@@ -136,9 +136,9 @@ export const getCountryFromCoordinates = (lat, lng) => {
   if (lat >= -50 && lat <= 82 && lng >= 60 && lng <= 180) {
     if (lng >= 129 && lng <= 146 && lat >= 30 && lat <= 46) return 'JPN';
     if (lng >= 124 && lng <= 132 && lat >= 33 && lat <= 39) return 'KOR';
-    if (lng >= 73 && lng <= 135 && lat >= 6 && lat <= 54) return 'CHN';
-    if (lng >= 68 && lng <= 97 && lat >= 6 && lat <= 37) return 'IND';
+    if (lng >= 68 && lng <= 97 && lat >= 6 && lat <= 37) return 'IND'; // India first, more specific range
     if (lng >= 103 && lng <= 104 && lat >= 1 && lat <= 2) return 'SGP';
+    if (lng >= 95 && lng <= 135 && lat >= 15 && lat <= 54) return 'CHN'; // China adjusted to not overlap with India
     if (lng >= 113 && lng <= 180 && lat >= -45 && lat <= -10) return 'AUS';
     return 'CHN'; // Default for Asia
   }
