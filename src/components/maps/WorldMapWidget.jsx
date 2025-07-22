@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Suspense } from 'react';
 import './WorldMapWidget.css';
 
@@ -14,41 +14,9 @@ export default function WorldMapWidget({
   awsUpdates = [],
   selectedServices: initialSelectedServices = [],
   showHistoric = false 
-}}) {
-  // Local state for widget-specific service selection
-  // Default to all services if none initially selected
-  const [selectedServices, setSelectedServices] = useState(
-    initialSelectedServices?.length > 0 
-      ? initialSelectedServices 
-      : ['cloudflare', 'zscaler', 'okta', 'sendgrid', 'slack', 'datadog', 'aws']
-  );
-  const [showServiceFilter, setShowServiceFilter] = useState(false);
-  
-  const serviceOptions = [
-    { id: 'cloudflare', name: 'Cloudflare', count: cloudflareIncidents?.length || 0, color: '#f48120' },
-    { id: 'zscaler', name: 'Zscaler', count: zscalerUpdates?.length || 0, color: '#0052cc' },
-    { id: 'okta', name: 'Okta', count: oktaUpdates?.length || 0, color: '#007dc1' },
-    { id: 'sendgrid', name: 'SendGrid', count: sendgridUpdates?.length || 0, color: '#1a82e2' },
-    { id: 'slack', name: 'Slack', count: slackUpdates?.length || 0, color: '#4a154b' },
-    { id: 'datadog', name: 'Datadog', count: datadogUpdates?.length || 0, color: '#632ca6' },
-    { id: 'aws', name: 'AWS', count: awsUpdates?.length || 0, color: '#ff9900' }
-  ];
-
-  const handleServiceToggle = (serviceId) => {
-    if (selectedServices.includes(serviceId)) {
-      setSelectedServices(prev => prev.filter(id => id !== serviceId));
-    } else {
-      setSelectedServices(prev => [...prev, serviceId]);
-    }
-  };
-
-  const handleSelectAll = () => {
-    setSelectedServices(serviceOptions.map(s => s.id));
-  };
-
-  const handleSelectNone = () => {
-    setSelectedServices([]);
-  };
+}) {  // Use the parent's selected services directly instead of creating local state
+  // This ensures consistency with the main app's service selection
+  const selectedServices = initialSelectedServices;
 
   // Count total issues for display
   const totalIssues = [
@@ -79,51 +47,30 @@ export default function WorldMapWidget({
         </div>
         
         <div className="widget-controls">
-          <button 
-            className={`filter-toggle ${showServiceFilter ? 'active' : ''}`}
-            onClick={() => setShowServiceFilter(!showServiceFilter)}
-            title="Filter Services"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
-            </svg>
-            Filter Services
-          </button>
+          {/* Service filtering is now controlled by the main app */}
+          <div className="widget-info">
+            Services: {selectedServices.length > 0 ? selectedServices.join(', ') : 'None selected'}
+          </div>
         </div>
       </div>
-
-      {showServiceFilter && (
-        <div className="service-filter-panel">
-          <div className="filter-controls">
-            <button className="filter-action" onClick={handleSelectAll}>
-              Select All
-            </button>
-            <button className="filter-action" onClick={handleSelectNone}>
-              Select None
-            </button>
+      
+      {/* Widget Legend and Stats */}
+      <div className="widget-legend-section">
+        <div className="widget-legend">
+          <div className="legend-item">
+            <div className="legend-dot critical"></div>
+            <span>Critical</span>
           </div>
-          
-          <div className="service-checkboxes">
-            {serviceOptions.map(service => (
-              <label key={service.id} className="service-checkbox">
-                <input
-                  type="checkbox"
-                  checked={selectedServices.includes(service.id)}
-                  onChange={() => handleServiceToggle(service.id)}
-                />
-                <div className="checkbox-content">
-                  <div 
-                    className="service-indicator" 
-                    style={{ backgroundColor: service.color }}
-                  ></div>
-                  <span className="service-name">{service.name}</span>
-                  <span className="service-count">({service.count})</span>
-                </div>
-              </label>
-            ))}
+          <div className="legend-item">
+            <div className="legend-dot major"></div>
+            <span>Major</span>
+          </div>
+          <div className="legend-item">
+            <div className="legend-dot minor"></div>
+            <span>Minor</span>
           </div>
         </div>
-      )}
+      </div>
       
       <div className="widget-map-container">
         <Suspense fallback={
@@ -145,6 +92,22 @@ export default function WorldMapWidget({
             isWidget={true}
           />
         </Suspense>
+      </div>
+      
+      {/* Widget Summary Bar */}
+      <div className="widget-summary-bar">
+        <div className="summary-item">
+          <span className="summary-label">Active Issues</span>
+          <span className="summary-value">{totalIssues}</span>
+        </div>
+        <div className="summary-item">
+          <span className="summary-label">Services</span>
+          <span className="summary-value">{selectedServices.length}</span>
+        </div>
+        <div className="summary-item">
+          <span className="summary-label">Mode</span>
+          <span className="summary-value">{showHistoric ? '7 Days' : 'Current'}</span>
+        </div>
       </div>
     </div>
   );

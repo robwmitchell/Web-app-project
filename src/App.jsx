@@ -709,13 +709,18 @@ const SPLASH_CONFIG = {
     if (isServiceSelected('cloudflare') && cloudflare && cloudflare.incidents) {
       cloudflare.incidents.forEach(incident => {
         if (isIssueActive(incident, 'cloudflare')) {
-          openIssues.push({ 
+          const issueObject = { 
             provider: 'Cloudflare', 
-            name: incident.name || incident.title, 
+            name: incident.name || incident.title || 'Cloudflare Service Issue', 
             status: incident.impact || incident.status || 'major', 
-            updated: incident.updated_at || incident.updatedAt, 
+            updated: incident.updated_at || incident.updatedAt || incident.date, 
             url: incident.shortlink || incident.url || 'https://www.cloudflarestatus.com/' 
-          });
+          };
+          
+          // Only add if we have a valid name/title
+          if (issueObject.name && issueObject.name.trim() !== '') {
+            openIssues.push(issueObject);
+          }
         }
       });
     }
@@ -724,13 +729,18 @@ const SPLASH_CONFIG = {
     if (isServiceSelected('zscaler') && zscaler && zscaler.updates) {
       zscaler.updates.forEach(update => {
         if (isIssueActive(update, 'zscaler')) {
-          openIssues.push({ 
+          const issueObject = { 
             provider: 'Zscaler', 
-            name: update.title, 
-            status: zscaler.status, 
-            updated: update.date, 
-            url: update.link || 'https://trust.zscaler.com/' 
-          });
+            name: update.title || update.name || 'Zscaler Service Issue', 
+            status: zscaler.status || 'unknown', 
+            updated: update.date || update.updated_at || update.reported_at, 
+            url: update.link || update.url || 'https://trust.zscaler.com/' 
+          };
+          
+          // Only add if we have a valid name/title
+          if (issueObject.name && issueObject.name.trim() !== '') {
+            openIssues.push(issueObject);
+          }
         }
       });
     }
@@ -739,13 +749,18 @@ const SPLASH_CONFIG = {
     if (isServiceSelected('okta') && okta && okta.updates) {
       okta.updates.forEach(update => {
         if (isIssueActive(update, 'okta')) {
-          openIssues.push({ 
+          const issueObject = { 
             provider: 'Okta', 
-            name: update.title, 
-            status: okta.status, 
-            updated: update.date, 
+            name: update.title || update.name || 'Okta Service Issue', 
+            status: okta.status || 'unknown', 
+            updated: update.date || update.updated_at || update.reported_at, 
             url: update.link || update.url || 'https://status.okta.com/' 
-          });
+          };
+          
+          // Only add if we have a valid name/title
+          if (issueObject.name && issueObject.name.trim() !== '') {
+            openIssues.push(issueObject);
+          }
         }
       });
     }
@@ -754,13 +769,18 @@ const SPLASH_CONFIG = {
     if (isServiceSelected('sendgrid') && sendgrid && sendgrid.updates) {
       sendgrid.updates.forEach(update => {
         if (isIssueActive(update, 'sendgrid')) {
-          openIssues.push({ 
+          const issueObject = { 
             provider: 'SendGrid', 
-            name: update.title, 
-            status: sendgrid.status, 
-            updated: update.date, 
-            url: update.link || 'https://status.sendgrid.com/' 
-          });
+            name: update.title || update.name || 'SendGrid Service Issue', 
+            status: sendgrid.status || 'unknown', 
+            updated: update.date || update.updated_at || update.reported_at, 
+            url: update.link || update.url || 'https://status.sendgrid.com/' 
+          };
+          
+          // Only add if we have a valid name/title
+          if (issueObject.name && issueObject.name.trim() !== '') {
+            openIssues.push(issueObject);
+          }
         }
       });
     }
@@ -769,13 +789,18 @@ const SPLASH_CONFIG = {
     if (isServiceSelected('slack') && slack && slack.updates) {
       slack.updates.forEach(update => {
         if (isIssueActive(update, 'slack')) {
-          openIssues.push({ 
+          const issueObject = { 
             provider: 'Slack', 
-            name: update.title, 
-            status: slack.status, 
-            updated: update.reported_at, 
+            name: update.title || update.name || 'Slack Service Issue', 
+            status: slack.status || 'unknown', 
+            updated: update.reported_at || update.date || update.updated_at, 
             url: update.url || 'https://status.slack.com/' 
-          });
+          };
+          
+          // Only add if we have a valid name/title
+          if (issueObject.name && issueObject.name.trim() !== '') {
+            openIssues.push(issueObject);
+          }
         }
       });
     }
@@ -784,13 +809,18 @@ const SPLASH_CONFIG = {
     if (isServiceSelected('datadog') && datadog && datadog.updates) {
       datadog.updates.forEach(update => {
         if (isIssueActive(update, 'datadog')) {
-          openIssues.push({ 
+          const issueObject = { 
             provider: 'Datadog', 
-            name: update.title, 
-            status: datadog.status, 
-            updated: update.reported_at, 
-            url: update.url || 'https://status.datadoghq.com/' 
-          });
+            name: update.title || update.name || 'Datadog Service Issue', 
+            status: datadog.status || 'unknown', 
+            updated: update.reported_at || update.date || update.updated_at, 
+            url: update.url || update.link || 'https://status.datadoghq.com/' 
+          };
+          
+          // Only add if we have a valid name/title
+          if (issueObject.name && issueObject.name.trim() !== '') {
+            openIssues.push(issueObject);
+          }
         }
       });
     }
@@ -799,13 +829,18 @@ const SPLASH_CONFIG = {
     if (isServiceSelected('aws') && aws && aws.updates) {
       aws.updates.forEach(update => {
         if (isIssueActive(update, 'aws')) {
-          openIssues.push({ 
+          const issueObject = { 
             provider: 'AWS', 
-            name: update.title, 
-            status: aws.status, 
-            updated: update.reported_at, 
-            url: update.url || 'https://status.aws.amazon.com/' 
-          });
+            name: update.title || update.name || 'AWS Service Issue', 
+            status: aws.status || 'unknown', 
+            updated: update.reported_at || update.date || update.updated_at, 
+            url: update.url || update.link || 'https://status.aws.amazon.com/' 
+          };
+          
+          // Only add if we have a valid name/title
+          if (issueObject.name && issueObject.name.trim() !== '') {
+            openIssues.push(issueObject);
+          }
         }
       });
     }
@@ -1294,8 +1329,35 @@ const SPLASH_CONFIG = {
               }}>
                 {(() => {
                   const issues = criticalMode.active ? criticalMode.details : demoIssues;
+                  if (!issues || issues.length === 0) {
+                    return (
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        gap: 4,
+                        animation: 'fadeIn 0.6s ease-out'
+                      }}>
+                        <span style={{ fontWeight: 700 }}>No active issues detected</span>
+                      </div>
+                    );
+                  }
                   const idx = tickerIndex % issues.length;
                   const c = issues[idx];
+                  
+                  // Safety check to ensure the issue object has required properties
+                  if (!c || !c.provider || !c.name) {
+                    return (
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        gap: 4,
+                        animation: 'fadeIn 0.6s ease-out'
+                      }}>
+                        <span style={{ fontWeight: 700 }}>Loading issue details...</span>
+                      </div>
+                    );
+                  }
+                  
                   return (
                     <div key={idx} style={{ 
                       display: 'flex', 
@@ -1364,9 +1426,14 @@ const SPLASH_CONFIG = {
               }}>
                 {(() => {
                   const issues = criticalMode.active ? criticalMode.details : demoIssues;
+                  if (!issues || issues.length === 0) return null;
                   const idx = tickerIndex % issues.length;
                   const c = issues[idx];
-                  return c.url && (
+                  
+                  // Safety check to ensure the issue object exists and has required properties
+                  if (!c || !c.url) return null;
+                  
+                  return (
                     <a 
                       href={c.url} 
                       target="_blank" 
@@ -1405,7 +1472,8 @@ const SPLASH_CONFIG = {
               {/* Navigation Controls - only show if more than one issue */}
               {(() => {
                 const issues = criticalMode.active ? criticalMode.details : demoIssues;
-                return issues.length > 1 && (
+                if (!issues || issues.length <= 1) return null;
+                return (
                   <div className="alert-navigation" style={{
                     display: 'flex',
                     alignItems: 'center',

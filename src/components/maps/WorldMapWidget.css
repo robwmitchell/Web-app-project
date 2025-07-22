@@ -3,12 +3,15 @@
 .world-map-widget {
   width: 100%;
   max-width: 1200px;
+  height: 500px; /* Fixed height to prevent overflow */
   margin: 20px auto;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .widget-header {
@@ -348,7 +351,117 @@
 /* Widget Map Container */
 .widget-map-container {
   position: relative;
-  height: 100%;
+  flex: 1; /* Take remaining space in flexbox layout */
+  min-height: 300px;
+}
+
+/* Widget Legend Section */
+.widget-legend-section {
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  align-items: center;
+}
+
+.widget-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.widget-legend .legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.widget-legend .legend-dot.critical {
+  background-color: #dc2626;
+}
+
+.widget-legend .legend-dot.major {
+  background-color: #ea580c;
+}
+
+.widget-legend .legend-dot.minor {
+  background-color: #d97706;
+}
+
+/* Widget Summary Bar */
+.widget-summary-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-summary-bar .summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.widget-summary-bar .summary-label {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.widget-summary-bar .summary-value {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+/* Responsive adjustments for widget elements */
+@media (max-width: 768px) {
+  .world-map-widget {
+    height: 450px; /* Smaller height on mobile */
+    margin: 10px;
+    border-radius: 12px;
+  }
+  
+  .widget-legend {
+    gap: 12px;
+  }
+  
+  .widget-legend .legend-item {
+    font-size: 0.8rem;
+  }
+  
+  .widget-summary-bar {
+    padding: 10px 16px;
+  }
+  
+  .widget-summary-bar .summary-label {
+    font-size: 0.7rem;
+  }
+  
+  .widget-summary-bar .summary-value {
+    font-size: 1rem;
+  }
+  
+  .widget-map-container {
+    flex: 1; /* Use flexbox on mobile too */
+    min-height: 250px;
+  }
 }
 
 /* Widget Mode Specific Styles */

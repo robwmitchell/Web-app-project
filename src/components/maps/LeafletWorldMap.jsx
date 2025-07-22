@@ -840,8 +840,8 @@ export default function LeafletWorldMap({
 
   // Create a stable hash of the input data to prevent unnecessary re-processing
   const dataHash = useMemo(() => {
-    // If no services are selected, use all available services
-    const servicesForHash = selectedServices?.length > 0 ? selectedServices.sort() : ['cloudflare', 'zscaler', 'okta', 'sendgrid', 'slack', 'datadog', 'aws'];
+    // Use the selected services as is - no fallback to all services
+    const servicesForHash = selectedServices?.length > 0 ? selectedServices.sort() : [];
     
     const dataString = JSON.stringify({
       cloudflare: cloudflareIncidents?.length || 0,
@@ -880,8 +880,8 @@ export default function LeafletWorldMap({
       ];
 
       for (const service of services) {
-        // If no services are selected, process all services, otherwise only process selected ones
-        const shouldProcessService = selectedServices?.length === 0 || selectedServices?.includes(service.name.toLowerCase());
+        // Only process services that are explicitly selected
+        const shouldProcessService = selectedServices?.length > 0 && selectedServices?.includes(service.name.toLowerCase());
         
         if (!shouldProcessService) continue;
         if (!Array.isArray(service.data)) continue;
