@@ -274,87 +274,83 @@ const getCoordinates = (text, provider) => {
   const textLower = cleanHtmlContent(text).toLowerCase();
   const foundLocations = [];
   
-  // Location extraction patterns for common service update formats
+  // Improved location extraction patterns for common service update formats
   const locationPatterns = [
-    // "Issue in [City]" or "Affecting [City]" - improved to capture city names better
-    /(?:issue|outage|problem|failure|disruption|degraded|down|offline)\s+(?:in|at|for|affecting)\s+([a-z\s\-]{2,25})(?:\s+(?:region|datacenter|data center|dc|zone|area|customers|users)|,|\.|$|\s+and|\s+or)/gi,
-    // "Affecting users in [City]" or "Customers in [City]"
-    /(?:affecting|impacting|customers|users|clients|subscribers)\s+(?:in|at|from|located in)\s+([a-z\s\-]{2,25})(?:\s+(?:region|area|zone|datacenter)|,|\.|$|\s+and|\s+or)/gi,
-    // "[City] experiencing issues" or "[City] is down"
-    /([a-z\s\-]{2,25})\s+(?:is\s+|are\s+)?(?:experiencing|having|reporting|down|offline|degraded|affected|unavailable|slow)(?:\s|,|\.|\(|$)/gi,
-    // "[City] region" or "[City] datacenter"
-    /([a-z\s\-]{2,25})\s+(?:region|datacenter|data center|dc|zone|pop|facility|node|server|area)(?:\s|,|\.|\(|$)/gi,
-    // Parenthetical city mentions: "(City)" or "(City, Country)"
-    /\(([a-z\s,\-]{2,35})\)/gi,
-    // Location after colon: "Location: City" or "Region: City"
-    /(?:location|region|area|city|datacenter|data center|affected area|affected region):\s*([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
-    // "Service issues near [City]" or "Problems around [City]"
-    /(?:issues|problems|outage|connectivity)\s+(?:near|around|in|at)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
-    // "[City]-based" or "[City] based"
-    /([a-z\s\-]{2,25})(?:\-based|\s+based)(?:\s|,|\.|\(|$)/gi,
-    // Service-specific patterns
-    /(?:reported|detected|identified)\s+(?:in|at|from)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
-    // Regional patterns with better capture
-    /(east coast|west coast|northeast|northwest|southeast|southwest|midwest|northern|southern|eastern|western|central)\s*([a-z\s\-]*?)(?:\s+(?:region|area|coast))?(?:\s|,|\.|\(|$)/gi,
-    // Cloud region patterns like "us-east-1", "eu-west-2"
-    /(us|eu|ap|ca|sa|me|af)[\-_](east|west|north|south|central|southeast|northeast|southwest|northwest)[\-_]?(\d+)?/gi,
+    // Direct city mentions with context
+    /(?:in|at|from|affecting)\s+([a-z\s\-]{2,25})(?:\s+(?:region|area|datacenter|data center|dc|zone|customers|users|clients)|,|\.|$)/gi,
+    // City experiencing issues
+    /([a-z\s\-]{2,25})\s+(?:is\s+|are\s+)?(?:experiencing|having|reporting|down|offline|degraded|affected|unavailable)(?:\s|,|\.|\(|$)/gi,
+    // Geographic qualifiers  
+    /([a-z\s\-]{2,25})\s+(?:region|datacenter|data center|dc|zone|pop|facility|area|office)(?:\s|,|\.|\(|$)/gi,
+    // Service patterns
+    /(?:outage|issue|problem|down|offline|disruption)\s+(?:in|at|affecting)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
+    // User/customer patterns
+    /(?:customers|users|clients|subscribers)\s+(?:in|at|from|located)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
+    // Parenthetical mentions
+    /\(([a-z\s,\-]{3,35})\)/gi,
+    // Cloud regions
+    /((?:us|eu|ap|ca|sa|me|af)[\-_](?:east|west|north|south|central|southeast|northeast|southwest|northwest)[\-_]?\d*)/gi,
+    // Airport codes (for Cloudflare)
+    /\b([a-z]{3})\s+(?:airport|pop|edge|location)/gi,
+    // Geographic descriptors
+    /(?:detected|identified|reported)\s+(?:in|at|from)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi
   ];
   
-  // Extract potential locations using patterns
+  // Extract potential locations using improved patterns
   const extractedTerms = new Set();
   
   locationPatterns.forEach(pattern => {
     let match;
     while ((match = pattern.exec(textLower)) !== null) {
-      if (match[1]) {
-        // Clean up the extracted term
-        let term = match[1].trim().replace(/[,\.\(\)]/g, '');
-        if (term.length >= 2 && term.length <= 30) {
-          extractedTerms.add(term);
-        }
-      }
-      // Also check match[2] for regional patterns
-      if (match[2]) {
-        let term = match[2].trim().replace(/[,\.\(\)]/g, '');
-        if (term.length >= 2 && term.length <= 30) {
-          extractedTerms.add(term);
+      for (let i = 1; i < match.length; i++) {
+        if (match[i]) {
+          let term = match[i].trim().replace(/[,\.\(\)]/g, '').replace(/\s+/g, ' ');
+          // Filter terms that are likely to be city names
+          if (term.length >= 2 && term.length <= 30 && !term.match(/^\d+$/)) {
+            // Skip common non-location words
+            const skipWords = ['service', 'issue', 'problem', 'outage', 'down', 'offline', 'customers', 'users', 'clients', 'experiencing', 'affecting', 'system', 'network', 'server', 'database', 'website', 'application', 'connectivity', 'performance', 'response', 'timeout', 'error', 'failure', 'maintenance'];
+            if (!skipWords.some(word => term.includes(word))) {
+              extractedTerms.add(term);
+            }
+          }
         }
       }
     }
   });
   
-  // Also split text into words and check for city names
-  const words = textLower.split(/\s+/);
+  // Also extract individual city names from the text
+  const words = textLower.replace(/[^\w\s\-]/g, ' ').split(/\s+/);
+  const potentialCities = new Set();
+  
+  // Check single words and common multi-word city combinations
   for (let i = 0; i < words.length; i++) {
-    // Check single words (minimum 3 characters for meaningful cities)
-    if (words[i] && words[i].length >= 3 && words[i].length <= 20) {
-      // Filter out common non-location words
-      const nonLocationWords = ['the', 'and', 'for', 'are', 'was', 'were', 'been', 'have', 'has', 'had', 'will', 'would', 'could', 'should', 'this', 'that', 'with', 'from', 'they', 'them', 'their', 'there', 'where', 'when', 'what', 'which', 'who', 'how', 'can', 'may', 'might', 'must', 'shall', 'service', 'issue', 'problem', 'outage', 'down', 'offline', 'experiencing', 'affecting', 'customers', 'users', 'clients'];
-      if (!nonLocationWords.includes(words[i])) {
-        extractedTerms.add(words[i]);
-      }
+    if (words[i] && words[i].length >= 3) {
+      potentialCities.add(words[i]);
     }
     
-    // Check 2-word combinations (like "New York", "San Francisco")
-    if (i < words.length - 1) {
+    // Two-word combinations (like "new york", "san francisco")
+    if (i < words.length - 1 && words[i] && words[i + 1]) {
       const twoWord = `${words[i]} ${words[i + 1]}`;
       if (twoWord.length >= 4 && twoWord.length <= 25) {
-        extractedTerms.add(twoWord);
+        potentialCities.add(twoWord);
       }
     }
     
-    // Check 3-word combinations (like "New York City")
-    if (i < words.length - 2) {
+    // Three-word combinations (like "new york city")
+    if (i < words.length - 2 && words[i] && words[i + 1] && words[i + 2]) {
       const threeWord = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
       if (threeWord.length >= 6 && threeWord.length <= 35) {
-        extractedTerms.add(threeWord);
+        potentialCities.add(threeWord);
       }
     }
   }
   
+  // Combine extracted terms with potential cities
+  const allTerms = new Set([...extractedTerms, ...potentialCities]);
+  
   // Priority 1: Cloud regions (exact matches)
   for (const [region, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cloudRegions)) {
-    if (textLower.includes(region.toLowerCase())) {
+    if (textLower.includes(region.toLowerCase()) || allTerms.has(region.toLowerCase())) {
       foundLocations.push({ 
         lat: coords.lat, 
         lng: coords.lng, 
@@ -365,9 +361,9 @@ const getCoordinates = (text, provider) => {
     }
   }
   
-  // Priority 2: Exact city matches
+  // Priority 2: Exact city matches from database
   for (const [city, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cities)) {
-    if (textLower.includes(city)) {
+    if (textLower.includes(city) || allTerms.has(city)) {
       foundLocations.push({ 
         lat: coords.lat, 
         lng: coords.lng, 
@@ -380,34 +376,37 @@ const getCoordinates = (text, provider) => {
   
   // Priority 3: Fuzzy matching on extracted terms
   const cityKeys = Object.keys(GEOGRAPHICAL_DATABASE.cities);
-  extractedTerms.forEach(term => {
-    // Look for cities that start with the term or contain it
-    const matchingCities = cityKeys.filter(city => {
-      return city.startsWith(term) || 
-             city.includes(term) || 
-             (term.length >= 4 && city.includes(term.substring(0, Math.floor(term.length * 0.8))));
-    });
-    
-    matchingCities.forEach(city => {
-      const coords = GEOGRAPHICAL_DATABASE.cities[city];
-      // Avoid duplicates
-      if (!foundLocations.some(loc => loc.lat === coords.lat && loc.lng === coords.lng)) {
-        foundLocations.push({ 
-          lat: coords.lat, 
-          lng: coords.lng, 
-          region: coords.region, 
-          confidence: 'medium',
-          source: 'fuzzy-match',
-          matchedTerm: term,
-          cityKey: city
-        });
-      }
-    });
+  allTerms.forEach(term => {
+    if (term.length >= 3) {
+      // Look for cities that match the term
+      const matchingCities = cityKeys.filter(city => {
+        return city === term || // exact match
+               city.startsWith(term) || // starts with term
+               (term.length >= 4 && city.includes(term)) || // contains term (if term is long enough)
+               (term.length >= 5 && city.includes(term.substring(0, Math.floor(term.length * 0.8)))); // partial match
+      });
+      
+      matchingCities.forEach(city => {
+        const coords = GEOGRAPHICAL_DATABASE.cities[city];
+        // Avoid duplicates based on coordinates
+        if (!foundLocations.some(loc => Math.abs(loc.lat - coords.lat) < 0.1 && Math.abs(loc.lng - coords.lng) < 0.1)) {
+          foundLocations.push({ 
+            lat: coords.lat, 
+            lng: coords.lng, 
+            region: coords.region, 
+            confidence: 'medium',
+            source: 'fuzzy-match',
+            matchedTerm: term,
+            cityKey: city
+          });
+        }
+      });
+    }
   });
   
   // Priority 4: Provider-specific location patterns
   if (provider === 'Cloudflare') {
-    // Cloudflare often mentions airport codes or POP locations
+    // Cloudflare often uses airport codes for their edge locations
     const airportCodes = {
       'lhr': { lat: 51.4700, lng: -0.4543, region: 'London Heathrow, UK' },
       'jfk': { lat: 40.6413, lng: -73.7781, region: 'New York JFK, USA' },
@@ -417,17 +416,23 @@ const getCoordinates = (text, provider) => {
       'sin': { lat: 1.3644, lng: 103.9915, region: 'Singapore Changi' },
       'syd': { lat: -33.9399, lng: 151.1753, region: 'Sydney, Australia' },
       'dxb': { lat: 25.2532, lng: 55.3657, region: 'Dubai, UAE' },
+      'cdg': { lat: 49.0097, lng: 2.5479, region: 'Paris Charles de Gaulle, France' },
+      'ams': { lat: 52.3105, lng: 4.7683, region: 'Amsterdam Schiphol, Netherlands' },
+      'mad': { lat: 40.4839, lng: -3.5680, region: 'Madrid Barajas, Spain' },
+      'mxp': { lat: 45.6301, lng: 8.7231, region: 'Milan Malpensa, Italy' },
     };
     
     for (const [code, coords] of Object.entries(airportCodes)) {
       if (textLower.includes(code)) {
-        foundLocations.push({ 
-          lat: coords.lat, 
-          lng: coords.lng, 
-          region: coords.region, 
-          confidence: 'medium',
-          source: 'airport-code'
-        });
+        if (!foundLocations.some(loc => Math.abs(loc.lat - coords.lat) < 0.1 && Math.abs(loc.lng - coords.lng) < 0.1)) {
+          foundLocations.push({ 
+            lat: coords.lat, 
+            lng: coords.lng, 
+            region: coords.region, 
+            confidence: 'medium',
+            source: 'airport-code'
+          });
+        }
       }
     }
   }
@@ -437,7 +442,7 @@ const getCoordinates = (text, provider) => {
   const seenCoords = new Set();
   
   foundLocations.forEach(location => {
-    const coordKey = `${location.lat}_${location.lng}`;
+    const coordKey = \`\${Math.round(location.lat * 100)}_\${Math.round(location.lng * 100)}\`;
     if (!seenCoords.has(coordKey)) {
       seenCoords.add(coordKey);
       uniqueLocations.push(location);
@@ -450,16 +455,16 @@ const getCoordinates = (text, provider) => {
     return confidenceOrder[b.confidence] - confidenceOrder[a.confidence];
   });
   
-  // Return the best matches (limit to 3 to avoid too many points)
+  // Return the best matches (limit to 5 to avoid cluttering)
   if (uniqueLocations.length > 0) {
-    return uniqueLocations.slice(0, 3);
+    return uniqueLocations.slice(0, 5);
   }
   
-  // Default fallback
+  // Final fallback
   return [{ 
     lat: 37.7749, 
     lng: -122.4194, 
-    region: 'Global (Fallback)', 
+    region: 'Global (No specific location detected)', 
     confidence: 'low',
     source: 'fallback'
   }];
