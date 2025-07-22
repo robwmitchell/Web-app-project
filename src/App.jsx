@@ -46,13 +46,20 @@ function parseZscalerRSS(xmlText, maxItems = 25) {
   const xml = parser.parseFromString(xmlText, 'text/xml');
   const items = Array.from(xml.querySelectorAll('item'));
   // Only keep the most recent N items
-  return items.slice(0, maxItems).map(item => ({
-    title: item.querySelector('title')?.textContent || '',
-    link: item.querySelector('link')?.textContent || '',
-    date: item.querySelector('pubDate')?.textContent || '', // This must be present!
-    description: item.querySelector('description')?.textContent || '',
-    eventType: item.querySelector('eventType')?.textContent || '',
-  }));
+  return items.slice(0, maxItems).map(item => {
+    // Extract categories from the XML
+    const categoryElements = item.querySelectorAll('category');
+    const categories = Array.from(categoryElements).map(cat => cat.textContent || '');
+    
+    return {
+      title: item.querySelector('title')?.textContent || '',
+      link: item.querySelector('link')?.textContent || '',
+      date: item.querySelector('pubDate')?.textContent || '', // This must be present!
+      description: item.querySelector('description')?.textContent || '',
+      eventType: item.querySelector('eventType')?.textContent || '',
+      categories: categories, // Add categories array
+    };
+  });
 }
 
 function getStatusFromZscalerUpdates(updates) {

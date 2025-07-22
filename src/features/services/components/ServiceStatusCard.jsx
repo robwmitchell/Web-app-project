@@ -115,14 +115,24 @@ function ServiceStatusCard({ provider, status, indicator, incidents, updates, na
   // Cloudflare: Only show incidents from last 7 days
   const recentIncidents = Array.isArray(incidents) ? incidents : [];
 
-  // Zscaler: Only show issues from last 7 days
+  // Zscaler: Only show issues from last 7 days AND have "Recent incident" category
   let recentZscalerIssues = [];
   if (provider === 'Zscaler' && Array.isArray(updates)) {
     const now = new Date();
     const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     recentZscalerIssues = updates.filter(u => {
+      // Check date filter
       const date = new Date(u.date);
-      return !isNaN(date) && date >= sevenDaysAgo;
+      const isWithinDateRange = !isNaN(date) && date >= sevenDaysAgo;
+      
+      // Check category filter - only include items with "Recent incident" category
+      const hasRecentIncidentCategory = u.categories && 
+        u.categories.some(category => 
+          category && 
+          category.toLowerCase().includes('recent incident')
+        );
+      
+      return isWithinDateRange && hasRecentIncidentCategory;
     });
   }
 
@@ -169,7 +179,7 @@ function ServiceStatusCard({ provider, status, indicator, incidents, updates, na
       )}
       {provider === 'Zscaler' && (
         <div style={{ fontSize: '0.95em', color: '#888', marginBottom: 4 }}>
-          Showing only issues from the last 7 days
+          Showing only recent incidents from the last 7 days
         </div>
       )}
       {provider === 'Cloudflare' && recentIncidents.length > 0 && (
@@ -212,7 +222,7 @@ function ServiceStatusCard({ provider, status, indicator, incidents, updates, na
             style={{ marginBottom: 8, cursor: 'pointer', background: '#eee', border: 'none', borderRadius: 4, padding: '4px 8px' }}
             onClick={() => setShowZscalerIssues(v => !v)}
           >
-            {showZscalerIssues ? 'Hide' : 'Show'} Issues from Last 7 Days ({recentZscalerIssues.length})
+            {showZscalerIssues ? 'Hide' : 'Show'} Recent Incidents from Last 7 Days ({recentZscalerIssues.length})
           </button>
           {showZscalerIssues && (
             <ul style={{ margin: '4px 0 0 12px', padding: 0, listStyle: 'disc' }}>
