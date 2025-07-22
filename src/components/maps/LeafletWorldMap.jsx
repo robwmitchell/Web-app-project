@@ -127,6 +127,8 @@ const GEOGRAPHICAL_DATABASE = {
     'bangalore': { lat: 12.9716, lng: 77.5946, region: 'Bangalore, India' },
     'hyderabad': { lat: 17.3850, lng: 78.4867, region: 'Hyderabad, India' },
     'chennai': { lat: 13.0827, lng: 80.2707, region: 'Chennai, India' },
+    'chennai ii': { lat: 13.0827, lng: 80.2707, region: 'Chennai, India' },
+    'maa2': { lat: 13.0827, lng: 80.2707, region: 'Chennai (MAA2), India' },
     'kolkata': { lat: 22.5726, lng: 88.3639, region: 'Kolkata, India' },
     'pune': { lat: 18.5204, lng: 73.8567, region: 'Pune, India' },
     'ahmedabad': { lat: 23.0225, lng: 72.5714, region: 'Ahmedabad, India' },
@@ -276,13 +278,12 @@ const getCoordinates = (text, provider) => {
   
   // Improved location extraction patterns for common service update formats
   const locationPatterns = [
-    // Datacenter patterns - high priority for provider-specific formats
-    /([a-z\s\-]{3,25})\s+(?:ii|iii|iv|v|\d+)?\s*\([a-z0-9]{3,5}\)\s*datacenter/gi,
-    /([a-z\s\-]{3,25})\s+datacenter/gi,
-    /datacenter[:\s]*([a-z\s\-]{3,25})/gi,
-    // Zscaler-specific patterns
-    /affected\s+datacenters?\s+or\s+regions?:\s*([a-z\s,\-]{3,50})/gi,
-    /regions?:\s*([a-z\s,\-]{3,50})/gi,
+    // Datacenter format: "Chennai II (MAA2)" or "Region, City"
+    /([a-z\s\-]{2,25})\s+(?:ii|iii|iv|i)\s*\(([a-z0-9]{2,6})\)/gi,
+    // Affected Datacenters/Regions format
+    /(?:affected.*?regions?:|affecting.*?regions?:)\s*([a-z\s,\-]{5,50})/gi,
+    // City (CODE) format
+    /([a-z\s\-]{3,25})\s*\(([a-z0-9]{2,6})\)/gi,
     // Direct city mentions with context
     /(?:in|at|from|affecting)\s+([a-z\s\-]{2,25})(?:\s+(?:region|area|datacenter|data center|dc|zone|customers|users|clients)|,|\.|$)/gi,
     // City experiencing issues
@@ -293,7 +294,7 @@ const getCoordinates = (text, provider) => {
     /(?:outage|issue|problem|down|offline|disruption)\s+(?:in|at|affecting)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
     // User/customer patterns
     /(?:customers|users|clients|subscribers)\s+(?:in|at|from|located)\s+([a-z\s\-]{2,25})(?:\s|,|\.|\(|$)/gi,
-    // Parenthetical mentions with airport codes
+    // Parenthetical mentions
     /\(([a-z\s,\-]{3,35})\)/gi,
     // Cloud regions
     /((?:us|eu|ap|ca|sa|me|af)[\-_](?:east|west|north|south|central|southeast|northeast|southwest|northwest)[\-_]?\d*)/gi,
@@ -312,26 +313,14 @@ const getCoordinates = (text, provider) => {
       for (let i = 1; i < match.length; i++) {
         if (match[i]) {
           let term = match[i].trim().replace(/[,\.\(\)]/g, '').replace(/\s+/g, ' ');
-          
-          // Handle multiple locations separated by commas or "and"
-          const multipleLocations = term.split(/,|\sand\s/).map(loc => loc.trim());
-          
-          multipleLocations.forEach(location => {
-            // Filter terms that are likely to be city names
-            if (location.length >= 2 && location.length <= 30 && !location.match(/^\d+$/)) {
-              // Skip common non-location words but be more selective
-              const skipWords = ['service', 'issue', 'problem', 'outage', 'down', 'offline', 'customers', 'users', 'clients', 'experiencing', 'affecting', 'system', 'network', 'server', 'database', 'website', 'application', 'connectivity', 'performance', 'response', 'timeout', 'error', 'failure'];
-              if (!skipWords.some(word => location.includes(word))) {
-                // Clean up region references that might be confusing
-                let cleanLocation = location.replace(/\b(region|area|datacenter|data center|dc|zone)\b/gi, '').trim();
-                if (cleanLocation.length >= 2) {
-                  extractedTerms.add(cleanLocation);
-                }
-                // Also add the original term
-                extractedTerms.add(location);
-              }
+          // Filter terms that are likely to be city names
+          if (term.length >= 2 && term.length <= 30 && !term.match(/^\d+$/)) {
+            // Skip common non-location words
+            const skipWords = ['service', 'issue', 'problem', 'outage', 'down', 'offline', 'customers', 'users', 'clients', 'experiencing', 'affecting', 'system', 'network', 'server', 'database', 'website', 'application', 'connectivity', 'performance', 'response', 'timeout', 'error', 'failure', 'maintenance'];
+            if (!skipWords.some(word => term.includes(word))) {
+              extractedTerms.add(term);
             }
-          });
+          }
         }
       }
     }
@@ -380,20 +369,57 @@ const getCoordinates = (text, provider) => {
     }
   }
   
-  // Priority 2: Exact city matches from database (highest priority for known cities)
+  // Priority 2: Exact city matches from database
   for (const [city, coords] of Object.entries(GEOGRAPHICAL_DATABASE.cities)) {
     if (textLower.includes(city) || allTerms.has(city)) {
-      // Check if this is a direct mention
-      const directMentions = [`${city} datacenter`, `${city} ii`, `${city}ii`, city];
-      const isDirectMention = directMentions.some(mention => textLower.includes(mention));
-      
       foundLocations.push({ 
         lat: coords.lat, 
         lng: coords.lng, 
         region: coords.region, 
-        confidence: isDirectMention ? 'high' : 'medium',
-        source: 'exact-city',
-        cityKey: city
+        confidence: 'high',
+        source: 'exact-city'
+      });
+    }
+  }
+  
+  // Priority 2.5: Datacenter codes and regional specifications
+  const datacenterCodes = {
+    'maa2': { lat: 13.0827, lng: 80.2707, region: 'Chennai (MAA2), India' },
+    'maa1': { lat: 13.0827, lng: 80.2707, region: 'Chennai (MAA1), India' },
+    'bom1': { lat: 19.0760, lng: 72.8777, region: 'Mumbai (BOM1), India' },
+    'del1': { lat: 28.7041, lng: 77.1025, region: 'Delhi (DEL1), India' },
+    'sin1': { lat: 1.3521, lng: 103.8198, region: 'Singapore (SIN1)' },
+    'hkg1': { lat: 22.3193, lng: 114.1694, region: 'Hong Kong (HKG1)' },
+    'nrt1': { lat: 35.7720, lng: 140.3928, region: 'Tokyo Narita (NRT1), Japan' },
+    'syd1': { lat: -33.9399, lng: 151.1753, region: 'Sydney (SYD1), Australia' }
+  };
+  
+  // Check for datacenter codes
+  for (const [code, coords] of Object.entries(datacenterCodes)) {
+    if (textLower.includes(code) || allTerms.has(code)) {
+      foundLocations.push({ 
+        lat: coords.lat, 
+        lng: coords.lng, 
+        region: coords.region, 
+        confidence: 'high',
+        source: 'datacenter-code'
+      });
+    }
+  }
+  
+  // Check for APAC region mentions and map to likely locations
+  if (textLower.includes('apac') || textLower.includes('asia pacific')) {
+    // If APAC is mentioned with specific cities, prioritize those
+    const apacCities = ['chennai', 'mumbai', 'singapore', 'hong kong', 'tokyo', 'sydney', 'manila'];
+    const foundApacCity = apacCities.find(city => textLower.includes(city));
+    if (foundApacCity && GEOGRAPHICAL_DATABASE.cities[foundApacCity]) {
+      const coords = GEOGRAPHICAL_DATABASE.cities[foundApacCity];
+      foundLocations.push({ 
+        lat: coords.lat, 
+        lng: coords.lng, 
+        region: coords.region, 
+        confidence: 'high',
+        source: 'apac-specific'
       });
     }
   }
