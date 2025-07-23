@@ -1481,3 +1481,155 @@
 .country-with-issues {
   animation: countryHighlight 2s ease-in-out infinite;
 }
+
+/* Issue Marker Popup Styles */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.issue-popup .popup-content {
+  padding: 0;
+  margin: 0;
+  min-width: 280px;
+  max-width: 300px;
+}
+
+.issue-popup .popup-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.issue-popup .service-badge {
+  background: #667eea;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.issue-popup .severity-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: white;
+}
+
+.issue-popup .severity-critical {
+  background: #dc2626;
+}
+
+.issue-popup .severity-major {
+  background: #ea580c;
+}
+
+.issue-popup .severity-minor {
+  background: #d97706;
+}
+
+.issue-popup .popup-title {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.issue-popup .popup-description {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.4;
+}
+
+.issue-popup .popup-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.issue-popup .meta-item {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.issue-popup .meta-item strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.issue-popup .ai-meta {
+  padding: 6px 8px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  border-left: 3px solid #8b5cf6;
+}
+
+.issue-popup .ai-reasoning {
+  margin-top: 4px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.issue-popup .ai-enhanced {
+  color: #8b5cf6;
+  font-weight: 600;
+}
+
+.issue-popup .popup-link {
+  display: inline-block;
+  background: #667eea;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.issue-popup .popup-link:hover {
+  background: #5a67d8;
+  color: white;
+  text-decoration: none;
+}
+
+/* Custom marker icon styles */
+.custom-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-marker-icon div {
+  animation: markerPulse 2s infinite;
+}
+
+@keyframes markerPulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Popup arrow styling */
+.leaflet-popup-tip {
+  background: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}

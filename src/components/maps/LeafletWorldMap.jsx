@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './WorldMap.css';
 import './AIEnhancedMap.css';
@@ -14,6 +14,38 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Create custom marker icons for different severity levels
+const createSeverityIcon = (severity) => {
+  const colors = {
+    critical: '#dc2626',
+    major: '#ea580c', 
+    minor: '#d97706'
+  };
+  
+  const color = colors[severity] || '#6b7280';
+  
+  return L.divIcon({
+    html: `<div style="
+      background-color: ${color};
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+    ">!</div>`,
+    className: 'custom-marker-icon',
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12]
+  });
+};
 
 // PERFORMANCE OPTIMIZATION: Move constants and databases outside component
 // Enhanced geographical location database with extensive city coverage
@@ -814,6 +846,20 @@ export default function LeafletWorldMap({
   showHistoric = false,
   isWidget = false
 }) {
+  console.log('🗺️ LeafletWorldMap props:', {
+    selectedServices,
+    isWidget,
+    showHistoric,
+    dataCount: {
+      cloudflare: cloudflareIncidents?.length || 0,
+      zscaler: zscalerUpdates?.length || 0,
+      okta: oktaUpdates?.length || 0,
+      sendgrid: sendgridUpdates?.length || 0,
+      slack: slackUpdates?.length || 0,
+      datadog: datadogUpdates?.length || 0,
+      aws: awsUpdates?.length || 0
+    }
+  });
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [worldGeoJSON, setWorldGeoJSON] = useState(null);
 
@@ -963,6 +1009,7 @@ export default function LeafletWorldMap({
         }
       }
       
+      console.log(`📍 Processed ${issues.length} total issues for map display:`, issues.slice(0, 3));
       setProcessedIssues(issues);
       setIsProcessingLocations(false);
     };
@@ -1097,6 +1144,9 @@ export default function LeafletWorldMap({
         <div className="world-map-header">
           <div className="header-content">
             <h2>Global Service Status Map</h2>
+            <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)', marginBottom: '8px' }}>
+              {processedIssues.length} issues • {countryGroups.length} affected regions • {selectedServices?.length || 'All'} services
+            </div>
             {isProcessingLocations && (
               <div className="ai-processing-indicator">
                 <div className="processing-spinner"></div>
@@ -1159,6 +1209,76 @@ export default function LeafletWorldMap({
                 onEachFeature={onEachCountry}
               />
             )}
+            
+            {/* Render issue markers */}
+            {processedIssues.map((issue) => {
+              console.log('🗺️ Rendering marker for:', issue.id, issue.lat, issue.lng);
+              return (
+                <Marker
+                  key={issue.id}
+                  position={[issue.lat, issue.lng]}
+                  icon={createSeverityIcon(issue.severity)}
+                >
+                <Popup maxWidth={300} className="issue-popup">
+                  <div className="popup-content">
+                    <div className="popup-header">
+                      <div className="service-badge" style={{ backgroundColor: '#667eea' }}>
+                        {issue.provider}
+                      </div>
+                      <div className={`severity-badge severity-${issue.severity}`}>
+                        {issue.severity}
+                      </div>
+                    </div>
+                    
+                    <h4 className="popup-title">{issue.title}</h4>
+                    
+                    {issue.description && (
+                      <p className="popup-description">
+                        {issue.description.length > 150 
+                          ? `${issue.description.substring(0, 150)}...` 
+                          : issue.description}
+                      </p>
+                    )}
+                    
+                    <div className="popup-meta">
+                      <div className="meta-item">
+                        <strong>Location:</strong> {issue.region}
+                      </div>
+                      <div className="meta-item">
+                        <strong>Date:</strong> {new Date(issue.date).toLocaleDateString()}
+                      </div>
+                      {issue.aiConfidence && (
+                        <div className="meta-item ai-meta">
+                          <strong>AI Severity:</strong> {issue.severity} ({issue.aiConfidence}% confidence)
+                          {issue.aiReasoning && (
+                            <div className="ai-reasoning">
+                              <em>{issue.aiReasoning}</em>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      {issue.extractionSource === 'ai-enhanced' && (
+                        <div className="meta-item ai-enhanced">
+                          🤖 AI-Enhanced Location Detection
+                        </div>
+                      )}
+                    </div>
+                    
+                    {issue.url && (
+                      <a 
+                        href={issue.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="popup-link"
+                      >
+                        View Details ↗
+                      </a>
+                    )}
+                  </div>
+                </Popup>
+              </Marker>
+              );
+            })}
           </MapContainer>
         </div>
 
