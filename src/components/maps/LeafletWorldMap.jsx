@@ -28,16 +28,28 @@ const createSeverityIcon = (severity) => {
   return L.divIcon({
     html: `<div style="
       background-color: ${color};
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      border: 2px solid white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    "></div>`,
-    className: 'custom-marker-icon',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-    popupAnchor: [0, -10]
+      border: 3px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      position: relative;
+    ">
+      <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 8px;
+        height: 8px;
+        background-color: white;
+        border-radius: 50%;
+      "></div>
+    </div>`,
+    className: 'custom-severity-marker',
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -13]
   });
 };
 
@@ -842,7 +854,8 @@ export default function LeafletWorldMap({
   awsUpdates = [],
   selectedServices = [],
   showHistoric = false,
-  isWidget = false
+  isWidget = false,
+  onIssueClick = null
 }) {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [worldGeoJSON, setWorldGeoJSON] = useState(null);
@@ -1210,65 +1223,74 @@ export default function LeafletWorldMap({
                   key={issue.id}
                   position={[lat, lng]}
                   icon={createSeverityIcon(issue.severity)}
+                  eventHandlers={{
+                    click: () => {
+                      if (onIssueClick) {
+                        onIssueClick(issue);
+                      }
+                    }
+                  }}
                 >
-                <Popup maxWidth={300} className="issue-popup">
-                  <div className="popup-content">
-                    <div className="popup-header">
-                      <div className="service-badge" style={{ backgroundColor: '#667eea' }}>
-                        {issue.provider}
-                      </div>
-                      <div className={`severity-badge severity-${issue.severity}`}>
-                        {issue.severity}
-                      </div>
-                    </div>
-                    
-                    <h4 className="popup-title">{issue.title}</h4>
-                    
-                    {issue.description && (
-                      <p className="popup-description">
-                        {issue.description.length > 150 
-                          ? `${issue.description.substring(0, 150)}...` 
-                          : issue.description}
-                      </p>
-                    )}
-                    
-                    <div className="popup-meta">
-                      <div className="meta-item">
-                        <strong>Location:</strong> {issue.region}
-                      </div>
-                      <div className="meta-item">
-                        <strong>Date:</strong> {new Date(issue.date).toLocaleDateString()}
-                      </div>
-                      {issue.aiConfidence && (
-                        <div className="meta-item ai-meta">
-                          <strong>AI Severity:</strong> {issue.severity} ({issue.aiConfidence}% confidence)
-                          {issue.aiReasoning && (
-                            <div className="ai-reasoning">
-                              <em>{issue.aiReasoning}</em>
+                  {!onIssueClick && (
+                    <Popup maxWidth={300} className="issue-popup">
+                      <div className="popup-content">
+                        <div className="popup-header">
+                          <div className="service-badge" style={{ backgroundColor: '#667eea' }}>
+                            {issue.provider}
+                          </div>
+                          <div className={`severity-badge severity-${issue.severity}`}>
+                            {issue.severity}
+                          </div>
+                        </div>
+                        
+                        <h4 className="popup-title">{issue.title}</h4>
+                        
+                        {issue.description && (
+                          <p className="popup-description">
+                            {issue.description.length > 150 
+                              ? `${issue.description.substring(0, 150)}...` 
+                              : issue.description}
+                          </p>
+                        )}
+                        
+                        <div className="popup-meta">
+                          <div className="meta-item">
+                            <strong>Location:</strong> {issue.region}
+                          </div>
+                          <div className="meta-item">
+                            <strong>Date:</strong> {new Date(issue.date).toLocaleDateString()}
+                          </div>
+                          {issue.aiConfidence && (
+                            <div className="meta-item ai-meta">
+                              <strong>AI Severity:</strong> {issue.severity} ({issue.aiConfidence}% confidence)
+                              {issue.aiReasoning && (
+                                <div className="ai-reasoning">
+                                  <em>{issue.aiReasoning}</em>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {issue.extractionSource === 'ai-enhanced' && (
+                            <div className="meta-item ai-enhanced">
+                              🤖 AI-Enhanced Location Detection
                             </div>
                           )}
                         </div>
-                      )}
-                      {issue.extractionSource === 'ai-enhanced' && (
-                        <div className="meta-item ai-enhanced">
-                          🤖 AI-Enhanced Location Detection
-                        </div>
-                      )}
-                    </div>
-                    
-                    {issue.url && (
-                      <a 
-                        href={issue.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="popup-link"
-                      >
-                        View Details ↗
-                      </a>
-                    )}
-                  </div>
-                </Popup>
-              </Marker>
+                        
+                        {issue.url && (
+                          <a 
+                            href={issue.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="popup-link"
+                          >
+                            View Details ↗
+                          </a>
+                        )}
+                      </div>
+                    </Popup>
+                  )}
+                </Marker>
               );
             }).filter(Boolean)}
           </MapContainer>
