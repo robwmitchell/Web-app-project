@@ -841,7 +841,7 @@ export default function LeafletWorldMap({
   // Create a stable hash of the input data to prevent unnecessary re-processing
   const dataHash = useMemo(() => {
     // Use the selected services as is - no fallback to all services
-    const servicesForHash = selectedServices?.length > 0 ? selectedServices.sort() : [];
+    const servicesForHash = selectedServices?.length > 0 ? selectedServices.slice().sort() : [];
     
     const dataString = JSON.stringify({
       cloudflare: cloudflareIncidents?.length || 0,
@@ -955,6 +955,14 @@ export default function LeafletWorldMap({
 
     return () => clearTimeout(timer);
   }, [dataHash, lastProcessedHash, isProcessingLocations]);
+
+  // Clear cache when selectedServices changes to ensure map updates immediately
+  useEffect(() => {
+    if (selectedServices) {
+      setLastProcessedHash(''); // Force re-processing
+      setProcessedIssues([]); // Clear current issues
+    }
+  }, [selectedServices]);
 
   // Group issues by country
   const countryGroups = useMemo(() => {
