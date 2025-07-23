@@ -50,15 +50,6 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
       if (item[field]) {
         const date = new Date(item[field]);
         if (!isNaN(date)) {
-          // Debug logging for SendGrid specifically
-          if (provider === 'SendGrid') {
-            console.log(`[ServiceTimeline] Parsed SendGrid date:`, {
-              field,
-              rawValue: item[field],
-              parsedDate: date,
-              isValid: !isNaN(date)
-            });
-          }
           return date;
         }
       }
@@ -109,20 +100,6 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
       const updateDate = getItemDate(update);
       if (!updateDate) return false;
       
-      // Debug logging for SendGrid specifically
-      if (provider === 'SendGrid') {
-        const dayDateString = date.toISOString().split('T')[0];
-        const updateDateString = updateDate.toISOString().split('T')[0];
-        console.log(`[ServiceTimeline] SendGrid update check:`, {
-          title: update.title,
-          date: update.date,
-          updateDate,
-          dayDateString,
-          updateDateString,
-          matches: dayDateString === updateDateString
-        });
-      }
-      
       // Use ISO date string comparison to handle timezone issues reliably
       const dayDateString = date.toISOString().split('T')[0]; // YYYY-MM-DD
       const updateDateString = updateDate.toISOString().split('T')[0]; // YYYY-MM-DD
@@ -131,14 +108,6 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
     });
 
     issueCount = dayUpdates.length;
-
-    if (provider === 'SendGrid') {
-      console.log(`[ServiceTimeline] SendGrid day analysis for ${date.toDateString()}:`, {
-        totalUpdates: validUpdates.length,
-        dayUpdates: dayUpdates.length,
-        dayUpdatesDetails: dayUpdates.map(u => ({ title: u.title, date: u.date }))
-      });
-    }
 
     if (dayUpdates.length > 0) {
       // Analyze update content for severity
@@ -184,21 +153,6 @@ function analyzeDay(date, incidents = [], updates = [], provider) {
         // For other providers (like SendGrid), if there are updates but no specific severity keywords,
         // it's likely an issue that occurred (even if resolved), so show as minor
         dayStatus = 'minor';
-      }
-
-      // Additional debug logging for SendGrid after severity analysis
-      if (provider === 'SendGrid') {
-        console.log(`[ServiceTimeline] SendGrid severity analysis for ${date.toDateString()}:`, {
-          hasResolved,
-          hasCritical,
-          hasMajor,
-          hasMinor,
-          finalStatus: dayStatus,
-          updateTexts: dayUpdates.map(u => ({
-            title: u.title,
-            descriptionSnippet: (u.description || '').substring(0, 100) + '...'
-          }))
-        });
       }
     }
   }
