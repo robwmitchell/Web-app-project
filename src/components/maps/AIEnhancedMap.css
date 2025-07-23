@@ -116,6 +116,72 @@
   flex-shrink: 0;
 }
 
+/* AI Severity Analysis Styles */
+.meta-ai-severity {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  margin-right: 8px;
+  position: relative;
+  cursor: help;
+}
+
+.ai-reasoning-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  pointer-events: none;
+}
+
+.meta-ai-severity:hover .ai-reasoning-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* AI Severity Level Specific Colors */
+.meta-ai-severity[data-severity="critical"] {
+  background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+}
+
+.meta-ai-severity[data-severity="major"] {
+  background: linear-gradient(135deg, #ea580c 0%, #f97316 100%);
+}
+
+.meta-ai-severity[data-severity="minor"] {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+}
+
+/* AI Analysis Confidence Indicator */
+.ai-confidence-high {
+  border-left: 3px solid #10b981;
+}
+
+.ai-confidence-medium {
+  border-left: 3px solid #f59e0b;
+}
+
+.ai-confidence-low {
+  border-left: 3px solid #ef4444;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .ai-processing-indicator {

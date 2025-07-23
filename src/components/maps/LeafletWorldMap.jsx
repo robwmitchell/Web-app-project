@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import './WorldMap.css';
 import './AIEnhancedMap.css';
 import { getCountryFromCoordinates, getCountryFromRegion, COUNTRY_MAPPING } from './countryMapping.js';
+import { analyzeSeverityWithAI } from '../../utils/aiSeverityAnalyzer.js';
 
 // Fix for default markers in Leaflet with React
 import L from 'leaflet';
@@ -233,11 +234,20 @@ const cleanHtmlContent = (htmlString) => {
   return text.replace(/\s+/g, ' ').replace(/\n+/g, ' ').trim();
 };
 
-const getSeverity = (issue) => {
-  const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
-  if (SEVERITY_PATTERNS.critical.test(text)) return 'critical';
-  if (SEVERITY_PATTERNS.major.test(text)) return 'major';
-  return 'minor';
+// AI-powered severity determination
+const getSeverityWithAI = (issue, serviceName) => {
+  const aiAnalysis = analyzeSeverityWithAI(issue, {
+    service: serviceName,
+    timestamp: new Date(issue.date || issue.created_at || Date.now())
+  });
+  
+  // Return both the severity and the AI analysis for debugging/display
+  return {
+    severity: aiAnalysis.severity,
+    confidence: aiAnalysis.confidence,
+    reasoning: aiAnalysis.reasoning,
+    factors: aiAnalysis.factors
+  };
 };
 
 const isRelevant = (issue, date, showHistoric) => {
@@ -900,13 +910,17 @@ export default function LeafletWorldMap({
 
             coordinates.forEach(coord => {
               const countryCode = getCountryFromCoordinates(coord.lat, coord.lng);
+              const aiSeverityAnalysis = getSeverityWithAI(item, service.name);
               
               issues.push({
                 id: `${service.name}-${index}-${coord.region}`,
                 provider: service.name,
                 title: formatTitle(titleText || 'Service Issue'),
                 description: formatDescription(descriptionText),
-                severity: getSeverity(item),
+                severity: aiSeverityAnalysis.severity,
+                aiConfidence: aiSeverityAnalysis.confidence,
+                aiReasoning: aiSeverityAnalysis.reasoning,
+                aiFactors: aiSeverityAnalysis.factors,
                 date: date,
                 lat: coord.lat,
                 lng: coord.lng,
@@ -924,12 +938,17 @@ export default function LeafletWorldMap({
             const coordinates = getCoordinates(fullText, service.name);
             coordinates.forEach(coord => {
               const countryCode = getCountryFromCoordinates(coord.lat, coord.lng);
+              const aiSeverityAnalysis = getSeverityWithAI(item, service.name);
+              
               issues.push({
                 id: `${service.name}-${index}-${coord.region}`,
                 provider: service.name,
                 title: formatTitle(titleText || 'Service Issue'),
                 description: formatDescription(descriptionText),
-                severity: getSeverity(item),
+                severity: aiSeverityAnalysis.severity,
+                aiConfidence: aiSeverityAnalysis.confidence,
+                aiReasoning: aiSeverityAnalysis.reasoning,
+                aiFactors: aiSeverityAnalysis.factors,
                 date: date,
                 lat: coord.lat,
                 lng: coord.lng,
@@ -1216,9 +1235,22 @@ export default function LeafletWorldMap({
                               )}
                             </span>
                           )}
+                          {issue.aiConfidence && (
+                            <span 
+                              className="meta-ai-severity" 
+                              data-severity={issue.severity}
+                            >
+                              🧠 AI Severity: {issue.severity.toUpperCase()} ({issue.aiConfidence}% confidence)
+                              {issue.aiReasoning && (
+                                <span className="ai-reasoning-tooltip">
+                                  Reasoning: {issue.aiReasoning}
+                                </span>
+                              )}
+                            </span>
+                          )}
                           {issue.confidence && (
                             <span className={`meta-confidence confidence-${issue.confidence}`}>
-                              Confidence: {issue.confidence}
+                              Location Confidence: {issue.confidence}
                             </span>
                           )}
                         </div>

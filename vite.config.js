@@ -19,12 +19,14 @@ export default defineConfig({
         }
       },
 
-      // All other API requests go to external server
-      '/api': {
-        target: 'https://www.stack-status.io',
-        changeOrigin: true,
-        secure: true,
-      },
+      // For development, disable API proxying to prevent DNS errors
+      // The API functions will need to be tested with `vercel dev` instead
+      // Uncomment the line below if you want to proxy to production
+      // '/api': {
+      //   target: 'https://your-production-domain.vercel.app',
+      //   changeOrigin: true,
+      //   secure: true,
+      // },
     },
   },
 })
