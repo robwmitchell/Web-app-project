@@ -28,22 +28,16 @@ const createSeverityIcon = (severity) => {
   return L.divIcon({
     html: `<div style="
       background-color: ${color};
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       border: 2px solid white;
       box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      font-weight: bold;
-      color: white;
-    ">!</div>`,
+    "></div>`,
     className: 'custom-marker-icon',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
-    popupAnchor: [0, -12]
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -10]
   });
 };
 
@@ -1009,7 +1003,7 @@ export default function LeafletWorldMap({
         }
       }
       
-      console.log(`📍 Processed ${issues.length} total issues for map display:`, issues.slice(0, 3));
+      console.log(`📍 Processed ${issues.length} issues for markers`);
       setProcessedIssues(issues);
       setIsProcessingLocations(false);
     };
@@ -1210,13 +1204,28 @@ export default function LeafletWorldMap({
               />
             )}
             
+            {/* Test marker to verify marker rendering works */}
+            <Marker position={[40.7128, -74.0060]} icon={createSeverityIcon('critical')}>
+              <Popup>
+                <div>Test marker - New York</div>
+              </Popup>
+            </Marker>
+            
             {/* Render issue markers */}
             {processedIssues.map((issue) => {
-              console.log('🗺️ Rendering marker for:', issue.id, issue.lat, issue.lng);
+              // Validate coordinates before rendering
+              const lat = parseFloat(issue.lat);
+              const lng = parseFloat(issue.lng);
+              
+              if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                console.warn('⚠️ Invalid coordinates for issue:', issue.id);
+                return null;
+              }
+              
               return (
                 <Marker
                   key={issue.id}
-                  position={[issue.lat, issue.lng]}
+                  position={[lat, lng]}
                   icon={createSeverityIcon(issue.severity)}
                 >
                 <Popup maxWidth={300} className="issue-popup">
@@ -1278,7 +1287,7 @@ export default function LeafletWorldMap({
                 </Popup>
               </Marker>
               );
-            })}
+            }).filter(Boolean)}
           </MapContainer>
         </div>
 
