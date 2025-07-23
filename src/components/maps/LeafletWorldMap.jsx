@@ -280,19 +280,32 @@ const isRelevant = (issue, date, showHistoric) => {
   try {
     const issueDate = new Date(date);
     if (isNaN(issueDate)) {
+      console.log(`❌ Invalid date for issue:`, date);
       return false;
     }
     
     if (showHistoric) {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const isWithinRange = issueDate >= sevenDaysAgo;
+      console.log(`📅 Historic check (7 days):`, { 
+        issueDate: issueDate.toISOString().split('T')[0], 
+        sevenDaysAgo: sevenDaysAgo.toISOString().split('T')[0], 
+        isWithinRange,
+        title: (issue.title || issue.name || '').substring(0, 50)
+      });
       return isWithinRange;
     } else {
       const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
       const hasResolvedKeyword = RESOLVED_KEYWORDS.some(keyword => text.includes(keyword));
+      console.log(`🔍 Live check:`, { 
+        title: (issue.title || issue.name || '').substring(0, 50), 
+        hasResolvedKeyword, 
+        matchedKeyword: RESOLVED_KEYWORDS.find(keyword => text.includes(keyword))
+      });
       return !hasResolvedKeyword;
     }
   } catch (e) {
+    console.log(`❌ Error in isRelevant:`, e);
     return false;
   }
 };
@@ -1008,13 +1021,14 @@ export default function LeafletWorldMap({
     return () => clearTimeout(timer);
   }, [dataHash, lastProcessedHash, isProcessingLocations]);
 
-  // Clear cache when selectedServices changes to ensure map updates immediately
+  // Clear cache when selectedServices or showHistoric changes to ensure map updates immediately
   useEffect(() => {
-    if (selectedServices) {
+    console.log('🔄 Clearing cache due to change:', { selectedServices, showHistoric });
+    if (selectedServices || showHistoric !== undefined) {
       setLastProcessedHash(''); // Force re-processing
       setProcessedIssues([]); // Clear current issues
     }
-  }, [selectedServices]);
+  }, [selectedServices, showHistoric]);
 
   // Group issues by country
   const countryGroups = useMemo(() => {
