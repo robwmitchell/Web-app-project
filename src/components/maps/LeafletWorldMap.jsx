@@ -890,8 +890,8 @@ export default function LeafletWorldMap({
       ];
 
       for (const service of services) {
-        // Only process services that are explicitly selected
-        const shouldProcessService = selectedServices?.length > 0 && selectedServices?.includes(service.name.toLowerCase());
+        // Process services that are either: 1) No services selected (show all), or 2) Explicitly selected
+        const shouldProcessService = !selectedServices?.length || selectedServices?.includes(service.name.toLowerCase());
         
         if (!shouldProcessService) continue;
         if (!Array.isArray(service.data)) continue;
