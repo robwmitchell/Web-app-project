@@ -1,5 +1,5 @@
 import React from 'react';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import './WorldMapWidget.css';
 
 const LeafletWorldMap = React.lazy(() => import('./LeafletWorldMap'));
@@ -13,10 +13,13 @@ export default function WorldMapWidget({
   datadogUpdates = [], 
   awsUpdates = [],
   selectedServices: initialSelectedServices = [],
-  showHistoric = false 
+  showHistoric: initialShowHistoric = false 
 }) {  // Use the parent's selected services directly instead of creating local state
   // This ensures consistency with the main app's service selection
   const selectedServices = initialSelectedServices;
+  
+  // Add internal state for historic toggle in the widget
+  const [showHistoric, setShowHistoric] = useState(initialShowHistoric);
 
   // Count total issues for display
   const totalIssues = [
@@ -69,10 +72,29 @@ export default function WorldMapWidget({
             </div>
           </div>
           
-          {/* View Mode */}
-          <div className="mode-indicator">
-            <span className="mode-label">View</span>
-            <span className="mode-value">{showHistoric ? 'Last 7 Days' : 'Live Issues'}</span>
+          {/* Interactive View Mode Toggle */}
+          <div className="mode-toggle-section">
+            <h4 className="toggle-title">Time Range</h4>
+            <div className="mode-toggle">
+              <button 
+                className={`toggle-btn ${!showHistoric ? 'active' : ''}`}
+                onClick={() => setShowHistoric(false)}
+              >
+                Live Issues
+              </button>
+              <button 
+                className={`toggle-btn ${showHistoric ? 'active' : ''}`}
+                onClick={() => setShowHistoric(true)}
+              >
+                Last 7 Days
+              </button>
+            </div>
+            <div className="mode-description">
+              {showHistoric ? 
+                'Showing all issues from the past 7 days' : 
+                'Showing only current unresolved issues'
+              }
+            </div>
           </div>
         </div>
       </div>

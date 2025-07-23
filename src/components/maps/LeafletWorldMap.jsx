@@ -279,14 +279,18 @@ const getSeverityWithAI = (issue, serviceName) => {
 const isRelevant = (issue, date, showHistoric) => {
   try {
     const issueDate = new Date(date);
-    if (isNaN(issueDate)) return false;
+    if (isNaN(issueDate)) {
+      return false;
+    }
     
     if (showHistoric) {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      return issueDate >= sevenDaysAgo;
+      const isWithinRange = issueDate >= sevenDaysAgo;
+      return isWithinRange;
     } else {
       const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
-      return !RESOLVED_KEYWORDS.some(keyword => text.includes(keyword));
+      const hasResolvedKeyword = RESOLVED_KEYWORDS.some(keyword => text.includes(keyword));
+      return !hasResolvedKeyword;
     }
   } catch (e) {
     return false;
@@ -840,20 +844,6 @@ export default function LeafletWorldMap({
   showHistoric = false,
   isWidget = false
 }) {
-  console.log('🗺️ LeafletWorldMap props:', {
-    selectedServices,
-    isWidget,
-    showHistoric,
-    dataCount: {
-      cloudflare: cloudflareIncidents?.length || 0,
-      zscaler: zscalerUpdates?.length || 0,
-      okta: oktaUpdates?.length || 0,
-      sendgrid: sendgridUpdates?.length || 0,
-      slack: slackUpdates?.length || 0,
-      datadog: datadogUpdates?.length || 0,
-      aws: awsUpdates?.length || 0
-    }
-  });
   const [selectedCountry, setSelectedCountry] = useState(null);
   const [worldGeoJSON, setWorldGeoJSON] = useState(null);
 
@@ -938,7 +928,9 @@ export default function LeafletWorldMap({
 
         for (const [index, item] of service.data.entries()) {
           const date = item[service.dateField] || item.date || item.created_at;
-          if (!isRelevant(item, date, showHistoric)) continue;
+          const isItemRelevant = isRelevant(item, date, showHistoric);
+          
+          if (!isItemRelevant) continue;
 
           const titleText = item.title || item.name || '';
           const descriptionText = item.description || item.body || '';
@@ -1204,13 +1196,6 @@ export default function LeafletWorldMap({
               />
             )}
             
-            {/* Test marker to verify marker rendering works */}
-            <Marker position={[40.7128, -74.0060]} icon={createSeverityIcon('critical')}>
-              <Popup>
-                <div>Test marker - New York</div>
-              </Popup>
-            </Marker>
-            
             {/* Render issue markers */}
             {processedIssues.map((issue) => {
               // Validate coordinates before rendering
@@ -1218,7 +1203,6 @@ export default function LeafletWorldMap({
               const lng = parseFloat(issue.lng);
               
               if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-                console.warn('⚠️ Invalid coordinates for issue:', issue.id);
                 return null;
               }
               
