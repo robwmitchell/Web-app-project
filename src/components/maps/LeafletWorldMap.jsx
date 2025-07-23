@@ -15,41 +15,45 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Create custom marker icons for different severity levels
+// Create custom pin-style marker icons for different severity levels
 const createSeverityIcon = (severity) => {
-  const colors = {
-    critical: '#dc2626',
-    major: '#ea580c', 
-    minor: '#d97706'
+  const config = {
+    critical: { color: '#dc2626', label: '!', textColor: 'white' },
+    major: { color: '#ea580c', label: '⚠', textColor: 'white' },
+    minor: { color: '#d97706', label: 'i', textColor: 'white' }
   };
   
-  const color = colors[severity] || '#6b7280';
+  const { color, label, textColor } = config[severity] || { color: '#6b7280', label: '?', textColor: 'white' };
   
   return L.divIcon({
-    html: `<div style="
-      background-color: ${color};
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      border: 3px solid white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    html: `<div class="map-pin-marker" style="
+      width: 32px;
+      height: 42px;
       position: relative;
+      cursor: pointer;
     ">
-      <div style="
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 8px;
-        height: 8px;
-        background-color: white;
-        border-radius: 50%;
-      "></div>
+      <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
+        <!-- Pin shadow -->
+        <ellipse cx="16" cy="39" rx="7" ry="3" fill="rgba(0,0,0,0.15)"/>
+        <!-- Pin outer stroke -->
+        <path d="M16 3 C10 3 5 8 5 14 C5 22 16 37 16 37 S27 22 27 14 C27 8 22 3 16 3 Z" 
+              fill="white" 
+              stroke="rgba(0,0,0,0.1)" 
+              stroke-width="1"/>
+        <!-- Pin body -->
+        <path d="M16 2 C10.5 2 6 6.5 6 12 C6 19 16 35 16 35 S26 19 26 12 C26 6.5 21.5 2 16 2 Z" 
+              fill="${color}"/>
+        <!-- Pin inner circle -->
+        <circle cx="16" cy="12" r="7" fill="white" stroke="${color}" stroke-width="1"/>
+        <!-- Severity indicator -->
+        <text x="16" y="16" font-family="Arial, sans-serif" font-size="12" font-weight="bold" 
+              text-anchor="middle" fill="${color}">${label}</text>
+      </svg>
     </div>`,
-    className: 'custom-severity-marker',
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-    popupAnchor: [0, -13]
+    className: 'custom-pin-marker',
+    iconSize: [32, 42],
+    iconAnchor: [16, 40],
+    popupAnchor: [0, -40]
   });
 };
 
