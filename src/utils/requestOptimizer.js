@@ -31,7 +31,6 @@ class RequestCache {
     const entry = this.cache.get(key);
     
     if (this.isValid(entry, maxAge)) {
-      console.log(`[Cache] Hit for ${url}`);
       return Promise.resolve(entry.response.clone());
     }
     
@@ -47,7 +46,6 @@ class RequestCache {
     };
     
     this.cache.set(key, entry);
-    console.log(`[Cache] Stored ${url}`);
   }
 
   // Get or create pending request to prevent duplicates
@@ -106,12 +104,10 @@ export async function optimizedFetch(url, options = {}, cacheMaxAge = CACHE_DURA
   // Check for pending request to avoid duplicates
   const pendingRequest = requestCache.getPendingRequest(url, options);
   if (pendingRequest) {
-    console.log(`[Request] Deduplicating ${url}`);
     return pendingRequest;
   }
 
   // Make new request
-  console.log(`[Request] Fetching ${url}`);
   const requestPromise = fetch(url, options)
     .then(response => {
       if (response.ok) {
@@ -149,7 +145,6 @@ export class APIBatchScheduler {
         this.pendingBatches.delete(batchKey);
         
         if (calls.length > 0) {
-          console.log(`[Batch] Executing ${calls.length} calls for ${batchKey}`);
           calls.forEach(call => call());
         }
       }, this.batchDelay);
@@ -177,10 +172,9 @@ export const RequestMonitor = {
     const request = this.requests.get(url);
     if (request) {
       const duration = performance.now() - request.startTime;
-      console.log(`[Performance] ${url} took ${duration.toFixed(2)}ms - ${success ? 'SUCCESS' : 'FAILED'}`);
       this.requests.delete(url);
       
-      // Warn about slow requests
+      // Warn about slow requests  
       if (duration > 3000) {
         console.warn(`[Performance] Slow request: ${url} took ${duration.toFixed(2)}ms`);
       }

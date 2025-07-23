@@ -14,18 +14,15 @@ class RequestManager {
     // Check cache first
     const cached = this.cache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < cacheDuration) {
-      console.log(`[RequestManager] Cache hit for ${url}`);
       return cached.response.clone();
     }
 
     // Check if request is already in flight
     if (this.inFlightRequests.has(cacheKey)) {
-      console.log(`[RequestManager] Deduplicating request for ${url}`);
       return this.inFlightRequests.get(cacheKey);
     }
 
     // Make new request
-    console.log(`[RequestManager] Making new request for ${url}`);
     const requestPromise = this.makeRequest(url, options)
       .then(response => {
         // Cache the response

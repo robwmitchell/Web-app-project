@@ -575,28 +575,17 @@ const SPLASH_CONFIG = {
         .then(data => {
           if (signal.aborted) return;
           const updates = parseSendgridRSS(data, 25); // Only keep 25 most recent
-          console.log('[SendGrid] Raw updates from RSS:', updates.map(u => ({ title: u.title, date: u.date })));
           
           const now = new Date();
           const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          console.log('[SendGrid] Date filtering - sevenDaysAgo:', sevenDaysAgo);
           
           const filteredUpdates = updates.filter(update => {
             const updateDate = new Date(update.date);
             const isValid = !isNaN(updateDate);
             const isRecent = updateDate >= sevenDaysAgo;
-            console.log('[SendGrid] Date filter check:', { 
-              title: update.title, 
-              rawDate: update.date, 
-              updateDate, 
-              isValid, 
-              isRecent,
-              daysDiff: isValid ? ((now - updateDate) / (24 * 60 * 60 * 1000)) : 'invalid'
-            });
             return isValid && isRecent;
           });
           
-          console.log('[SendGrid] Filtered updates:', filteredUpdates.length, 'out of', updates.length);
           const status = getStatusFromSendgridUpdates(filteredUpdates);
           setSendgrid({ status, indicator: getSendgridIndicator(status), updates: filteredUpdates, name: 'SendGrid' });
         })
