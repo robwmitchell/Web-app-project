@@ -1,5 +1,5 @@
-import React from 'react';
-import { Suspense, useState } from 'react';
+import React, { useState } from 'react';
+import { Suspense } from 'react';
 import './WorldMapWidget.css';
 
 const LeafletWorldMap = React.lazy(() => import('./LeafletWorldMap'));
@@ -13,13 +13,12 @@ export default function WorldMapWidget({
   datadogUpdates = [], 
   awsUpdates = [],
   selectedServices: initialSelectedServices = [],
-  showHistoric: initialShowHistoric = false 
-}) {  // Use the parent's selected services directly instead of creating local state
-  // This ensures consistency with the main app's service selection
-  const selectedServices = initialSelectedServices;
+  showHistoric = false 
+}) {
+  const [localShowHistoric, setLocalShowHistoric] = useState(showHistoric);
   
-  // Add internal state for historic toggle in the widget
-  const [showHistoric, setShowHistoric] = useState(initialShowHistoric);
+  // Use the parent's selected services directly
+  const selectedServices = initialSelectedServices;
 
   // Count total issues for display
   const totalIssues = [
@@ -33,78 +32,74 @@ export default function WorldMapWidget({
   ].length;
 
   return (
-    <div className="world-map-widget">
-      {/* Left Sidebar Menu */}
-      <div className="widget-sidebar">
+    <div className="google-maps-widget">
+      {/* Left Sidebar Menu - Google Maps Style */}
+      <div className="maps-sidebar">
         <div className="sidebar-header">
-          <h3 className="sidebar-title">🌍 Global Overview</h3>
+          <h3 className="sidebar-title">Global Status</h3>
+          <div className="status-summary">
+            <div className="metric">
+              <span className="metric-value">{totalIssues}</span>
+              <span className="metric-label">Issues</span>
+            </div>
+            <div className="metric">
+              <span className="metric-value">{selectedServices.length}</span>
+              <span className="metric-label">Services</span>
+            </div>
+          </div>
         </div>
         
-        <div className="sidebar-content">
-          {/* Quick Stats */}
-          <div className="status-summary">
-            <div className="summary-stat">
-              <span className="stat-number">{totalIssues}</span>
-              <span className="stat-label">Issues Found</span>
-            </div>
-            <div className="summary-stat">
-              <span className="stat-number">{selectedServices.length}</span>
-              <span className="stat-label">Services</span>
-            </div>
-          </div>
-          
-          {/* Severity Legend */}
-          <div className="sidebar-legend">
-            <h4 className="legend-title">Severity</h4>
-            <div className="legend-items">
-              <div className="legend-item">
-                <div className="legend-dot critical"></div>
-                <span>Critical</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-dot major"></div>
-                <span>Major</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-dot minor"></div>
-                <span>Minor</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Interactive View Mode Toggle */}
-          <div className="mode-toggle-section">
-            <h4 className="toggle-title">Time Range</h4>
-            <div className="mode-toggle">
+        {/* Toggle Controls */}
+        <div className="view-controls">
+          <div className="control-group">
+            <label className="control-label">View Mode</label>
+            <div className="toggle-buttons">
               <button 
-                className={`toggle-btn ${!showHistoric ? 'active' : ''}`}
-                onClick={() => setShowHistoric(false)}
+                className={`toggle-button ${!localShowHistoric ? 'active' : ''}`}
+                onClick={() => setLocalShowHistoric(false)}
               >
-                Live Issues
+                <span className="button-icon">�</span>
+                <span className="button-text">Live Issues</span>
               </button>
               <button 
-                className={`toggle-btn ${showHistoric ? 'active' : ''}`}
-                onClick={() => setShowHistoric(true)}
+                className={`toggle-button ${localShowHistoric ? 'active' : ''}`}
+                onClick={() => setLocalShowHistoric(true)}
               >
-                Last 7 Days
+                <span className="button-icon">�</span>
+                <span className="button-text">Last 7 Days</span>
               </button>
             </div>
-            <div className="mode-description">
-              {showHistoric ? 
-                'Showing all issues from the past 7 days' : 
-                'Showing only current unresolved issues'
-              }
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div className="legend-section">
+          <label className="control-label">Severity Levels</label>
+          <div className="legend-list">
+            <div className="legend-item">
+              <div className="legend-marker critical"></div>
+              <span className="legend-text">Critical</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-marker major"></div>
+              <span className="legend-text">Major</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-marker minor"></div>
+              <span className="legend-text">Minor</span>
             </div>
           </div>
         </div>
       </div>
-      
-      {/* Map Container */}
-      <div className="widget-map-container">
+
+      {/* Main Map Area */}
+      <div className="maps-main">
         <Suspense fallback={
-          <div className="map-loading">
-            <div className="loading-spinner"></div>
-            <p>Loading global service status map...</p>
+          <div className="maps-loading">
+            <div className="loading-content">
+              <div className="loading-spinner"></div>
+              <p className="loading-text">Loading global map...</p>
+            </div>
           </div>
         }>
           <LeafletWorldMap
@@ -116,7 +111,7 @@ export default function WorldMapWidget({
             datadogUpdates={datadogUpdates}
             awsUpdates={awsUpdates}
             selectedServices={selectedServices}
-            showHistoric={showHistoric}
+            showHistoric={localShowHistoric}
             isWidget={true}
           />
         </Suspense>
