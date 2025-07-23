@@ -1061,15 +1061,6 @@ export default function LeafletWorldMap({
           setSelectedCountry(group);
         }
       });
-      
-      const popupContent = `
-        <div class="country-popup">
-          <h3>${group.countryName}</h3>
-          <p><strong>${group.issues.length}</strong> active issue${group.issues.length !== 1 ? 's' : ''}</p>
-          <p>Highest severity: <span class="severity-${group.maxSeverity}">${group.maxSeverity}</span></p>
-        </div>
-      `;
-      layer.bindPopup(popupContent);
     }
   }, [countryGroups, getCountryStyle]);
 
@@ -1246,29 +1237,6 @@ export default function LeafletWorldMap({
             </div>
           </div>
         )}
-      </div>
-
-      <div className="map-summary-compact">
-        <div className="summary-item-compact">
-          <span className="summary-label-compact">Total Issues</span>
-          <span className="summary-value-compact">{processedIssues.length}</span>
-        </div>
-        <div className="summary-item-compact">
-          <span className="summary-label-compact">Critical</span>
-          <span className="summary-value-compact critical">
-            {processedIssues.filter(i => i.severity === 'critical').length}
-          </span>
-        </div>
-        <div className="summary-item-compact">
-          <span className="summary-label-compact">Regions</span>
-          <span className="summary-value-compact">{countryGroups.length}</span>
-        </div>
-        <div className="summary-item-compact">
-          <span className="summary-label-compact">Mode</span>
-          <span className="summary-value-compact">
-            {showHistoric ? 'Last 7 Days' : 'Current Active'}
-          </span>
-        </div>
       </div>
     </div>
   );

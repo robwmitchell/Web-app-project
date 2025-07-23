@@ -31,47 +31,53 @@ export default function WorldMapWidget({
 
   return (
     <div className="world-map-widget">
-      <div className="widget-header">
-        <div className="widget-title-section">
-          <h3 className="widget-title">
-            🌍 Global Service Status Map
-          </h3>
-          <div className="widget-stats">
-            <span className="stat-item">
-              {totalIssues} active issue{totalIssues !== 1 ? 's' : ''}
-            </span>
-            <span className="stat-item">
-              {selectedServices.length} service{selectedServices.length !== 1 ? 's' : ''} monitored
-            </span>
-          </div>
+      {/* Left Sidebar Menu */}
+      <div className="widget-sidebar">
+        <div className="sidebar-header">
+          <h3 className="sidebar-title">🌍 Global Overview</h3>
         </div>
         
-        <div className="widget-controls">
-          {/* Service filtering is now controlled by the main app */}
-          <div className="widget-info">
-            Services: {selectedServices.length > 0 ? selectedServices.join(', ') : 'None selected'}
+        <div className="sidebar-content">
+          {/* Quick Stats */}
+          <div className="status-summary">
+            <div className="summary-stat">
+              <span className="stat-number">{totalIssues}</span>
+              <span className="stat-label">Issues Found</span>
+            </div>
+            <div className="summary-stat">
+              <span className="stat-number">{selectedServices.length}</span>
+              <span className="stat-label">Services</span>
+            </div>
+          </div>
+          
+          {/* Severity Legend */}
+          <div className="sidebar-legend">
+            <h4 className="legend-title">Severity</h4>
+            <div className="legend-items">
+              <div className="legend-item">
+                <div className="legend-dot critical"></div>
+                <span>Critical</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-dot major"></div>
+                <span>Major</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-dot minor"></div>
+                <span>Minor</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* View Mode */}
+          <div className="mode-indicator">
+            <span className="mode-label">View</span>
+            <span className="mode-value">{showHistoric ? 'Last 7 Days' : 'Live Issues'}</span>
           </div>
         </div>
       </div>
       
-      {/* Widget Legend and Stats */}
-      <div className="widget-legend-section">
-        <div className="widget-legend">
-          <div className="legend-item">
-            <div className="legend-dot critical"></div>
-            <span>Critical</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-dot major"></div>
-            <span>Major</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-dot minor"></div>
-            <span>Minor</span>
-          </div>
-        </div>
-      </div>
-      
+      {/* Map Container */}
       <div className="widget-map-container">
         <Suspense fallback={
           <div className="map-loading">
@@ -92,22 +98,6 @@ export default function WorldMapWidget({
             isWidget={true}
           />
         </Suspense>
-      </div>
-      
-      {/* Widget Summary Bar */}
-      <div className="widget-summary-bar">
-        <div className="summary-item">
-          <span className="summary-label">Active Issues</span>
-          <span className="summary-value">{totalIssues}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Services</span>
-          <span className="summary-value">{selectedServices.length}</span>
-        </div>
-        <div className="summary-item">
-          <span className="summary-label">Mode</span>
-          <span className="summary-value">{showHistoric ? '7 Days' : 'Current'}</span>
-        </div>
       </div>
     </div>
   );
