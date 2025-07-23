@@ -4,7 +4,7 @@ class RequestManager {
   constructor() {
     this.cache = new Map();
     this.inFlightRequests = new Map();
-    this.defaultCacheDuration = 30 * 1000; // 30 seconds default cache
+    this.defaultCacheDuration = 2 * 60 * 1000; // 2 minutes cache duration
   }
 
   // Get a cached response or make a new request
@@ -112,6 +112,6 @@ export const optimizedFetch = (url, options = {}, cacheDuration) => {
 // Periodically clean up expired cache entries
 setInterval(() => {
   requestManager.clearExpiredCache();
-}, 60 * 1000); // Clean up every minute
+}, 2 * 60 * 1000); // Clean up every 2 minutes
 
 export default requestManager;

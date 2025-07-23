@@ -42,12 +42,7 @@ function ServiceLogo({ service }) {
   
   // Debug: log logo information
   React.useEffect(() => {
-    console.log(`ServiceLogo for "${service}":`, { 
-      service, 
-      logoSrc, 
-      logoError, 
-      logoLoaded
-    });
+    // Logo debugging removed for production
   }, [service, logoSrc, logoError, logoLoaded]);
   
   if (!logoSrc) {
@@ -115,7 +110,7 @@ function ServiceLogo({ service }) {
           objectFit: 'contain'
         }} 
         onLoad={() => {
-          console.log(`✅ Logo loaded successfully for ${service} from ${logoSrc}`);
+          // Logo loaded successfully
           setLogoLoaded(true);
         }}
         onError={(e) => {
@@ -216,8 +211,7 @@ export default function MiniHeatbarGrid({
 
   // Debug: log service logos on component mount and preload them
   React.useEffect(() => {
-    console.log('Available service logos:', serviceLogos);
-    console.log('Selected services:', selectedServices);
+    // Available service logos and selected services
     
     // Preload all logos to help with loading
     selectedServices.forEach(service => {
@@ -231,10 +225,13 @@ export default function MiniHeatbarGrid({
       }
       
       if (logoSrc) {
-        console.log(`Attempting to preload logo for ${service}: ${logoSrc}`);
         const img = new Image();
-        img.onload = () => console.log(`✅ Preloaded logo for ${service}`);
-        img.onerror = (e) => console.error(`❌ Failed to preload logo for ${service}:`, e);
+        img.onload = () => {
+          // Logo preloaded successfully
+        };
+        img.onerror = (e) => {
+          // Failed to preload logo
+        };
         img.src = logoSrc;
       }
     });
@@ -251,7 +248,7 @@ export default function MiniHeatbarGrid({
           setTrendData(data);
           setLoading(false);
           // Debug: log the fetched data
-          console.log('Fetched trend data:', data);
+          // Fetched trend data successfully
         }
       })
       .catch(e => {
@@ -265,9 +262,7 @@ export default function MiniHeatbarGrid({
 
   // Debug: log closed services synchronization
   React.useEffect(() => {
-    console.log('MiniHeatbarGrid - Closed cards from App:', closedCards);
-    console.log('MiniHeatbarGrid - Closed services Set:', closedServices);
-    console.log('MiniHeatbarGrid - Selected services:', selectedServices);
+  // Debug component state
   }, [closedCards, closedServices, selectedServices]);
 
   if (loading) return <div className="mini-heatbar-grid">Loading...</div>;
@@ -276,7 +271,7 @@ export default function MiniHeatbarGrid({
 
   const { trend } = trendData;
   // Debug: log the raw trend object
-  console.log('Raw trend object:', trend);
+  // Process trend data
   const rows = selectedServices.map(service => {
     // Find the trend key case-insensitively
     const trendKey = Object.keys(trend).find(
@@ -286,7 +281,7 @@ export default function MiniHeatbarGrid({
     const todayCount = trendArr[trendArr.length - 1] || 0;
     const trendUp = trendArr.length > 1 ? trendArr[trendArr.length-1] >= trendArr[trendArr.length-2] : false;
     // Debug: log mapping for each service
-    console.log('service:', service, 'trendKey:', trendKey, 'trendArr:', trendArr, 'raw:', trend[trendKey]);
+    // Process service trend data
     return {
       service,
       status: STATUS_MAP[service],
@@ -296,7 +291,7 @@ export default function MiniHeatbarGrid({
     };
   });
   // Debug: log the final rows array
-  console.log('MiniHeatbarGrid rows:', rows);
+  // Generated rows for heatbar grid
 
   // Filter out closed services (case-insensitive)
   const visibleRows = rows.filter(row => !closedServices.has(row.service.toLowerCase()));
@@ -338,7 +333,7 @@ export default function MiniHeatbarGrid({
       </div>
       {visibleRows.map(row => {
         // Debug log for each row
-        console.log(`Rendering row for service: "${row.service}"`);
+        // Rendering row for service
         return (
           <div 
             className="mini-heatbar-row" 

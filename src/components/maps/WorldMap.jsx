@@ -92,23 +92,12 @@ export default function WorldMap({
 
   // Debug logging to understand data flow
   useEffect(() => {
-    console.log('WorldMap - Data received:', {
-      cloudflareIncidents: cloudflareIncidents?.length || 0,
-      zscalerUpdates: zscalerUpdates?.length || 0,
-      oktaUpdates: oktaUpdates?.length || 0,
-      sendgridUpdates: sendgridUpdates?.length || 0,
-      slackUpdates: slackUpdates?.length || 0,
-      datadogUpdates: datadogUpdates?.length || 0,
-      awsUpdates: awsUpdates?.length || 0,
-      selectedServices: selectedServices?.length || 0,
-      showHistoric
-    });
+    // Data flow logging removed for production
   }, [cloudflareIncidents, zscalerUpdates, oktaUpdates, sendgridUpdates, slackUpdates, datadogUpdates, awsUpdates, selectedServices, showHistoric]);
 
   // Debug log processed issues
   useEffect(() => {
-    console.log('WorldMap - Processed location issues:', locationIssues.length);
-    console.log('WorldMap - Region data:', Object.keys(regionData).length, regionData);
+    // Issue processing logging removed for production
   }, [locationIssues, regionData]);
 
   // Filter and analyze issues by location
