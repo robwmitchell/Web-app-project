@@ -18,42 +18,35 @@ L.Icon.Default.mergeOptions({
 // Create custom pin-style marker icons for different severity levels
 const createSeverityIcon = (severity) => {
   const config = {
-    critical: { color: '#dc2626', label: '!', textColor: 'white' },
-    major: { color: '#ea580c', label: '⚠', textColor: 'white' },
-    minor: { color: '#d97706', label: 'i', textColor: 'white' }
+    critical: { color: '#dc2626', symbol: '●' },
+    major: { color: '#ea580c', symbol: '●' },
+    minor: { color: '#d97706', symbol: '●' }
   };
   
-  const { color, label, textColor } = config[severity] || { color: '#6b7280', label: '?', textColor: 'white' };
+  const { color, symbol } = config[severity] || { color: '#6b7280', symbol: '●' };
   
   return L.divIcon({
-    html: `<div class="map-pin-marker" style="
-      width: 32px;
-      height: 42px;
-      position: relative;
-      cursor: pointer;
-    ">
-      <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg">
-        <!-- Pin shadow -->
-        <ellipse cx="16" cy="39" rx="7" ry="3" fill="rgba(0,0,0,0.15)"/>
-        <!-- Pin outer stroke -->
-        <path d="M16 3 C10 3 5 8 5 14 C5 22 16 37 16 37 S27 22 27 14 C27 8 22 3 16 3 Z" 
-              fill="white" 
-              stroke="rgba(0,0,0,0.1)" 
-              stroke-width="1"/>
-        <!-- Pin body -->
-        <path d="M16 2 C10.5 2 6 6.5 6 12 C6 19 16 35 16 35 S26 19 26 12 C26 6.5 21.5 2 16 2 Z" 
-              fill="${color}"/>
-        <!-- Pin inner circle -->
-        <circle cx="16" cy="12" r="7" fill="white" stroke="${color}" stroke-width="1"/>
-        <!-- Severity indicator -->
-        <text x="16" y="16" font-family="Arial, sans-serif" font-size="12" font-weight="bold" 
-              text-anchor="middle" fill="${color}">${label}</text>
-      </svg>
-    </div>`,
-    className: 'custom-pin-marker',
-    iconSize: [32, 42],
-    iconAnchor: [16, 40],
-    popupAnchor: [0, -40]
+    html: `
+      <div class="simple-pin-marker" style="
+        width: 20px;
+        height: 20px;
+        background-color: ${color};
+        border: 3px solid white;
+        border-radius: 50%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      ">${severity === 'critical' ? '!' : severity === 'major' ? '⚠' : 'i'}</div>
+    `,
+    className: 'custom-simple-marker',
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -13]
   });
 };
 
@@ -1213,16 +1206,21 @@ export default function LeafletWorldMap({
             )}
             
             {/* Render issue markers */}
-            {processedIssues.map((issue) => {
-              // Validate coordinates before rendering
-              const lat = parseFloat(issue.lat);
-              const lng = parseFloat(issue.lng);
-              
-              if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-                return null;
-              }
-              
-              return (
+            {(() => {
+              console.log('processedIssues:', processedIssues.length);
+              return processedIssues.map((issue) => {
+                // Validate coordinates before rendering
+                const lat = parseFloat(issue.lat);
+                const lng = parseFloat(issue.lng);
+                
+                console.log('Issue:', issue.id, 'Coords:', lat, lng, 'Severity:', issue.severity);
+                
+                if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                  console.log('Invalid coordinates for issue:', issue.id);
+                  return null;
+                }
+                
+                return (
                 <Marker
                   key={issue.id}
                   position={[lat, lng]}
@@ -1296,7 +1294,8 @@ export default function LeafletWorldMap({
                   )}
                 </Marker>
               );
-            }).filter(Boolean)}
+            });
+            })().filter(Boolean)}
           </MapContainer>
         </div>
 
