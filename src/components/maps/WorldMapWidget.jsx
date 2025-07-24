@@ -17,9 +17,44 @@ export default function WorldMapWidget({
 }) {
   const [localShowHistoric, setLocalShowHistoric] = useState(showHistoric);
   const [selectedIssue, setSelectedIssue] = useState(null);
+  const [localSelectedServices, setLocalSelectedServices] = useState(initialSelectedServices);
+  const [filteredSeverities, setFilteredSeverities] = useState(['critical', 'major', 'minor']);
   
-  // Use the parent's selected services directly
-  const selectedServices = initialSelectedServices;
+  // Map of available services with their display names
+  const availableServices = [
+    { id: 'cloudflare', name: 'Cloudflare', logo: '/src/assets/cloudflare-logo.svg' },
+    { id: 'zscaler', name: 'Zscaler', logo: '/src/assets/Zscaler.svg' },
+    { id: 'okta', name: 'Okta', logo: '/src/assets/Okta-logo.svg' },
+    { id: 'sendgrid', name: 'SendGrid', logo: '/src/assets/SendGrid.svg' },
+    { id: 'slack', name: 'Slack', logo: '/src/assets/slack-logo.png' },
+    { id: 'datadog', name: 'Datadog', logo: '/src/assets/datadog-logo.png' },
+    { id: 'aws', name: 'AWS', logo: '/src/assets/aws-logo.png' }
+  ];
+  
+  // Toggle service selection
+  const toggleService = (serviceId) => {
+    setLocalSelectedServices(prev => {
+      if (prev.includes(serviceId)) {
+        return prev.filter(id => id !== serviceId);
+      } else {
+        return [...prev, serviceId];
+      }
+    });
+  };
+  
+  // Toggle severity filter
+  const toggleSeverity = (severity) => {
+    setFilteredSeverities(prev => {
+      if (prev.includes(severity)) {
+        return prev.filter(sev => sev !== severity);
+      } else {
+        return [...prev, severity];
+      }
+    });
+  };
+  
+  // Use the local selected services
+  const selectedServices = localSelectedServices;
 
   // Count total issues for display
   const totalIssues = [
@@ -71,23 +106,40 @@ export default function WorldMapWidget({
         </div>
 
         <div className="controls-right">
-          {/* Legend */}
+          {/* Severity Legend as Filter */}
           <div className="legend-section">
             <div className="legend-list">
-              <div className="legend-item">
-                <div className="legend-marker critical"></div>
-                <span className="legend-text">Critical</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-marker major"></div>
-                <span className="legend-text">Major</span>
-              </div>
-              <div className="legend-item">
-                <div className="legend-marker minor"></div>
-                <span className="legend-text">Minor</span>
-              </div>
+              {['critical', 'major', 'minor'].map(severity => (
+                <div 
+                  key={severity}
+                  className={`legend-item ${filteredSeverities.includes(severity) ? 'active' : 'inactive'}`}
+                  onClick={() => toggleSeverity(severity)}
+                  title={`Click to ${filteredSeverities.includes(severity) ? 'hide' : 'show'} ${severity} issues`}
+                >
+                  <div className={`legend-marker ${severity}`}></div>
+                  <span className="legend-text">{severity.charAt(0).toUpperCase() + severity.slice(1)}</span>
+                  <span className="checkmark">{filteredSeverities.includes(severity) ? '✓' : ''}</span>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+      </div>
+      
+      {/* Service Pills Row */}
+      <div className="service-pills-row">
+        <div className="service-pills-container">
+          {availableServices.map(service => (
+            <div
+              key={service.id}
+              className={`service-pill ${selectedServices.includes(service.id) ? 'active' : ''}`}
+              onClick={() => toggleService(service.id)}
+            >
+              <img src={service.logo} alt={service.name} className="service-pill-logo" />
+              <span className="service-pill-name">{service.name}</span>
+              {selectedServices.includes(service.id) && <span className="service-pill-check">✓</span>}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -112,6 +164,7 @@ export default function WorldMapWidget({
               datadogUpdates={datadogUpdates}
               awsUpdates={awsUpdates}
               selectedServices={selectedServices}
+              filteredSeverities={filteredSeverities}
               showHistoric={localShowHistoric}
               isWidget={true}
               onIssueClick={setSelectedIssue}

@@ -1633,3 +1633,78 @@
   background: white;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
+
+/* Custom Pin Marker Styles */
+.custom-pin-marker {
+  /* This removes the default background of divIcon */
+  background: none !important;
+  border: none !important;
+}
+
+.pin-marker-container {
+  position: relative;
+  width: 30px;
+  height: 42px;
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.pin-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50% 50% 50% 0;
+  background-color: #ff5252;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  border: 2px solid white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pin-symbol {
+  position: relative;
+  transform: rotate(45deg);
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+}
+
+.pin-shadow {
+  position: absolute;
+  bottom: 1px;
+  left: 5px;
+  width: 20px;
+  height: 10px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 50%;
+  z-index: -1;
+  filter: blur(3px);
+  transform: rotateX(60deg);
+}
+
+/* Hover effects */
+.pin-marker-container:hover .pin-marker {
+  transform: rotate(-45deg) scale(1.2);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+}
+
+/* Improve popup styles */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.leaflet-popup-content {
+  margin: 16px;
+}
+
+.leaflet-popup-tip {
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+}

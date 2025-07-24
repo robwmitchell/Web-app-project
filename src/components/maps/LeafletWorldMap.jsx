@@ -18,35 +18,26 @@ L.Icon.Default.mergeOptions({
 // Create custom pin-style marker icons for different severity levels
 const createSeverityIcon = (severity) => {
   const config = {
-    critical: { color: '#dc2626', symbol: '●' },
-    major: { color: '#ea580c', symbol: '●' },
-    minor: { color: '#d97706', symbol: '●' }
+    critical: { color: '#dc2626', symbol: '!' },
+    major: { color: '#ea580c', symbol: '⚠' },
+    minor: { color: '#d97706', symbol: 'i' }
   };
   
   const { color, symbol } = config[severity] || { color: '#6b7280', symbol: '●' };
   
   return L.divIcon({
     html: `
-      <div class="simple-pin-marker" style="
-        width: 20px;
-        height: 20px;
-        background-color: ${color};
-        border: 3px solid white;
-        border-radius: 50%;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        color: white;
-        font-weight: bold;
-        cursor: pointer;
-      ">${severity === 'critical' ? '!' : severity === 'major' ? '⚠' : 'i'}</div>
+      <div class="pin-marker-container">
+        <div class="pin-marker" style="background-color: ${color};">
+          <span class="pin-symbol">${symbol}</span>
+        </div>
+        <div class="pin-shadow"></div>
+      </div>
     `,
-    className: 'custom-simple-marker',
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-    popupAnchor: [0, -13]
+    className: 'custom-pin-marker',
+    iconSize: [30, 42],
+    iconAnchor: [15, 42],
+    popupAnchor: [0, -42]
   });
 };
 
@@ -842,14 +833,15 @@ const intelligentLocationMapping = async (locationText, provider) => {
 
 // Main component
 export default function LeafletWorldMap({ 
-  cloudflareIncidents = [], 
-  zscalerUpdates = [], 
-  oktaUpdates = [], 
-  sendgridUpdates = [], 
-  slackUpdates = [], 
-  datadogUpdates = [], 
+  cloudflareIncidents = [],
+  zscalerUpdates = [],
+  oktaUpdates = [],
+  sendgridUpdates = [],
+  slackUpdates = [],
+  datadogUpdates = [],
   awsUpdates = [],
   selectedServices = [],
+  filteredSeverities = ['critical', 'major', 'minor'],
   showHistoric = false,
   isWidget = false,
   onIssueClick = null
@@ -1207,16 +1199,18 @@ export default function LeafletWorldMap({
             
             {/* Render issue markers */}
             {(() => {
-              console.log('processedIssues:', processedIssues.length);
-              return processedIssues.map((issue) => {
+              // Filter issues by severity
+              const filteredIssues = processedIssues.filter(issue => 
+                filteredSeverities.includes(issue.severity)
+              );
+              
+              console.log('Filtered Issues:', filteredIssues.length, 'of', processedIssues.length);
+              return filteredIssues.map((issue) => {
                 // Validate coordinates before rendering
                 const lat = parseFloat(issue.lat);
                 const lng = parseFloat(issue.lng);
                 
-                console.log('Issue:', issue.id, 'Coords:', lat, lng, 'Severity:', issue.severity);
-                
                 if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-                  console.log('Invalid coordinates for issue:', issue.id);
                   return null;
                 }
                 

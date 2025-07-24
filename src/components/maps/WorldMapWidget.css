@@ -131,6 +131,28 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 5px 10px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.legend-item:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+.legend-item.active {
+  background: rgba(0,0,0,0.05);
+}
+
+.legend-item.inactive {
+  opacity: 0.6;
+}
+
+.checkmark {
+  font-size: 12px;
+  margin-left: 2px;
+  color: #4b5563;
 }
 
 .legend-marker {
@@ -425,6 +447,71 @@
   }
 }
 
+/* Service Pills Row */
+.service-pills-row {
+  padding: 12px 24px;
+  background: #ffffff;
+  border-bottom: 1px solid #e1e5e9;
+  display: flex;
+  justify-content: center;
+}
+
+.service-pills-container {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f8f9fa;
+  border: 2px solid #e1e5e9;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  color: #5f6368;
+  min-height: 40px;
+}
+
+.service-pill:hover {
+  border-color: #1a73e8;
+  background: #f1f7ff;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.15);
+}
+
+.service-pill.active {
+  background: #1a73e8;
+  border-color: #1a73e8;
+  color: white;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
+}
+
+.service-pill-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.service-pill-name {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.service-pill-check {
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 4px;
+}
+
 /* Map specific overrides */
 .leaflet-container {
   height: 100%;
@@ -468,4 +555,48 @@
 .custom-simple-marker:hover .simple-pin-marker {
   box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
   transform: translateY(-1px);
+}
+
+/* Custom Pin Marker Styles */
+.pin-marker-container {
+  position: relative;
+  width: 30px;
+  height: 42px;
+  cursor: pointer;
+}
+
+.pin-marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 30px;
+  background-color: #dc2626;
+  border: 3px solid white;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pin-symbol {
+  transform: rotate(45deg);
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 3px;
+  margin-right: 3px;
+}
+
+.pin-shadow {
+  position: absolute;
+  bottom: 0;
+  left: 5px;
+  width: 20px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  filter: blur(2px);
 }
