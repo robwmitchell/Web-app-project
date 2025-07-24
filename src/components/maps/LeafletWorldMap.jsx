@@ -16,7 +16,42 @@ L.Icon.Default.mergeOptions({
 });
 
 // Create custom pin-style marker icons for different severity levels
-const createSeverityIcon = (severity) => {
+const createSeverityIcon = (severity, isGlobal = false) => {
+  if (isGlobal) {
+    const config = {
+      critical: { color: '#dc2626', symbol: '🌍' },
+      major: { color: '#ea580c', symbol: '🌍' },
+      minor: { color: '#d97706', symbol: '🌍' }
+    };
+    
+    const { color, symbol } = config[severity] || { color: '#6b7280', symbol: '🌍' };
+    
+    return L.divIcon({
+      html: `
+        <div class="global-pin-marker" style="
+          width: 32px;
+          height: 32px;
+          background: radial-gradient(circle, ${color}, ${color}88);
+          border: 4px solid white;
+          border-radius: 50%;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 20px ${color}44;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 16px;
+          color: white;
+          font-weight: bold;
+          cursor: pointer;
+          animation: globalPulse 2s infinite;
+        ">${symbol}</div>
+      `,
+      className: 'custom-global-marker',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+      popupAnchor: [0, -20]
+    });
+  }
+  
   const config = {
     critical: { color: '#dc2626', symbol: '!' },
     major: { color: '#ea580c', symbol: '⚠' },
@@ -551,11 +586,34 @@ const getCoordinates = (text, provider) => {
     return uniqueLocations.slice(0, 5);
   }
   
-  // Final fallback
+  // Final fallback - check if this is likely a global issue
+  const isGlobalIssue = textLower.includes('global') || 
+                       textLower.includes('worldwide') || 
+                       textLower.includes('all users') || 
+                       textLower.includes('all customers') || 
+                       textLower.includes('platform') ||
+                       textLower.includes('service') ||
+                       provider === 'Slack' || // Slack issues are often global
+                       textLower.includes('maintenance') ||
+                       textLower.includes('upgrade') ||
+                       textLower.includes('all regions');
+
+  if (isGlobalIssue) {
+    return [{ 
+      lat: 0, // Center of the world map
+      lng: 0, 
+      region: 'Global Issue', 
+      confidence: 'high',
+      source: 'global-detection',
+      isGlobal: true
+    }];
+  }
+
+  // Regular fallback for unknown location
   return [{ 
     lat: 37.7749, 
     lng: -122.4194, 
-    region: 'Global (No specific location detected)', 
+    region: 'Unknown Location', 
     confidence: 'low',
     source: 'fallback'
   }];
@@ -963,6 +1021,7 @@ export default function LeafletWorldMap({
                 confidence: coord.confidence || coord.aiConfidence || 'medium',
                 aiContext: coord.aiContext,
                 extractionSource: coord.source,
+                isGlobal: coord.isGlobal || false,
                 url: item.html_url || item.link || item.url
               });
             });
@@ -990,6 +1049,7 @@ export default function LeafletWorldMap({
                 countryCode: countryCode,
                 confidence: coord.confidence || 'medium',
                 extractionSource: 'fallback-pattern',
+                isGlobal: coord.isGlobal || false,
                 url: item.html_url || item.link || item.url
               });
             });
@@ -1132,7 +1192,7 @@ export default function LeafletWorldMap({
           <div className="header-content">
             <h2>Global Service Status Map</h2>
             <div style={{ fontSize: '0.875rem', color: 'rgba(255,255,255,0.8)', marginBottom: '8px' }}>
-              {processedIssues.length} issues • {countryGroups.length} affected regions • {selectedServices?.length || 'All'} services
+              {processedIssues.length} issues • {countryGroups.length} affected regions • {processedIssues.filter(i => i.isGlobal).length} global • {selectedServices?.length || 'All'} services
             </div>
             {isProcessingLocations && (
               <div className="ai-processing-indicator">
@@ -1144,6 +1204,10 @@ export default function LeafletWorldMap({
               <div className="legend-item">
                 <div className="legend-region affected-regions"></div>
                 <span>Regions with Issues ({countryGroups.length})</span>
+              </div>
+              <div className="legend-item">
+                <div className="legend-dot global-legend" style={{ fontSize: '12px' }}>🌍</div>
+                <span>Global Issues ({processedIssues.filter(i => i.isGlobal).length})</span>
               </div>
               <div className="legend-item">
                 <div className="legend-dot" style={{ backgroundColor: '#dc2626' }}></div>
@@ -1205,6 +1269,11 @@ export default function LeafletWorldMap({
               );
               
               console.log('Filtered Issues:', filteredIssues.length, 'of', processedIssues.length);
+              console.log('Global Issues:', filteredIssues.filter(i => i.isGlobal).length);
+              console.log('Issues by service:', filteredIssues.reduce((acc, issue) => {
+                acc[issue.provider] = (acc[issue.provider] || 0) + 1;
+                return acc;
+              }, {}));
               return filteredIssues.map((issue) => {
                 // Validate coordinates before rendering
                 const lat = parseFloat(issue.lat);
@@ -1218,7 +1287,7 @@ export default function LeafletWorldMap({
                 <Marker
                   key={issue.id}
                   position={[lat, lng]}
-                  icon={createSeverityIcon(issue.severity)}
+                  icon={createSeverityIcon(issue.severity, issue.isGlobal)}
                   eventHandlers={{
                     click: () => {
                       if (onIssueClick) {
@@ -1237,6 +1306,11 @@ export default function LeafletWorldMap({
                           <div className={`severity-badge severity-${issue.severity}`}>
                             {issue.severity}
                           </div>
+                          {issue.isGlobal && (
+                            <div className="global-badge">
+                              🌍 Global
+                            </div>
+                          )}
                         </div>
                         
                         <h4 className="popup-title">{issue.title}</h4>

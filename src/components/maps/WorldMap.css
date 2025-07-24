@@ -1645,66 +1645,139 @@
   position: relative;
   width: 30px;
   height: 42px;
-  pointer-events: all;
   cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.pin-marker-container:hover {
+  transform: scale(1.1);
+  z-index: 999;
 }
 
 .pin-marker {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 30px;
+  width: 24px;
   height: 30px;
-  border-radius: 50% 50% 50% 0;
-  background-color: #ff5252;
-  transform: rotate(-45deg);
+  border-radius: 12px 12px 12px 2px;
+  border: 3px solid white;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-  border: 2px solid white;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .pin-symbol {
-  position: relative;
-  transform: rotate(45deg);
   color: white;
+  font-size: 14px;
   font-weight: bold;
-  font-size: 12px;
-  line-height: 1;
-  text-align: center;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .pin-shadow {
   position: absolute;
-  bottom: 1px;
-  left: 5px;
-  width: 20px;
-  height: 10px;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 8px;
   background: rgba(0,0,0,0.2);
   border-radius: 50%;
-  z-index: -1;
-  filter: blur(3px);
-  transform: rotateX(60deg);
+  filter: blur(2px);
 }
 
-/* Hover effects */
-.pin-marker-container:hover .pin-marker {
-  transform: rotate(-45deg) scale(1.2);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+/* Global issue marker animation */
+@keyframes globalPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.3);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.5), 0 0 30px rgba(255,255,255,0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4), 0 0 20px rgba(255,255,255,0.3);
+  }
 }
 
-/* Improve popup styles */
-.leaflet-popup-content-wrapper {
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+/* Global marker specific styles */
+.custom-global-marker {
+  z-index: 1000 !important;
 }
 
-.leaflet-popup-content {
-  margin: 16px;
+.global-pin-marker {
+  position: relative;
+  z-index: 1000;
 }
 
-.leaflet-popup-tip {
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+/* Enhanced pin marker styles */
+.pin-marker-container {
+  position: relative;
+  width: 30px;
+  height: 42px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.pin-marker-container:hover {
+  transform: scale(1.1);
+  z-index: 999;
+}
+
+.pin-marker {
+  width: 24px;
+  height: 30px;
+  border-radius: 12px 12px 12px 2px;
+  border: 3px solid white;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.pin-symbol {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.pin-shadow {
+  position: absolute;
+  bottom: -3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+
+/* Global badge in popup */
+.global-badge {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.global-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  animation: globalPulse 2s infinite;
 }
