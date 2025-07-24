@@ -1007,7 +1007,7 @@ export default function LeafletWorldMap({
         { name: 'Zscaler', data: zscalerUpdates, dateField: 'date' },
         { name: 'Okta', data: oktaUpdates, dateField: 'date' },
         { name: 'SendGrid', data: sendgridUpdates, dateField: 'date' },
-        { name: 'Slack', data: slackUpdates, dateField: 'date' },
+        { name: 'Slack', data: slackUpdates, dateField: 'date' }, // We'll try multiple fields in extraction
         { name: 'Datadog', data: datadogUpdates, dateField: 'date' },
         { name: 'AWS', data: awsUpdates, dateField: 'date' }
       ];
@@ -1032,14 +1032,17 @@ export default function LeafletWorldMap({
         if (!Array.isArray(service.data)) continue;
 
         for (const [index, item] of service.data.entries()) {
-          const date = item[service.dateField] || item.date || item.created_at;
+          const date = item[service.dateField] || item.date || item.created_at || item.timestamp || item.published_at;
           const isItemRelevant = isRelevant(item, date, showHistoric);
           
           // Debug logging for Slack issues
           if (service.name === 'Slack') {
             console.log(`Slack Issue ${index}:`, {
               title: item.title || item.name,
-              date: date,
+              rawItem: item, // Log the full item to see all available fields
+              dateField: service.dateField,
+              extractedDate: date,
+              availableFields: Object.keys(item),
               isRelevant: isItemRelevant,
               showHistoric: showHistoric,
               dateAge: date ? (Date.now() - new Date(date).getTime()) / (24 * 60 * 60 * 1000) : 'no date'
