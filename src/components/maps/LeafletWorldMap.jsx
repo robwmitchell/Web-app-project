@@ -317,13 +317,14 @@ const isRelevant = (issue, date, showHistoric) => {
     
     // Handle different date formats
     if (typeof date === 'string') {
-      // Handle DD/MM/YYYY, HH:MM:SS format (like Slack uses)
+      // Handle DD/MM/YYYY, HH:MM:SS format (like some services use)
       if (date.includes('/') && date.includes(',')) {
         const [datePart, timePart] = date.split(', ');
         const [day, month, year] = datePart.split('/').map(num => parseInt(num));
         const [hour, minute, second] = timePart.split(':').map(num => parseInt(num));
         issueDate = new Date(year, month - 1, day, hour, minute, second); // month is 0-indexed
       } else {
+        // Try standard JavaScript date parsing (handles RFC 2822, ISO 8601, etc.)
         issueDate = new Date(date);
       }
     } else {
@@ -1032,17 +1033,24 @@ export default function LeafletWorldMap({
         if (!Array.isArray(service.data)) continue;
 
         for (const [index, item] of service.data.entries()) {
-          const date = item[service.dateField] || item.date || item.created_at || item.timestamp || item.published_at;
+          // Extract date with service-specific logic
+          let date;
+          if (service.name === 'Slack') {
+            date = item.reported_at || item.date || item.created_at || item.timestamp || item.published_at;
+          } else {
+            date = item[service.dateField] || item.date || item.created_at || item.timestamp || item.published_at;
+          }
+          
           const isItemRelevant = isRelevant(item, date, showHistoric);
           
           // Debug logging for Slack issues
           if (service.name === 'Slack') {
             console.log(`Slack Issue ${index}:`, {
               title: item.title || item.name,
-              rawItem: item, // Log the full item to see all available fields
-              dateField: service.dateField,
+              rawDate: item.reported_at,
               extractedDate: date,
-              availableFields: Object.keys(item),
+              dateValid: date ? !isNaN(new Date(date)) : false,
+              parsedDate: date ? new Date(date).toISOString() : null,
               isRelevant: isItemRelevant,
               showHistoric: showHistoric,
               dateAge: date ? (Date.now() - new Date(date).getTime()) / (24 * 60 * 60 * 1000) : 'no date'
