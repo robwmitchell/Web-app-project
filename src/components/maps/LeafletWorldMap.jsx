@@ -1267,13 +1267,6 @@ export default function LeafletWorldMap({
               const filteredIssues = processedIssues.filter(issue => 
                 filteredSeverities.includes(issue.severity)
               );
-              
-              console.log('Filtered Issues:', filteredIssues.length, 'of', processedIssues.length);
-              console.log('Global Issues:', filteredIssues.filter(i => i.isGlobal).length);
-              console.log('Issues by service:', filteredIssues.reduce((acc, issue) => {
-                acc[issue.provider] = (acc[issue.provider] || 0) + 1;
-                return acc;
-              }, {}));
               return filteredIssues.map((issue) => {
                 // Validate coordinates before rendering
                 const lat = parseFloat(issue.lat);
