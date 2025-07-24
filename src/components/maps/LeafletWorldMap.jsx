@@ -313,14 +313,46 @@ const getSeverityWithAI = (issue, serviceName) => {
 
 const isRelevant = (issue, date, showHistoric) => {
   try {
-    const issueDate = new Date(date);
+    let issueDate;
+    
+    // Handle different date formats
+    if (typeof date === 'string') {
+      // Handle DD/MM/YYYY, HH:MM:SS format (like Slack uses)
+      if (date.includes('/') && date.includes(',')) {
+        const [datePart, timePart] = date.split(', ');
+        const [day, month, year] = datePart.split('/').map(num => parseInt(num));
+        const [hour, minute, second] = timePart.split(':').map(num => parseInt(num));
+        issueDate = new Date(year, month - 1, day, hour, minute, second); // month is 0-indexed
+      } else {
+        issueDate = new Date(date);
+      }
+    } else {
+      issueDate = new Date(date);
+    }
+    
     if (isNaN(issueDate)) {
+      console.log('Invalid date for issue:', { issue: issue.title || issue.name, date, dateType: typeof date });
       return false;
     }
     
     if (showHistoric) {
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
       const isWithinRange = issueDate >= sevenDaysAgo;
+      const daysSinceIssue = (Date.now() - issueDate.getTime()) / (24 * 60 * 60 * 1000);
+      
+      // Debug logging for historic filtering
+      if (issue.title && issue.title.toLowerCase().includes('see more')) {
+        console.log('Slack "See More" issue relevance check:', {
+          title: issue.title,
+          date: date,
+          issueDate: issueDate.toISOString(),
+          sevenDaysAgo: sevenDaysAgo.toISOString(),
+          daysSinceIssue: daysSinceIssue.toFixed(2),
+          isWithinRange: isWithinRange,
+          showHistoric: showHistoric
+        });
+      }
+      
       return isWithinRange;
     } else {
       const text = `${issue.title || issue.name || ''} ${issue.description || ''}`.toLowerCase();
@@ -328,6 +360,7 @@ const isRelevant = (issue, date, showHistoric) => {
       return !hasResolvedKeyword;
     }
   } catch (e) {
+    console.log('Error in isRelevant:', e, { issue: issue.title || issue.name, date });
     return false;
   }
 };
@@ -983,12 +1016,35 @@ export default function LeafletWorldMap({
         // Process services that are either: 1) No services selected (show all), or 2) Explicitly selected
         const shouldProcessService = !selectedServices?.length || selectedServices?.includes(service.name.toLowerCase());
         
+        // Debug logging for service processing
+        if (service.name === 'Slack') {
+          console.log(`Processing Slack service:`, {
+            shouldProcessService,
+            selectedServices,
+            dataLength: service.data?.length || 0,
+            isArray: Array.isArray(service.data),
+            showHistoric,
+            sampleData: service.data?.[0]
+          });
+        }
+        
         if (!shouldProcessService) continue;
         if (!Array.isArray(service.data)) continue;
 
         for (const [index, item] of service.data.entries()) {
           const date = item[service.dateField] || item.date || item.created_at;
           const isItemRelevant = isRelevant(item, date, showHistoric);
+          
+          // Debug logging for Slack issues
+          if (service.name === 'Slack') {
+            console.log(`Slack Issue ${index}:`, {
+              title: item.title || item.name,
+              date: date,
+              isRelevant: isItemRelevant,
+              showHistoric: showHistoric,
+              dateAge: date ? (Date.now() - new Date(date).getTime()) / (24 * 60 * 60 * 1000) : 'no date'
+            });
+          }
           
           if (!isItemRelevant) continue;
 
