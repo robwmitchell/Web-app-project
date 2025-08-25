@@ -412,24 +412,29 @@
 
 @media (max-width: 768px) {
   .fullscreen-map-widget {
-    height: 60vh;
-    min-height: 500px;
+    height: 85vh; /* Increased from 60vh for better mobile experience */
+    min-height: 600px; /* Increased minimum height */
   }
   
   .map-top-controls {
     flex-direction: column;
-    gap: 16px;
-    padding: 16px;
+    gap: 12px; /* Reduced gap for more space */
+    padding: 12px; /* Reduced padding for more space */
   }
   
   .controls-left {
     flex-direction: column;
-    gap: 12px;
+    gap: 8px; /* Reduced gap */
     width: 100%;
   }
   
   .status-summary {
     justify-content: center;
+  }
+  
+  /* Improved mobile map area sizing */
+  .map-area {
+    min-height: 450px; /* Ensure minimum usable map height */
   }
   
   .issue-details-panel {
@@ -444,6 +449,23 @@
   
   .map-area.with-details {
     flex: 1;
+  }
+  
+  /* Improved service pills for mobile */
+  .service-pills-container {
+    gap: 8px;
+    padding: 8px 0;
+  }
+  
+  .service-pill {
+    min-height: 44px; /* Meet touch target accessibility requirement */
+    padding: 10px 14px; /* Larger touch area */
+    font-size: 13px;
+  }
+  
+  .service-pill-logo {
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -529,6 +551,13 @@
   background: white !important;
   color: #5f6368 !important;
   font-weight: 600 !important;
+  width: 44px !important; /* Minimum touch target size */
+  height: 44px !important; /* Minimum touch target size */
+  line-height: 44px !important;
+  font-size: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .leaflet-control-zoom a:hover {
@@ -599,4 +628,141 @@
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 50%;
   filter: blur(2px);
+}
+
+/* Mobile Accessibility Enhancements */
+@media (max-width: 768px) {
+  /* Enhanced touch targets for mobile */
+  .leaflet-control-zoom a {
+    width: 48px !important; /* Larger touch targets on mobile */
+    height: 48px !important;
+    line-height: 48px !important;
+    font-size: 20px !important;
+  }
+  
+  /* Ensure map takes adequate space on mobile */
+  .leaflet-container {
+    min-height: 450px !important;
+    touch-action: pan-x pan-y !important; /* Enable touch gestures */
+  }
+  
+  /* Mobile-optimized service pills */
+  .service-pills-row {
+    padding: 8px 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .service-pills-container {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .service-pill {
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    min-height: 44px; /* Accessibility touch target */
+    min-width: 44px;
+    padding: 10px 16px;
+  }
+  
+  /* Better map legend on mobile */
+  .map-legend {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .legend-item {
+    min-height: 44px; /* Touch accessibility */
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  
+  /* Improved controls layout */
+  .controls-center {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  
+  .view-controls {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .toggle-button {
+    min-height: 44px; /* Touch accessibility */
+    min-width: 44px;
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+  
+  /* Enhanced visibility for severity filter buttons */
+  .severity-filter-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .severity-filter-btn {
+    min-height: 44px; /* Touch accessibility */
+    min-width: 60px;
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 22px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  .fullscreen-map-widget {
+    height: 90vh; /* Even more height on small devices */
+    min-height: 500px;
+  }
+  
+  .map-top-controls {
+    padding: 8px;
+    gap: 8px;
+  }
+  
+  .controls-left {
+    text-align: center;
+  }
+  
+  .map-title {
+    font-size: 18px;
+  }
+  
+  .metric-value {
+    font-size: 20px;
+  }
+  
+  .metric-label {
+    font-size: 12px;
+  }
+  
+  /* Ensure touch targets are still adequate on very small screens */
+  .service-pill {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .toggle-button {
+    min-height: 44px;
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .leaflet-control-zoom a {
+    width: 44px !important;
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 18px !important;
+  }
 }
