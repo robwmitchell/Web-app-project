@@ -314,6 +314,20 @@ export default function LeafletWorldMap({
         mouseout: () => {
           layer.setStyle(getCountryStyle(feature));
         },
+        touchstart: () => {
+          // Mobile touch interaction - highlight on touch
+          layer.setStyle({
+            weight: 3,
+            color: '#ffffff',
+            fillOpacity: 0.8
+          });
+        },
+        touchend: () => {
+          // Reset style after touch
+          setTimeout(() => {
+            layer.setStyle(getCountryStyle(feature));
+          }, 2000); // Keep highlight for 2 seconds on mobile
+        },
         click: () => {
           setSelectedCountry(group);
         }
@@ -365,6 +379,15 @@ export default function LeafletWorldMap({
             worldCopyJump={true}
             maxBounds={[[-90, -180], [90, 180]]}
             maxBoundsViscosity={1.0}
+            touchZoom={true}
+            doubleClickZoom={true}
+            scrollWheelZoom={true}
+            boxZoom={true}
+            keyboard={true}
+            dragging={true}
+            tap={true}
+            zoomControl={true}
+            attributionControl={true}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
