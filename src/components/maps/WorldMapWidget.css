@@ -400,6 +400,366 @@
 }
 
 /* Responsive Design */
+
+/* Mobile-first approach with progressive enhancement */
+@media (max-width: 480px) {
+  .fullscreen-map-widget {
+    height: 85vh;
+    min-height: 400px;
+    border-radius: 8px;
+  }
+  
+  .map-top-controls {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e1e5e9;
+  }
+  
+  .controls-left {
+    width: 100%;
+    gap: 8px;
+  }
+  
+  .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .map-title {
+    font-size: 16px;
+    margin: 0;
+  }
+  
+  .mobile-filter-toggle {
+    background: #f1f3f4;
+    border: none;
+    border-radius: 20px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .mobile-filter-toggle:hover {
+    background: #e8eaed;
+  }
+  
+  .filter-icon {
+    font-size: 16px;
+  }
+  
+  .status-summary {
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  
+  .metric {
+    padding: 4px 8px;
+    min-width: 60px;
+  }
+  
+  .metric-value {
+    font-size: 16px;
+  }
+  
+  .metric-label {
+    font-size: 10px;
+  }
+  
+  /* Collapsible controls */
+  .collapsible-controls {
+    width: 100%;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .collapsible-controls.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .collapsible-controls.expanded {
+    max-height: 200px;
+    opacity: 1;
+    margin-top: 8px;
+  }
+  
+  .controls-center,
+  .controls-right {
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  
+  .view-controls {
+    padding: 2px;
+    gap: 2px;
+  }
+  
+  .toggle-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .button-text {
+    display: none;
+  }
+  
+  .legend-list {
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .legend-item {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  
+  .legend-text {
+    font-size: 11px;
+  }
+  
+  /* Service pills horizontal scroll */
+  .service-pills-row {
+    padding: 8px 12px;
+  }
+  
+  .service-pills-row.collapsed {
+    max-height: 0;
+    padding: 0 12px;
+    overflow: hidden;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .service-pills-row.expanded {
+    max-height: 100px;
+    opacity: 1;
+    transition: all 0.3s ease;
+  }
+  
+  .service-pills-container {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 0;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .service-pills-container::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .service-pills-container::-webkit-scrollbar-track {
+    background: #f1f3f4;
+    border-radius: 2px;
+  }
+  
+  .service-pills-container::-webkit-scrollbar-thumb {
+    background: #dadce0;
+    border-radius: 2px;
+  }
+  
+  .service-pill {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    min-height: 32px;
+    scroll-snap-align: start;
+    font-size: 12px;
+  }
+  
+  .service-pill-logo {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .service-pill-name {
+    font-size: 11px;
+  }
+  
+  /* Map container optimization for mobile */
+  .map-container {
+    flex: 1;
+    min-height: 0;
+  }
+  
+  .map-area {
+    height: 100%;
+  }
+  
+  /* Issue details panel mobile */
+  .issue-details-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    z-index: 3000;
+    box-shadow: none;
+    border-left: none;
+  }
+  
+  .details-header {
+    padding: 16px;
+    border-bottom: 2px solid #f1f3f4;
+  }
+  
+  .details-content {
+    padding: 16px;
+  }
+  
+  .close-details {
+    font-size: 28px;
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+  }
+}
+
+/* Small tablets and large phones */
+@media (min-width: 481px) and (max-width: 768px) {
+  .fullscreen-map-widget {
+    height: 75vh;
+    min-height: 500px;
+  }
+  
+  .mobile-view .map-top-controls {
+    padding: 12px 16px;
+  }
+  
+  .mobile-view .title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .mobile-view .map-title {
+    font-size: 18px;
+  }
+  
+  .mobile-view .status-summary {
+    gap: 12px;
+  }
+  
+  .mobile-view .metric {
+    padding: 6px 12px;
+    min-width: 70px;
+  }
+  
+  .mobile-view .service-pills-container {
+    overflow-x: auto;
+    padding: 6px 0;
+  }
+  
+  .mobile-view .service-pill {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  
+  .mobile-view .service-pill-logo {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .mobile-view .issue-details-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 400px;
+    z-index: 2000;
+  }
+}
+
+/* Tablets */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .fullscreen-map-widget {
+    height: 70vh;
+    min-height: 550px;
+  }
+  
+  .map-top-controls {
+    padding: 14px 20px;
+  }
+  
+  .controls-left {
+    gap: 20px;
+  }
+  
+  .status-summary {
+    gap: 16px;
+  }
+  
+  .service-pills-row {
+    padding: 10px 20px;
+  }
+  
+  .service-pills-container {
+    gap: 10px;
+  }
+  
+  .issue-details-panel {
+    width: 380px;
+  }
+  
+  .map-area.with-details {
+    flex: 0 0 calc(100% - 380px);
+  }
+}
+
+/* Touch optimizations for mobile devices */
+@media (max-width: 768px) {
+  /* Ensure all interactive elements have minimum touch target size */
+  .toggle-button,
+  .legend-item,
+  .service-pill,
+  .mobile-filter-toggle,
+  .close-details {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+  
+  /* Improve tap highlight */
+  .toggle-button,
+  .legend-item,
+  .service-pill {
+    -webkit-tap-highlight-color: rgba(26, 115, 232, 0.2);
+  }
+  
+  /* Prevent zoom on double tap */
+  .fullscreen-map-widget {
+    touch-action: pan-x pan-y;
+  }
+  
+  /* Smooth scrolling for service pills */
+  .service-pills-container {
+    scroll-behavior: smooth;
+  }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .service-pill-logo {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+  
+  .legend-marker {
+    border-width: 1px;
+  }
+}
 @media (max-width: 1200px) {
   .issue-details-panel {
     width: 350px;
@@ -410,42 +770,7 @@
   }
 }
 
-@media (max-width: 768px) {
-  .fullscreen-map-widget {
-    height: 60vh;
-    min-height: 500px;
-  }
-  
-  .map-top-controls {
-    flex-direction: column;
-    gap: 16px;
-    padding: 16px;
-  }
-  
-  .controls-left {
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
-  }
-  
-  .status-summary {
-    justify-content: center;
-  }
-  
-  .issue-details-panel {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    max-width: 400px;
-    z-index: 2000;
-  }
-  
-  .map-area.with-details {
-    flex: 1;
-  }
-}
+
 
 /* Service Pills Row */
 .service-pills-row {

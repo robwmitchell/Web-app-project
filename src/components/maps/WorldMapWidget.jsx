@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Suspense } from 'react';
 import './WorldMapWidget.css';
 
@@ -19,6 +19,24 @@ export default function WorldMapWidget({
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [localSelectedServices, setLocalSelectedServices] = useState(initialSelectedServices);
   const [filteredSeverities, setFilteredSeverities] = useState(['critical', 'major', 'minor']);
+  
+  // Mobile responsiveness state
+  const [isMobile, setIsMobile] = useState(false);
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
+
+  // Mobile detection effect
+  useEffect(() => {
+    const checkIsMobile = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      // Collapse filters by default on mobile
+      setFiltersCollapsed(mobile);
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
   
   // Map of available services with their display names
   const availableServices = [
@@ -68,11 +86,22 @@ export default function WorldMapWidget({
   ].length;
 
   return (
-    <div className="fullscreen-map-widget">
+    <div className={`fullscreen-map-widget ${isMobile ? 'mobile-view' : ''}`}>
       {/* Top Controls Bar */}
       <div className="map-top-controls">
         <div className="controls-left">
-          <h3 className="map-title">Global Status Monitor</h3>
+          <div className="title-row">
+            <h3 className="map-title">Global Status Monitor</h3>
+            {isMobile && (
+              <button 
+                className="mobile-filter-toggle"
+                onClick={() => setFiltersCollapsed(!filtersCollapsed)}
+                aria-label="Toggle filters"
+              >
+                <span className="filter-icon">{filtersCollapsed ? '⚙️' : '✕'}</span>
+              </button>
+            )}
+          </div>
           <div className="status-summary">
             <div className="metric">
               <span className="metric-value">{totalIssues}</span>
@@ -85,49 +114,52 @@ export default function WorldMapWidget({
           </div>
         </div>
         
-        <div className="controls-center">
-          {/* Toggle Controls */}
-          <div className="view-controls">
-            <button 
-              className={`toggle-button ${!localShowHistoric ? 'active' : ''}`}
-              onClick={() => setLocalShowHistoric(false)}
-            >
-              <span className="button-icon">🔴</span>
-              <span className="button-text">Live Issues</span>
-            </button>
-            <button 
-              className={`toggle-button ${localShowHistoric ? 'active' : ''}`}
-              onClick={() => setLocalShowHistoric(true)}
-            >
-              <span className="button-icon">📊</span>
-              <span className="button-text">Last 7 Days</span>
-            </button>
+        {/* Collapsible controls for mobile */}
+        <div className={`collapsible-controls ${filtersCollapsed ? 'collapsed' : 'expanded'}`}>
+          <div className="controls-center">
+            {/* Toggle Controls */}
+            <div className="view-controls">
+              <button 
+                className={`toggle-button ${!localShowHistoric ? 'active' : ''}`}
+                onClick={() => setLocalShowHistoric(false)}
+              >
+                <span className="button-icon">🔴</span>
+                <span className="button-text">Live</span>
+              </button>
+              <button 
+                className={`toggle-button ${localShowHistoric ? 'active' : ''}`}
+                onClick={() => setLocalShowHistoric(true)}
+              >
+                <span className="button-icon">📊</span>
+                <span className="button-text">History</span>
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="controls-right">
-          {/* Severity Legend as Filter */}
-          <div className="legend-section">
-            <div className="legend-list">
-              {['critical', 'major', 'minor'].map(severity => (
-                <div 
-                  key={severity}
-                  className={`legend-item ${filteredSeverities.includes(severity) ? 'active' : 'inactive'}`}
-                  onClick={() => toggleSeverity(severity)}
-                  title={`Click to ${filteredSeverities.includes(severity) ? 'hide' : 'show'} ${severity} issues`}
-                >
-                  <div className={`legend-marker ${severity}`}></div>
-                  <span className="legend-text">{severity.charAt(0).toUpperCase() + severity.slice(1)}</span>
-                  <span className="checkmark">{filteredSeverities.includes(severity) ? '✓' : ''}</span>
-                </div>
-              ))}
+          <div className="controls-right">
+            {/* Severity Legend as Filter */}
+            <div className="legend-section">
+              <div className="legend-list">
+                {['critical', 'major', 'minor'].map(severity => (
+                  <div 
+                    key={severity}
+                    className={`legend-item ${filteredSeverities.includes(severity) ? 'active' : 'inactive'}`}
+                    onClick={() => toggleSeverity(severity)}
+                    title={`Click to ${filteredSeverities.includes(severity) ? 'hide' : 'show'} ${severity} issues`}
+                  >
+                    <div className={`legend-marker ${severity}`}></div>
+                    <span className="legend-text">{severity.charAt(0).toUpperCase() + severity.slice(1)}</span>
+                    <span className="checkmark">{filteredSeverities.includes(severity) ? '✓' : ''}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
       
-      {/* Service Pills Row */}
-      <div className="service-pills-row">
+      {/* Service Pills Row - Also collapsible on mobile */}
+      <div className={`service-pills-row ${filtersCollapsed ? 'collapsed' : 'expanded'}`}>
         <div className="service-pills-container">
           {availableServices.map(service => (
             <div
